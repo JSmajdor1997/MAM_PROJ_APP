@@ -1,5 +1,5 @@
 import { Icon } from '@rneui/base';
-import React, { Component } from 'react';
+import React, { Component, VoidFunctionComponent } from 'react';
 import {
     View,
     TextInput,
@@ -11,14 +11,14 @@ import {
 
 interface Props {
     onClear: () => void;
+    onPress: ()=>void
     style?: ViewStyle
 }
 
-export default function SearchBar({ style }: Props) {
+export default function SearchBar({ style, onPress, onClear }: Props) {
     return (
         <View
             style={{
-                flex: 1,
                 padding: 6,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -38,7 +38,7 @@ export default function SearchBar({ style }: Props) {
                 }}
             />
             <TouchableOpacity
-                onPress={() => { }}
+                onPress={onPress}
                 style={{
                     width: '100%',
                     height: 35,
@@ -64,8 +64,7 @@ export default function SearchBar({ style }: Props) {
                     Szukaj wydarzeń i wysypisk...
                 </Text>
                 <TouchableOpacity
-                    onPress={() => {
-                    }}
+                    onPress={onClear}
                     style={{ paddingLeft: 4, paddingTop: 4, paddingBottom: 4 }}>
                     <Icon name="close" type="material" color="black" size={16} />
                 </TouchableOpacity>

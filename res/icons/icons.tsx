@@ -1,6 +1,8 @@
 export const map_pin_icon = require('../images/map-pin.png');
 
-export const wasteland_icon = require('../images/recycle-bin.png');
+export const trash_bin_icon = require('../images/recycle-bin.png');
+
+export const wasteland_icon = require('../images/wasteland-icon.png');
 
 export const event_icon = require('../images/calendar.png');
 
@@ -18,6 +20,6 @@ export const map_icon = require('../images/planet-earth.png');
 
 
 
-export const bamboo_image = require('../images/bamboo.svg');
+export {default as BambooImage} from "../images/bamboo.svg"
 
-export const leaves_image = require('../images/leaves_on_stick.svg');
+export {default as LeavesImage} from "../images/leaves_on_stick.svg"

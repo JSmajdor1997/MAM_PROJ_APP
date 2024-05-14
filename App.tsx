@@ -5,14 +5,15 @@ import {
   StatusBar,
   StyleSheet,
   Image,
-  View
+  View,
+  Modal
 } from 'react-native';
 import { Resources } from './res/Resources';
 import SplashScreen from './src/screens/SplashScreen';
 import MapScreen from './src/screens/MapScreen';
 import NavBar from './src/components/NavBar';
 import FastImage from 'react-native-fast-image';
-import { event_icon, map_icon, event_add_icon, wasteland_icon, rank_icon } from './res/icons/icons';
+import { event_icon, map_icon, event_add_icon, trash_bin_icon, rank_icon, wasteland_icon } from './res/icons/icons';
 import { Icon } from '@rneui/base';
 import LoginScreen from './src/screens/LoginScreen';
 import ChatScreen from './src/screens/ChatScreen';
@@ -23,6 +24,9 @@ import LeaderboardScreen from './src/screens/LeaderBoardScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import MyEventsScreen from './src/screens/MyEventsScreen';
 import NavigationParamsList from './src/screens/NavigationParamsList';
+import WastelandAddingDialog from './src/dialogs/WastelandAddingDialog';
+import EventAddingDialog from './src/dialogs/EventAddingDialog';
+import DumpsterAddingDialog from './src/dialogs/DumpsterAddingDialog';
 
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
 
@@ -34,18 +38,21 @@ const Stack = createNativeStackNavigator<NavigationParamsList>();
 
 export default function App() {
   const [navBarIndex, setNavBarIndex] = React.useState(1)
-  const [isNavigationBarVisible, setIsNavigationBarVisible] = React.useState(false)
+  const [isNavigationBarVisible, setIsNavigationBarVisible] = React.useState(true)
+  const [isWastelandAddingDialogVisible, setIsWastelandAddingDialogVisible] = React.useState(false)
+  const [isDumpsterAddingDialogVisible, setIsDumpsterAddingDialogVisible] = React.useState(false)
+  const [isEventAddingDialogVisible, setIsEventAddingDialogVisible] = React.useState(false)
 
   return (
     <View style={styles.root}>
       <NavigationContainer ref={navigationRef} onStateChange={state => {
         const currentScreen = state?.routes[state.index].name
 
-        if(currentScreen == null) {
+        if (currentScreen == null) {
           return
         }
 
-        switch(currentScreen) {
+        switch (currentScreen) {
           case WisbScreens.MapScreen:
           case WisbScreens.LeaderBoardScreen:
           case WisbScreens.MyEventsScreen:
@@ -62,8 +69,8 @@ export default function App() {
         }
       }}>
         <Stack.Navigator
-          initialRouteName={WisbScreens.SplashScreen} 
-          screenOptions={{headerShown: false, animation: "fade", animationDuration: 100}}>
+          initialRouteName={WisbScreens.MapScreen}
+          screenOptions={{ headerShown: false, animation: "fade", animationDuration: 100 }}>
           <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
           <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
           <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
@@ -77,7 +84,6 @@ export default function App() {
       <NavBar
         enabled
         selectedIndex={navBarIndex}
-        style={styles.navbar}
         visible={isNavigationBarVisible}
         items={[
           {
@@ -100,7 +106,7 @@ export default function App() {
             bubbles: [
               {
                 component: <Icon type="antdesign" name="qrcode" />,
-                onPress: () => this.setState({ isQRDialogVisible: true }),
+                onPress: () => setState({ isQRDialogVisible: true }),
               },
             ],
           },
@@ -124,17 +130,39 @@ export default function App() {
                     style={{ width: 22, aspectRatio: 1 }}
                   />
                 ),
-                onPress: () => { },
+                onPress: () => {
+                  setIsEventAddingDialogVisible(true)
+                  setIsWastelandAddingDialogVisible(false)
+                  setIsDumpsterAddingDialogVisible(false)
+                },
+              },
+              {
+                component: (
+                  <FastImage
+                    source={trash_bin_icon}
+                    resizeMode="cover"
+                    style={{ width: 22, aspectRatio: 1 }}
+                  />
+                ),
+                onPress: () => { 
+                  setIsEventAddingDialogVisible(false)
+                  setIsWastelandAddingDialogVisible(false)
+                  setIsDumpsterAddingDialogVisible(true)
+                },
               },
               {
                 component: (
                   <FastImage
                     source={wasteland_icon}
                     resizeMode="cover"
-                    style={{ width: 22, aspectRatio: 1 }}
+                    style={{ width: 50, aspectRatio: 1 }}
                   />
                 ),
-                onPress: () => { },
+                onPress: () => { 
+                  setIsEventAddingDialogVisible(false)
+                  setIsWastelandAddingDialogVisible(true)
+                  setIsDumpsterAddingDialogVisible(false)
+                },
               },
             ],
           },
@@ -151,6 +179,21 @@ export default function App() {
             },
           },
         ]} />
+
+      <DumpsterAddingDialog
+        visible={isDumpsterAddingDialogVisible}
+        onDismiss={() => setIsDumpsterAddingDialogVisible(false)}
+      />
+
+      <WastelandAddingDialog
+        visible={isWastelandAddingDialogVisible}
+        onDismiss={() => setIsWastelandAddingDialogVisible(false)}
+      />
+
+      <EventAddingDialog
+        visible={isEventAddingDialogVisible}
+        onDismiss={() => setIsEventAddingDialogVisible(false)}
+      />
     </View>
   );
 }
@@ -162,12 +205,4 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between"
   },
-  navbar: {
-    // position: "absolute",
-    // height: 20,
-    // width: "90%",
-    // backgroundColor: "red",
-    // bottom: 5,
-    // alignSelf: 'center'
-  }
 });

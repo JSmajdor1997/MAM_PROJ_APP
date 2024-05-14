@@ -1,4 +1,4 @@
-import React, {Component, ReactElement, Fragment} from 'react';
+import React, { Component, ReactElement, Fragment } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,12 @@ import {
   ViewStyle,
   ToastAndroid,
 } from 'react-native';
-import MapView, {Marker} from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import FastImage from 'react-native-fast-image';
-import Ripple from 'react-native-material-ripple';
-import {Menu, MenuItem} from 'react-native-material-menu';
-import {Region} from 'react-native-maps';
-import {LatLng} from 'react-native-maps';
-import { event_icon, map_pin_icon, wasteland_icon } from '../../res/icons/icons';
+import { Menu, MenuItem } from 'react-native-material-menu';
+import { Region } from 'react-native-maps';
+import { LatLng } from 'react-native-maps';
+import { event_icon, map_pin_icon, trash_bin_icon } from '../../res/icons/icons';
 import { Icon } from '@rneui/base';
 import SearchBar from '../components/SearchBar';
 import MoreButton from '../components/MoreButton';
@@ -24,6 +23,8 @@ import map_style from '../../res/map_style';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
+import Geolocation from '@react-native-community/geolocation';
+import EventsPlacesFilteringDialog from '../dialogs/EventsPlacesFilteringDialog';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> {
 
@@ -43,6 +44,8 @@ interface State {
   userSelectedPosition: LatLng;
 
   currentlyShownRegion: Region;
+
+  isEventsWastelandsFilteringDialogVisible: boolean
 }
 
 export default class MapScreen extends Component<Props, State> {
@@ -54,11 +57,7 @@ export default class MapScreen extends Component<Props, State> {
     onDismissed: () => void,
   ) => void;
 
-  private menu: any = null;
   private map: MapView | null = null;
-
-  private onUserSelectedPosition = () => {};
-  private onUserDismissedSelectingPosition = () => {};
 
   constructor(props: Props) {
     super(props);
@@ -71,7 +70,7 @@ export default class MapScreen extends Component<Props, State> {
       isEventAddingDialogVisible: false,
 
       operationMode: 'Normal',
-      userSelectedPosition: {latitude: 0, longitude: 0},
+      userSelectedPosition: { latitude: 0, longitude: 0 },
 
       currentlyShownRegion: {
         latitude: 52,
@@ -82,20 +81,10 @@ export default class MapScreen extends Component<Props, State> {
 
       eventToShow: null,
       wastelandToShow: null,
+      isEventsWastelandsFilteringDialogVisible: false
     };
 
-    MapScreen.openEventAddingDialog = () => {
-      this.setState({isEventAddingDialogVisible: true});
-    };
-
-    MapScreen.openWastelandAddingDialog = () => {
-      this.setState({isWastelandAddingDialogVisible: true});
-    };
-
-    MapScreen.getUserSelectedPosition = (
-      onChosen: (position: LatLng) => void,
-      onDismissed: () => void,
-    ) => {
+    MapScreen.getUserSelectedPosition = () => {
       (ToastAndroid as any).showWithGravityAndOffset(
         'Przesuń marker na pozycję śmieciowiska',
         ToastAndroid.SHORT,
@@ -113,32 +102,22 @@ export default class MapScreen extends Component<Props, State> {
         this.map.animateToRegion({
           ...this.state.currentlyShownRegion,
         });
-
-      this.onUserDismissedSelectingPosition = () => {
-        this.setState({operationMode: 'Normal'});
-        onDismissed();
-      };
-
-      this.onUserSelectedPosition = () => {
-        this.setState({operationMode: 'Normal'});
-        onChosen(this.state.userSelectedPosition);
-      };
     };
   }
 
   private getPosition() {
     try {
-      // Geolocation.getCurrentPosition(info => {
-      //   const region: Region = {
-      //     ...info.coords,
-      //     latitudeDelta: 0.05,
-      //     longitudeDelta: 0.05,
-      //   };
+      Geolocation.getCurrentPosition(info => {
+        const region: Region = {
+          ...info.coords,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        };
 
-      //   this.map && this.map.animateToRegion(region);
+        this.map && this.map.animateToRegion(region);
 
-      //   this.setState({userPos: info.coords});
-      // });
+        this.setState({ userPos: info.coords });
+      });
     } catch {
       const region = {
         latitude: 52,
@@ -155,27 +134,17 @@ export default class MapScreen extends Component<Props, State> {
     this.getPosition();
   }
 
-  private showMenu(show: boolean) {
-    if (this.menu) {
-      if (show) {
-        this.menu.show();
-      } else {
-        this.menu.hide();
-      }
-    }
-  }
-
   private renderUser(): ReactElement | null {
     return (
       this.state.userPos && (
         <Marker
           title="Tu jesteś"
-          onPress={() => {}}
+          onPress={() => { }}
           coordinate={this.state.userPos}>
           <FastImage
             source={map_pin_icon}
             resizeMode="contain"
-            style={{height: 25, width: 25}}
+            style={{ height: 25, width: 25 }}
           />
         </Marker>
       )
@@ -192,9 +161,9 @@ export default class MapScreen extends Component<Props, State> {
         }
         coordinate={wasteland.position}>
         <FastImage
-          source={wasteland_icon}
+          source={trash_bin_icon}
           resizeMode="contain"
-          style={{height: 30, width: 30}}
+          style={{ height: 30, width: 30 }}
         />
       </Marker>
     );
@@ -203,12 +172,12 @@ export default class MapScreen extends Component<Props, State> {
   private renderEvent(event: any): ReactElement | null {
     return event.position && event.position.latitude && event.position.longitude ? (
       <Marker
-        onPress={() => this.setState({eventToShow: event})}
+        onPress={() => this.setState({ eventToShow: event })}
         coordinate={event.position}>
         <FastImage
           source={event_icon}
           resizeMode="contain"
-          style={{height: 30, width: 30}}
+          style={{ height: 30, width: 30 }}
         />
       </Marker>
     ) : null;
@@ -219,16 +188,16 @@ export default class MapScreen extends Component<Props, State> {
       <Marker
         coordinate={this.state.userSelectedPosition}
         onDragEnd={e =>
-          this.setState({userSelectedPosition: e.nativeEvent.coordinate})
+          this.setState({ userSelectedPosition: e.nativeEvent.coordinate })
         }
         draggable>
-        <FastImage source={map_pin_icon} style={{aspectRatio: 1, width: 28}} />
+        <FastImage source={map_pin_icon} style={{ aspectRatio: 1, width: 28 }} />
       </Marker>
     );
   }
 
   private renderAllMarkers(): ReactElement {
-    const {operationMode, eventToShow, wastelandToShow} = this.state;
+    const { operationMode, eventToShow, wastelandToShow } = this.state;
 
     if (operationMode == 'Normal') {
       return (
@@ -302,61 +271,32 @@ export default class MapScreen extends Component<Props, State> {
 
               elevation: 20,
             }}>
-            <Text style={{textAlign: 'center'}}>{label}</Text>
+            <Text style={{ textAlign: 'center' }}>{label}</Text>
           </View>
         ) : null}
-      </View>
-    );
-  }
 
-  private renderBar(): ReactElement {
-    return (
-      <View
-        style={{
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 10,
-          },
-          shadowOpacity: 0.51,
-          shadowRadius: 13.16,
-
-          elevation: 20,
-          backgroundColor: 'white',
-          borderRadius: 10,
-          marginHorizontal: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          position: 'absolute',
-          marginTop: (StatusBar.currentHeight ?? 20) + 5,
-        }}>
-        <SearchBar
-          onEventSelected={item => this.setState({eventToShow: item})}
-          onWastelandSelected={item => this.setState({wastelandToShow: item})}
-          onClear={() => {
-            this.setState({eventToShow: null, wastelandToShow: null});
-            this.getPosition();
-          }}
-        />
-        <MoreButton
-          style={{paddingRight: 8}}
-          onPress={this.showMenu.bind(this, true)}
-          color="black"
-        />
-        <Menu style={{marginTop: 75}} ref={(ref: any) => (this.menu = ref)}>
-          <MenuItem
-            onPress={() => {
-              this.showMenu(false);
-            }}>
-            Ustawienia
-          </MenuItem>
-        </Menu>
+        {this.state.operationMode == 'GetSelectedPosition' &&
+          this.renderFAB(
+            <Icon type="material" name="close" color="white" />,
+            '#db887b',
+            this.onUserDismissedSelectingPosition,
+            'Anuluj',
+            { bottom: 10, left: 10 },
+          )}
+        {this.state.operationMode == 'GetSelectedPosition' &&
+          this.renderFAB(
+            <Icon type="material" name="check" color="white" />,
+            '#60b580',
+            this.onUserSelectedPosition,
+            'Wybierz',
+            { bottom: 10, right: 10 },
+          )}
       </View>
     );
   }
 
   render() {
-    const {wastelandToShow} = this.state;
+    const { wastelandToShow, isEventsWastelandsFilteringDialogVisible } = this.state;
 
     return (
       <View
@@ -366,7 +306,7 @@ export default class MapScreen extends Component<Props, State> {
 
         <MapView
           onRegionChange={region =>
-            this.setState({currentlyShownRegion: region})
+            this.setState({ currentlyShownRegion: region })
           }
           showsMyLocationButton={false}
           toolbarEnabled={false}
@@ -374,71 +314,42 @@ export default class MapScreen extends Component<Props, State> {
           provider="google"
           showsPointsOfInterest={false}
           ref={(ref: any) => (this.map = ref)}
-          style={{height: '100%', width: '100%'}}
+          style={{ height: '100%', width: '100%' }}
           customMapStyle={map_style}>
           {this.renderAllMarkers()}
         </MapView>
 
-        {this.renderBar()}
+        <View
+          style={{
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: 10,
+            },
+            shadowOpacity: 0.51,
+            shadowRadius: 13.16,
 
-        {/* <WastelandInfoDialog
-          wasteland={wastelandToShow}
-          visible={wastelandToShow != null}
-          onDismiss={() => {
-            this.setState({
-              wastelandToShow: null,
-            });
-          }}
-          onShowOnMap={() => {
-            this.map &&
-              this.state.wastelandToShow &&
-              // this.map.animateToCoordinate(this.state.wastelandToShow.position);
+            elevation: 20,
+            backgroundColor: 'white',
+            borderRadius: 10,
+            marginHorizontal: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            position: 'absolute',
+            marginTop: (StatusBar.currentHeight ?? 20) + 5,
+          }}>
+          <SearchBar
+            onPress={()=>this.setState({isEventsWastelandsFilteringDialogVisible: true})}
+            onClear={() => {
+              this.setState({ eventToShow: null, wastelandToShow: null });
+              this.getPosition();
+            }}
+          />
+        </View>
 
-            this.setState({wastelandToShow: null});
-          }}
-        /> */}
-
-        {/* <WastelandAddingDialog
-          visible={this.state.isWastelandAddingDialogVisible}
-          onDismiss={() =>
-            this.setState({isWastelandAddingDialogVisible: false})
-          }
-        /> */}
-
-        {/* <EventAddingDialog
-          visible={this.state.isEventAddingDialogVisible}
-          onDismiss={() => this.setState({isEventAddingDialogVisible: false})}
-        /> */}
-
-        {/* <EventInfoDialog
-          event={this.state.eventToShow}
-          visible={this.state.eventToShow != null}
-          onDismiss={() => this.setState({eventToShow: null})}
-          onShowOnMap={() => {
-            this.map &&
-              this.state.eventToShow &&
-              // this.map.animateToCoordinate(this.state.eventToShow.position);
-
-            this.setState({eventToShow: null});
-          }}
-        /> */}
-
-        {this.state.operationMode == 'GetSelectedPosition' &&
-          this.renderFAB(
-            <Icon type="material" name="close" color="white" />,
-            '#db887b',
-            this.onUserDismissedSelectingPosition,
-            'Anuluj',
-            {bottom: 10, left: 10},
-          )}
-        {this.state.operationMode == 'GetSelectedPosition' &&
-          this.renderFAB(
-            <Icon type="material" name="check" color="white" />,
-            '#60b580',
-            this.onUserSelectedPosition,
-            'Wybierz',
-            {bottom: 10, right: 10},
-          )}
+        <EventsPlacesFilteringDialog 
+          visible={isEventsWastelandsFilteringDialogVisible}
+          onDismiss={()=>this.setState({isEventsWastelandsFilteringDialogVisible: false})}/>
       </View>
     );
   }

@@ -169,16 +169,24 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
     };
 
     if (bubbles != undefined) {
-      const isBidirectional = bubbles.length == 2;
-
       return bubbles.map((bubble, index) => {
         let style: any;
 
-        if (isBidirectional) {
+        if (bubbles.length == 2) {
           if (index == 0) {
             style = styleForLeft;
           } else {
             style = styleForRight;
+          }
+        } else if(bubbles.length == 3) {
+          if (index == 0) {
+            style = styleForLeft;
+          } else if(index == 2) {
+            style = styleForRight;
+          } else if(index == 1) {
+            style ={
+              marginBottom: 20
+            }
           }
         }
 

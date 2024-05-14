@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { bamboo_image, leaves_image } from '../../res/icons/icons';
 import { Resources } from '../../res/Resources';
 import { Icon } from '@rneui/base';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,6 +14,9 @@ import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
 import getAPI from '../API/getAPI';
 import Toast from 'react-native-simple-toast';
+import FastImage from 'react-native-fast-image';
+import { SvgUri } from 'react-native-svg';
+import { BambooImage, LeavesImage } from '../../res/icons/icons';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LoginScreen> { }
 
@@ -49,12 +51,26 @@ export default function LoginScreen({ navigation }: Props) {
         backgroundColor: Resources.Colors.Primary,
         justifyContent: 'center',
       }}>
-      <Image source={bamboo_image} style={styles.bambooImage} />
-      <Image source={leaves_image} style={styles.stickImage} />
-
+      <LeavesImage
+        style={{
+          height: 190,
+          width: 161,
+          position: 'absolute',
+          top: -50,
+          right: -20,
+          transform: [{ rotate: '180deg' }],
+        }} />
+      <BambooImage
+        style={{
+          height: 250,
+          width: 120,
+          position: 'absolute',
+          bottom: -30,
+          left: -45,
+          transform: [{ rotate: '20deg' }],
+        }} />
       <View>
-        <View style={{}}>
-          <View
+      <View
             style={{
               alignItems: 'center',
               bottom: 5,
@@ -158,7 +174,6 @@ export default function LoginScreen({ navigation }: Props) {
               <Icon type="antdesign" name="arrowright" color={Resources.Colors.Primary} />
             </TouchableOpacity>
           </View>
-        </View>
       </View>
 
       <View

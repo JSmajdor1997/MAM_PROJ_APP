@@ -19,6 +19,7 @@ import EventItem from '../components/EventItem';
 import WastelandItem from '../components/WastelandItem';
 import SearchBar from '../components/SearchBar';
 import { Resources } from '../../res/Resources';
+import ShakyDialog from './ShakyDialog';
 
 interface Props {
   visible: boolean;
@@ -32,7 +33,7 @@ interface State {
   data: Array<any>;
 }
 
-export default class WisbEventsPlacesFilteringDialog extends Component<
+export default class EventsPlacesFilteringDialog extends Component<
   Props,
   State
 > {
@@ -136,39 +137,16 @@ export default class WisbEventsPlacesFilteringDialog extends Component<
 
   render() {
     return (
-      <Modal
-        deviceHeight={Dimensions.get('screen').height}
-        deviceWidth={Dimensions.get('screen').width}
-        onBackdropPress={this.props.onDismiss}
-        isVisible={this.props.visible}>
+      <ShakyDialog
+        onDismiss={this.props.onDismiss}
+        visible={this.props.visible}>
         <View
           style={{
-            flex: 1,
             backgroundColor: Resources.Colors.White,
             borderRadius: 10,
             justifyContent: 'space-between',
-            position: 'absolute',
-            top: StatusBar.currentHeight,
-            bottom: 0,
-            left: 0,
-            right: 0,
           }}>
-          <SearchBar
-            ref={ref => (this.searchBar = ref)}
-            color="pink"
-            onTextChange={this.onSearchBarTextChange.bind(this)}
-            placeholder="Szukaj..."
-            containerStyle={{
-              width: '100%',
-              paddingRight: 22,
-              paddingLeft: 15,
-              paddingVertical: 12,
-              marginTop: 4
-            }}
-            iconStyle={{
-              right: 14,
-            }}
-          />
+          <SearchBar onClear={()=>{}} onPress={()=>{}}/>
           <FlatList
             renderItem={this.renderItem.bind(this)}
             keyExtractor={item => item.ID}
@@ -203,7 +181,7 @@ export default class WisbEventsPlacesFilteringDialog extends Component<
             </View>
           </View>
         </View>
-      </Modal>
+      </ShakyDialog>
     );
   }
 }

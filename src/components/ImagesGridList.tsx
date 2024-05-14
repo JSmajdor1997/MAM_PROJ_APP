@@ -72,7 +72,6 @@ export default class ImagesGridList extends Component<Props, State> {
 
   removeImage(ID: number) {
     let {data, images} = this.state;
-    console.log(ID);
 
     images = images.filter(it => it.ID != ID);
 

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   StyleSheet,
   ViewStyle,
@@ -6,8 +6,15 @@ import {
   Dimensions,
   StatusBar,
   ViewProps,
-  Modal
-} from 'react-native';;
+  Modal,
+  View,
+  TouchableHighlight,
+  Text,
+  TouchableWithoutFeedback,
+  SafeAreaView,
+  TouchableOpacity,
+  Pressable
+} from 'react-native';
 
 interface Props {
   visible: boolean;
@@ -22,10 +29,10 @@ interface Props {
   shakingOffset?: number;
   shakingDuration?: number;
   containerProps?: ViewProps;
+  children: React.ReactNode
 }
 
 interface State {
-  visible: boolean;
   shakeOffset: Animated.Value;
 }
 
@@ -34,7 +41,6 @@ export default class ShakyDialog extends Component<Props, State> {
     super(props);
 
     this.state = {
-      visible: this.props.visible,
       shakeOffset: new Animated.Value(0),
     };
   }
@@ -71,40 +77,47 @@ export default class ShakyDialog extends Component<Props, State> {
   }
 
   render() {
-    const backdropOpacity =
-      this.props.backdropOpacity == null ? 0.5 : this.props.backdropOpacity;
-    const positiveLabel = this.props.positiveLabel || 'OK';
-    const negativeLabel = this.props.negativeLabel || 'CANCEL';
-
-    const labelsColor = this.props.labelsColor || 'black';
-
-    const {onNegative, onPositive} = this.props;
-    const {left, right} = this.state;
+    const { onDismiss } = this.props;
+    const { shakeOffset } = this.state;
 
     return (
       <Modal
-        deviceHeight={Dimensions.get('screen').height}
-        deviceWidth={Dimensions.get('screen').width}
-        isVisible={this.state.visible}
-        onBackdropPress={this.props.onDismiss}
-        backdropOpacity={backdropOpacity}>
-        <Animated.View
-          {...this.props.containerProps}
-          style={[
-            {
-              top: StatusBar.currentHeight,
-              bottom: 0,
-              position: 'absolute',
-              backgroundColor: 'white',
-              borderRadius: 10,
-              overflow: 'hidden',
-              translateX: left,
-            },
-            this.props.dialogStyle,
-          ]}>
-          {this.props.children}
-        </Animated.View>
-      </Modal>
+        animationType='fade'
+        transparent
+        visible={this.props.visible}
+        onDismiss={onDismiss}>
+
+        <Pressable
+          style={{ height: "100%", display: "flex" }}
+          onPress={onDismiss} >
+          <SafeAreaView style={{ backgroundColor: "#00000055", flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Animated.View
+              onStartShouldSetResponder={(event) => true}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+              }}
+              style={[
+                {
+                  transform: [
+                    { translateX: shakeOffset }
+                  ],
+                  minWidth: 50,
+                  minHeight: 50,
+                  maxWidth: "90%",
+                  maxHeight: "90%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "white",
+                  borderRadius: 20,
+                  overflow: "hidden"
+                }
+              ]}>
+              {this.props.children}
+            </Animated.View>
+          </SafeAreaView>
+        </Pressable>
+      </Modal >
     );
   }
 }

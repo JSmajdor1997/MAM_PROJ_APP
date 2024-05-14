@@ -8,7 +8,7 @@ import FastImage from 'react-native-fast-image';
 import Swiper from 'react-native-swiper';
 import Toast from 'react-native-simple-toast';
 import ShakyDialog from './ShakyDialog';
-import { mono_clear_icon, wasteland_icon } from '../../res/icons/icons';
+import { mono_clear_icon, trash_bin_icon } from '../../res/icons/icons';
 import { Icon } from '@rneui/base';
 import ImagesList from '../components/ImagesList';
 import { FBShareButton, TwitterShareButton, renderFAB } from '../components/buttons';
@@ -129,7 +129,7 @@ export default class WastelandInfoDialog extends Component<Props, State> {
             <Icon type="material" name="close" size={20} color="white" />
           </TouchableOpacity>
           <FastImage
-            source={wasteland_icon}
+            source={trash_bin_icon}
             style={{ aspectRatio: 1, width: 40 }}
           />
           <Text

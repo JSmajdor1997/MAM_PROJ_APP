@@ -1,4 +1,4 @@
-import React, {Component, ReactElement, Fragment} from 'react';
+import React, { Component, ReactElement, Fragment } from 'react';
 import {
   View,
   Text,
@@ -15,13 +15,13 @@ import Ripple from 'react-native-material-ripple';
 import Swiper from 'react-native-swiper';
 // import DateTimePicker from '@react-native-community/datetimepicker';
 import Spinner from 'react-native-spinkit';
-import {LatLng} from 'react-native-maps';
+import { LatLng } from 'react-native-maps';
 import { Icon } from '@rneui/base';
 import { event_add_icon, map_pin_icon } from '../../res/icons/icons';
 import { Resources } from '../../res/Resources';
 import ImagesList from '../components/ImagesList';
 import ShakyDialog from './ShakyDialog';
-import WisbEventsPlacesFilteringDialog from './WisbEventsPlacesFilteringDialog';
+import EventsPlacesFilteringDialog from './EventsPlacesFilteringDialog';
 
 function formatDate(date: Date) {
   const monthNames = [
@@ -64,7 +64,7 @@ interface State {
     description: string | null;
     position: LatLng | null;
     placeName: string | null;
-    images: Array<{image: string; ID: number}>;
+    images: Array<{ image: string; ID: number }>;
     mainImage: string | null;
     date: Date | null;
     wasteland: any | null;
@@ -79,7 +79,6 @@ interface State {
 
 export default class EventAddingDialog extends Component<Props, State> {
   private dialog: ShakyDialog | null = null;
-  //  used for swiping screens
   private swiper: Swiper | null = null;
 
   constructor(props: Props) {
@@ -163,7 +162,7 @@ export default class EventAddingDialog extends Component<Props, State> {
   }
 
   private async publish() {
-    this.setState({isPublishing: true});
+    this.setState({ isPublishing: true });
 
     const {
       position,
@@ -200,7 +199,7 @@ export default class EventAddingDialog extends Component<Props, State> {
   }
 
   private async setPlaceName() {
-    const {event} = this.state;
+    const { event } = this.state;
 
     if (event.position) {
 
@@ -212,7 +211,7 @@ export default class EventAddingDialog extends Component<Props, State> {
       const parsedResponse = await ff.json();
 
       event.placeName = parsedResponse.results[0].formatted_address;
-      this.setState({event});
+      this.setState({ event });
     }
   }
 
@@ -223,7 +222,7 @@ export default class EventAddingDialog extends Component<Props, State> {
   private swipeTo(index: number) {
     this.swiper && this.swiper.scrollTo(index);
 
-    this.setState({currentIndex: index});
+    this.setState({ currentIndex: index });
   }
 
   private showToast(message: string) {
@@ -244,7 +243,7 @@ export default class EventAddingDialog extends Component<Props, State> {
     size?: number,
   ): ReactElement {
     return (
-      <View style={{justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
         <Ripple
           rippleCentered={true}
           rippleSize={45}
@@ -289,7 +288,7 @@ export default class EventAddingDialog extends Component<Props, State> {
 
               elevation: 20,
             }}>
-            <Text style={{textAlign: 'center'}}>{label}</Text>
+            <Text style={{ textAlign: 'center' }}>{label}</Text>
           </View>
         ) : null}
       </View>
@@ -297,8 +296,8 @@ export default class EventAddingDialog extends Component<Props, State> {
   }
 
   private renderNavButtons(): ReactElement {
-    const {onDismiss} = this.props;
-    const {currentIndex, event} = this.state;
+    const { onDismiss } = this.props;
+    const { currentIndex, event } = this.state;
 
     let buttons: ReactElement;
 
@@ -404,7 +403,7 @@ export default class EventAddingDialog extends Component<Props, State> {
   }
 
   private renderHeader(): ReactElement {
-    const {currentIndex, event} = this.state;
+    const { currentIndex, event } = this.state;
 
     let label: string;
     if (currentIndex == 0) {
@@ -426,7 +425,7 @@ export default class EventAddingDialog extends Component<Props, State> {
         }}>
         <FastImage
           source={event_add_icon}
-          style={{aspectRatio: 1, width: 40}}
+          style={{ aspectRatio: 1, width: 40 }}
         />
         <Text
           style={{
@@ -448,7 +447,7 @@ export default class EventAddingDialog extends Component<Props, State> {
           }}>
           <TouchableOpacity
             onPress={() => {
-              this.setState({shouldRender: false}, () => {
+              this.setState({ shouldRender: false }, () => {
                 // MapScreen.getUserSelectedPosition(
                 //   position => {
                 //     event.position = position;
@@ -469,7 +468,7 @@ export default class EventAddingDialog extends Component<Props, State> {
                 // );
               });
             }}
-            style={{flexDirection: 'row', alignItems: 'center'}}>
+            style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text
               style={{
                 fontFamily: 'roboto',
@@ -482,7 +481,7 @@ export default class EventAddingDialog extends Component<Props, State> {
             </Text>
             <FastImage
               source={map_pin_icon}
-              style={{aspectRatio: 1, width: 22}}
+              style={{ aspectRatio: 1, width: 22 }}
             />
           </TouchableOpacity>
         </View>
@@ -491,12 +490,12 @@ export default class EventAddingDialog extends Component<Props, State> {
   }
 
   private renderBasicDataPage(): ReactElement {
-    const {event} = this.state;
+    const { event } = this.state;
 
     return (
       <ScrollView
-        style={{flex: 1}}
-        contentContainerStyle={{flex: 1, paddingBottom: 4}}>
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flex: 1, paddingBottom: 4 }}>
         <View
           style={{
             height: 40,
@@ -531,7 +530,7 @@ export default class EventAddingDialog extends Component<Props, State> {
             onChangeText={text => {
               event.title = text;
 
-              this.setState({event});
+              this.setState({ event });
             }}
           />
         </View>
@@ -571,7 +570,7 @@ export default class EventAddingDialog extends Component<Props, State> {
             onChangeText={text => {
               event.description = text;
 
-              this.setState({event});
+              this.setState({ event });
             }}
           />
         </View>
@@ -582,7 +581,7 @@ export default class EventAddingDialog extends Component<Props, State> {
               isDateDialogVisible: true,
             })
           }
-          onPressOut={() => this.setState({isDateDialogVisible: false})}
+          onPressOut={() => this.setState({ isDateDialogVisible: false })}
           style={{
             height: 40,
             backgroundColor: '#dedede',
@@ -618,7 +617,7 @@ export default class EventAddingDialog extends Component<Props, State> {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => this.setState({isEventsFilteringDialogVisible: true})}
+          onPress={() => this.setState({ isEventsFilteringDialogVisible: true })}
           style={{
             height: 40,
             backgroundColor: '#dedede',
@@ -654,15 +653,15 @@ export default class EventAddingDialog extends Component<Props, State> {
               : ''}
           </TextInput>
         </TouchableOpacity>
-        <WisbEventsPlacesFilteringDialog
+        <EventsPlacesFilteringDialog
           visible={this.state.isEventsFilteringDialogVisible}
           onDismiss={() =>
-            this.setState({isEventsFilteringDialogVisible: false})
+            this.setState({ isEventsFilteringDialogVisible: false })
           }
           type="WisbWastelands"
           onItemSelected={item => {
             event.wasteland = (item as any) as any;
-            this.setState({event, isEventsFilteringDialogVisible: false});
+            this.setState({ event, isEventsFilteringDialogVisible: false });
           }}
         />
         {/* {this.state.isDateDialogVisible ? (
@@ -698,7 +697,7 @@ export default class EventAddingDialog extends Component<Props, State> {
 
             event.images = images;
 
-            this.setState({event});
+            this.setState({ event });
           }}
           readonly={false}
         />
@@ -711,7 +710,7 @@ export default class EventAddingDialog extends Component<Props, State> {
       <View
         onLayout={e => {
           if (e.nativeEvent.layout.width != 0) {
-            this.setState({sizeOfQR: e.nativeEvent.layout.width});
+            this.setState({ sizeOfQR: e.nativeEvent.layout.width });
           }
         }}
         style={{
@@ -721,18 +720,18 @@ export default class EventAddingDialog extends Component<Props, State> {
         <ScrollView
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
-          style={{marginHorizontal: 10, marginTop: 10, flex: 1}}
+          style={{ marginHorizontal: 10, marginTop: 10, flex: 1 }}
           contentContainerStyle={{
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingBottom: 10,
           }}>
-          <View style={{alignItems: 'center', padding: 10}}>
+          <View style={{ alignItems: 'center', padding: 10 }}>
             <QRCode
               size={this.state.sizeOfQR / 2}
               value={this.state.joinCode ? this.state.joinCode : '.'}
             />
-            <Text style={{fontSize: 40, fontWeight: 'bold', marginTop: 10}}>
+            <Text style={{ fontSize: 40, fontWeight: 'bold', marginTop: 10 }}>
               {this.state.joinCode ? this.state.joinCode : ''}
             </Text>
           </View>
@@ -742,39 +741,36 @@ export default class EventAddingDialog extends Component<Props, State> {
   }
 
   render() {
-    const {shouldRender} = this.state;
+    const { shouldRender } = this.state;
 
     return shouldRender ? (
       <ShakyDialog
         shakingDuration={15}
+        onDismiss={this.props.onDismiss}
         shakingOffset={2}
         ref={ref => (this.dialog = ref)}
         visible={this.props.visible}>
-        <TouchableWithoutFeedback
-          onPress={Keyboard.dismiss}
-          style={{backgroundColor: 'red'}}>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: Resources.Colors.White,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              overflow: 'hidden',
-            }}>
-            {this.renderHeader()}
-            <Swiper
-              ref={ref => (this.swiper = ref)}
-              showsButtons={false}
-              showsPagination={false}
-              scrollEnabled={false}
-              loop={false}>
-              {this.renderBasicDataPage()}
-              {this.renderPhotosAddingPage()}
-              {this.renderSharingPage()}
-            </Swiper>
-            {this.renderNavButtons()}
-          </View>
-        </TouchableWithoutFeedback>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: Resources.Colors.White,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            overflow: 'hidden',
+          }}>
+          {this.renderHeader()}
+          <Swiper
+            ref={ref => (this.swiper = ref)}
+            showsButtons={false}
+            showsPagination={false}
+            scrollEnabled={false}
+            loop={false}>
+            {this.renderBasicDataPage()}
+            {this.renderPhotosAddingPage()}
+            {this.renderSharingPage()}
+          </Swiper>
+          {this.renderNavButtons()}
+        </View>
       </ShakyDialog>
     ) : null;
   }

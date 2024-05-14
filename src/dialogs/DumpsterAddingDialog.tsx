@@ -47,7 +47,7 @@ interface State {
   isPublishing: boolean;
 }
 
-export default class WastelandAddingDialog extends Component<Props, State> {
+export default class DumpsterAddingDialog extends Component<Props, State> {
   private dialog: ShakyDialog | null = null;
   //  used for swiping screens
   private swiper: Swiper | null = null;
