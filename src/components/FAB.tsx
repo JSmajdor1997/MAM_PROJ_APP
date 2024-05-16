@@ -5,7 +5,7 @@ import Ripple from 'react-native-material-ripple';
 
 export interface Props {
     style?: ViewStyle
-    icon: ReactElement
+    icon: React.ReactNode
     color: string
     onPress: () => void
     label?: string

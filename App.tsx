@@ -22,12 +22,13 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import MyEventsScreen from './src/screens/MyEventsScreen';
 import NavigationParamsList from './src/screens/NavigationParamsList';
 import WisbIcon, { IconType, ModificatorType } from './src/components/WisbIcon';
-import WastelandDialog, { Mode } from './src/dialogs/WastelandDialog';
 import Wasteland from './src/API/data_types/Wasteland';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
-import EventDialog from './src/dialogs/EventDialog';
 import DumpsterDialog from './src/dialogs/DumpsterDialog';
+import EventDialog from './src/dialogs/EventDialog';
+import WastelandDialog from './src/dialogs/WastelandDialog';
+import { Mode } from './src/dialogs/WisbDialog';
 
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
 
@@ -71,7 +72,7 @@ export default function App() {
         }
       }}>
         <Stack.Navigator
-          initialRouteName={WisbScreens.MapScreen}
+          initialRouteName={WisbScreens.SplashScreen}
           screenOptions={{ headerShown: false, animation: "fade", animationDuration: 100 }}>
           <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
           <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
@@ -149,16 +150,9 @@ export default function App() {
           },
         ]} />
 
-      <WastelandDialog
-        wasteland={selectedWasteland}
-        onDismiss={() => setSelectedWasteland(undefined)}
-        mode={Mode.Adding}
-        visible={selectedWasteland != null}
-      />
-
-      <EventDialog visible={false}/>
-
-      <DumpsterDialog visible={false}/>
+      <EventDialog visible={false} mode={Mode.Adding}/>
+      <WastelandDialog visible={false} mode={Mode.Adding}/>
+      <DumpsterDialog visible={false} mode={Mode.Adding}/> 
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import User from "./data_types/User";
 import Event from "./data_types/Event";
-import APIResponse from "./responses_types/APIResponse";
+import APIResponse from "./APIResponse";
 import Message from "./data_types/Message";
 import Wasteland from "./data_types/Wasteland";
 import LeadershipRecord from "./data_types/LeadershipRecord";

@@ -19,7 +19,7 @@ import EventItem from '../components/EventItem';
 import WastelandItem from '../components/WastelandItem';
 import SearchBar from '../components/SearchBar';
 import { Resources } from '../../res/Resources';
-import ShakyDialog from './ShakyDialog';
+import Dialog from './Dialog';
 
 interface Props {
   visible: boolean;
@@ -137,7 +137,7 @@ export default class EventsPlacesFilteringDialog extends Component<
 
   render() {
     return (
-      <ShakyDialog
+      <Dialog
         onDismiss={this.props.onDismiss}
         visible={this.props.visible}>
         <View
@@ -146,7 +146,7 @@ export default class EventsPlacesFilteringDialog extends Component<
             borderRadius: 10,
             justifyContent: 'space-between',
           }}>
-          <SearchBar onClear={()=>{}} onPress={()=>{}}/>
+          <SearchBar onClear={() => { }} onPress={() => { }} />
           <FlatList
             renderItem={this.renderItem.bind(this)}
             keyExtractor={item => item.ID}
@@ -181,7 +181,7 @@ export default class EventsPlacesFilteringDialog extends Component<
             </View>
           </View>
         </View>
-      </ShakyDialog>
+      </Dialog>
     );
   }
 }

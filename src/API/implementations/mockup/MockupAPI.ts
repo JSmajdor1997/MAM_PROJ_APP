@@ -6,7 +6,7 @@ import Message from "../../data_types/Message";
 import User from "../../data_types/User";
 import getMockupUsers from "./mockup_users"
 import Wasteland from "../../data_types/Wasteland";
-import APIResponse from "../../responses_types/APIResponse";
+import APIResponse from "../../APIResponse";
 import getMockupDumpsters from "./mockup_dumpsters";
 import getMockupEvents from "./mockup_events";
 import getMockupWastelands from "./mockup_wastelands";

@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Animated, ViewStyle, Pressable, Easing } from "react-native";
 
 export interface Option {
-    label: React.ReactNode;
+    icon: React.ReactNode;
     color: string;
     disabled?: boolean;
 }
@@ -95,7 +95,7 @@ export default function ProgressInput({ style, selectedOptionIndex, options, onS
 
                     <Pressable disabled={option.disabled} key={`circle-${index}`} style={{ alignItems: "center", opacity: option.disabled ? 0.4 : 1 }} onPress={() => onSelectedOptionChanged?.(index)}>
                         <View style={{ borderRadius: 100, borderWidth: circleBorderWidth, height: circlesDiameter, width: circlesDiameter, transformOrigin: "center center" }} />
-                        {option.label == null ? null : <View style={{ position: "absolute", top: circlesDiameter + circleBorderWidth * 2, width: "100%", justifyContent: "center", alignItems: "center" }}>{option.label}</View>}
+                        {option.icon == null ? null : <View style={{ position: "absolute", top: circlesDiameter + circleBorderWidth * 2, width: "100%", justifyContent: "center", alignItems: "center" }}>{option.icon}</View>}
                     </Pressable>
                 </Fragment>
             ))}

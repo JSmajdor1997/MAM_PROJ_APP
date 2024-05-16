@@ -9,6 +9,15 @@ export const Resources = {
         Blue: "#3886c2",
     } as const,
     Fonts: {
-        Leafy: "leafy"
+        Primary: "leafy"
     } as const,
+    Locale: {
+        LanguageCode: "pl-PL"
+    } as const,
+    Strings: {
+
+    } as const,
+    Env: {
+        GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY as string
+    } as const
 }

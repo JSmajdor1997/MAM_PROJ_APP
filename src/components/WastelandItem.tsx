@@ -1,14 +1,13 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
 } from 'react-native';
-import FastImage from 'react-native-fast-image';
-import WisbIcon, { IconType } from './WisbIcon';
+import Wasteland from '../API/data_types/Wasteland';
 
 interface Props {
-  item: any;
+  item: Wasteland;
   onPress: (item: any) => void;
 }
 
@@ -25,19 +24,11 @@ export default class WastelandItem extends Component<Props, State> {
     };
   }
 
-  formatDate(date: Date): string {
-    const month = date.getUTCMonth() + 1; //months from 1-12
-    const day = date.getUTCDate();
-    const year = date.getUTCFullYear();
-
-    return day + '.' + month + '.' + year;
-  }
-
   render() {
     const {
       description,
-      postedOn,
-      placeName,
+      creationDate,
+      placeDescription,
     } = this.props.item;
     return (
       <TouchableOpacity
@@ -64,7 +55,7 @@ export default class WastelandItem extends Component<Props, State> {
             style={{marginTop: 4, height: 30, width: 30}}
           /> */}
         </View>
-        <View style={{flex: 1, marginLeft: 8}}>
+        <View style={{ flex: 1, marginLeft: 8 }}>
           <Text
             numberOfLines={1}
             style={{
@@ -72,7 +63,7 @@ export default class WastelandItem extends Component<Props, State> {
               fontSize: 14.5,
               maxWidth: '90%',
             }}>
-            {placeName}
+            {placeDescription}
           </Text>
           <Text
             numberOfLines={1}
@@ -96,7 +87,7 @@ export default class WastelandItem extends Component<Props, State> {
                 alignSelf: 'flex-end',
                 fontSize: 12,
               }}>
-              {this.formatDate(postedOn)}
+              {creationDate.toLocaleDateString("pl-PL", { year: "numeric", month: "short", day: "numeric" })}
             </Text>
           </View>
         </View>

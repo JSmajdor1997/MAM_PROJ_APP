@@ -159,7 +159,7 @@ export default class EventItem extends Component<Props, State> {
 
             <Menu
               style={{ marginTop: StatusBar.currentHeight }}
-              button={
+              anchor={
                 <TouchableOpacity
                   style={{ marginRight: -6 }}
                   onPress={this.showMenu.bind(this)}>

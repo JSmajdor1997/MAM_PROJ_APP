@@ -6,7 +6,7 @@ export interface Props {
     withMotto: boolean
 }
 
-export default function Logo({withMotto}: Props) {
+export default function Logo({ withMotto }: Props) {
     return (
         <View style={styles.root}>
             <Text style={styles.text}>Wisb</Text>
@@ -21,12 +21,12 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     text: {
-        fontFamily: Resources.Fonts.Leafy,
+        fontFamily: Resources.Fonts.Primary,
         color: Resources.Colors.White,
         fontSize: 80
     },
     motto: {
-        fontFamily: Resources.Fonts.Leafy,
+        fontFamily: Resources.Fonts.Primary,
         color: Resources.Colors.White,
     }
 })

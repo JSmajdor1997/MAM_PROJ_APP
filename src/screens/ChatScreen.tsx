@@ -158,7 +158,7 @@ export default class ChatScreen extends Component<Props, State> {
           style={{
             top: (StatusBar.currentHeight ? StatusBar.currentHeight : 20) + 10,
           }}
-          button={
+          anchor={
             <TouchableOpacity
               onPress={this.showMenu.bind(this, true)}
               style={{ alignSelf: 'flex-end', marginRight: 2 }}>
