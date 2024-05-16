@@ -76,7 +76,16 @@
         "elementType": "labels.text.fill",
         "stylers": [
             {
-                "color": "#f18e38"
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "poi",
+        "elementType": "labels",
+        "stylers": [
+            {
+                "visibility": "off"
             }
         ]
     },
@@ -85,7 +94,7 @@
         "elementType": "labels.text.stroke",
         "stylers": [
             {
-                "color": "#ffffff"
+                "visibility": "off"
             }
         ]
     },
@@ -94,7 +103,15 @@
         "elementType": "labels.text.fill",
         "stylers": [
             {
-                "color": "#5e544e"
+                "visibility": "off"
+            }
+        ]
+    },
+    {
+        "featureType": "transit",
+        "stylers": [
+            {
+                "visibility": "off"
             }
         ]
     },

@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -6,10 +6,12 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
-import {MenuItem, Menu} from 'react-native-material-menu';
+import { MenuItem, Menu } from 'react-native-material-menu';
 import FastImage from 'react-native-fast-image';
-import { Icon } from '@rneui/base';
-import { event_icon } from '../../res/icons/icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import WisbIcon, { IconType } from './WisbIcon';
+import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
+import { faMessage } from '@fortawesome/free-regular-svg-icons';
 
 interface Props {
   item: any;
@@ -45,7 +47,7 @@ export default class EventItem extends Component<Props, State> {
 
   private static async closeAll(exceptFor: number) {
     EventItem.instances.forEach(instance => {
-      if (instance.ID != exceptFor) instance.setState({maxHeight: 120});
+      if (instance.ID != exceptFor) instance.setState({ maxHeight: 120 });
     });
   }
 
@@ -53,12 +55,12 @@ export default class EventItem extends Component<Props, State> {
     EventItem.instances.push(this);
 
     this.props.item.getImagesBase64().then(images => {
-      this.setState({image: images[0]});
+      this.setState({ image: images[0] });
     });
 
     this.props.item
       .isUserAdmin()
-      .then(() => this.setState({isUserAdmin: true}));
+      .then(() => this.setState({ isUserAdmin: true }));
   }
 
   componentWillUnmount() {
@@ -74,8 +76,8 @@ export default class EventItem extends Component<Props, State> {
   }
 
   render() {
-    const {image, isUserAdmin} = this.state;
-    const {item} = this.props;
+    const { image, isUserAdmin } = this.state;
+    const { item } = this.props;
     const primary = 'white';
     const white = '#55ba9b';
 
@@ -117,7 +119,7 @@ export default class EventItem extends Component<Props, State> {
               marginTop: 6,
               marginHorizontal: 6,
             }}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View
                 style={{
                   height: 39,
@@ -127,21 +129,21 @@ export default class EventItem extends Component<Props, State> {
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}>
-                <FastImage
-                  style={{
-                    height: image ? 36 : 26,
-                    width: image ? 36 : 26,
-                    borderRadius: image ? 50 : 0,
-                  }}
-                  resizeMode="cover"
-                  source={
-                    image
-                      ? {
-                          uri: image,
-                        }
-                      : event_icon
-                  }
-                />
+                {
+                  image
+                    ? <FastImage
+                      style={{
+                        height: image ? 36 : 26,
+                        width: image ? 36 : 26,
+                        borderRadius: image ? 50 : 0,
+                      }}
+                      resizeMode="cover"
+                      source={{
+                        uri: image,
+                      }}
+                    />
+                    : <WisbIcon size={22} icon={IconType.Earth} />
+                }
               </View>
               <Text
                 numberOfLines={1}
@@ -156,12 +158,12 @@ export default class EventItem extends Component<Props, State> {
             </View>
 
             <Menu
-              style={{marginTop: StatusBar.currentHeight}}
+              style={{ marginTop: StatusBar.currentHeight }}
               button={
                 <TouchableOpacity
-                  style={{marginRight: -6}}
+                  style={{ marginRight: -6 }}
                   onPress={this.showMenu.bind(this)}>
-                  <Icon color={white} type="feather" name="more-vertical" />
+                  <FontAwesomeIcon color={white} icon={faMobileRetro} />
                 </TouchableOpacity>
               }
               ref={(ref: any) => (this.menu = ref)}>
@@ -196,7 +198,7 @@ export default class EventItem extends Component<Props, State> {
                       [
                         {
                           text: 'ANULUJ',
-                          onPress: () => {},
+                          onPress: () => { },
                           style: 'cancel',
                         },
                         {
@@ -207,7 +209,7 @@ export default class EventItem extends Component<Props, State> {
                           },
                         },
                       ],
-                      {cancelable: true},
+                      { cancelable: true },
                     );
                   }}>
                   Usuń
@@ -258,13 +260,12 @@ export default class EventItem extends Component<Props, State> {
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-              <Icon color={white} type="entypo" name="chat" />
+              <FontAwesomeIcon color={white} icon={faMessage} />
             </TouchableOpacity>
             {isUserAdmin == true && (
-              <View style={{marginLeft: 6}}>
-                <Icon
-                  type="foundation"
-                  name="crown"
+              <View style={{ marginLeft: 6 }}>
+                <FontAwesomeIcon
+                  icon={faCrown}
                   color="#ff8c00"
                   size={15}
                 />

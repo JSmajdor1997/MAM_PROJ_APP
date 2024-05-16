@@ -11,8 +11,10 @@ import {
 import { Menu, MenuItem } from 'react-native-material-menu';
 import Ripple from 'react-native-material-ripple';
 import LinearGradient from 'react-native-linear-gradient';
-import { Icon } from '@rneui/base';
 import ComponentDisabler from './ComponentDisabler';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCircle, faDotCircle } from '@fortawesome/free-regular-svg-icons';
+import { faExpand } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
   data: Array<{ label: string; isActive?: boolean }>;
@@ -79,9 +81,9 @@ export default class DropDownMenu extends React.PureComponent<Props, State> {
           <Text>{it.label}</Text>
           {it.isActive != undefined ? (
             it.isActive ? (
-              <Icon type="font-awesome" name="dot-circle-o" />
+              <FontAwesomeIcon icon={faDotCircle} />
             ) : (
-              <Icon type="font-awesome" name="circle-o" />
+              <FontAwesomeIcon icon={faCircle} />
             )
           ) : null}
         </TouchableOpacity>
@@ -127,7 +129,7 @@ export default class DropDownMenu extends React.PureComponent<Props, State> {
                   },
                 ],
               }}>
-              <Icon type="MaterialIcons" name="expand-more" />
+              <FontAwesomeIcon icon={faExpand} />
             </Animated.View>
           </View>
           <View

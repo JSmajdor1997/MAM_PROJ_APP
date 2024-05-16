@@ -5,14 +5,15 @@ import {
   FlatList,
   Text
 } from 'react-native';
-import { Icon } from '@rneui/base';
 import EventItem from '../components/EventItem';
-import EventParticipantsDialog from '../dialogs/EventParticipantsDialog';
-import EventJoiningDialog from '../dialogs/EventJoiningDialog';
+import EventParticipantsDialog from '../dialogs/Event/EventParticipantsDialog';
+import EventJoiningDialog from '../dialogs/Event/EventJoiningDialog';
 import WisbScreens from './WisbScreens';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import { Resources } from '../../res/Resources';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 
 interface Props  extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> {}
 
@@ -74,7 +75,7 @@ export default class EventsScreen extends Component<Props, State> {
             justifyContent: [].length == 0 ? 'center' : undefined,
           }}
           ListEmptyComponent={
-            <Icon color="#ffffff77" type="feather" name="calendar" size={70} />
+            <FontAwesomeIcon color="#ffffff77"  icon={faCalendar} size={70} />
           }
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}

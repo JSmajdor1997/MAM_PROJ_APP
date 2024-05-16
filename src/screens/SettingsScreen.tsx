@@ -1,16 +1,18 @@
-import React, {Component} from 'react';
-import {StyleSheet, Text, View, StatusBar} from 'react-native';
-import {Switch} from 'react-native-switch';
+import React, { Component } from 'react';
+import { StyleSheet, Text, View, StatusBar } from 'react-native';
+import { Switch } from 'react-native-switch';
 import { Resources } from '../../res/Resources';
-import { Icon } from '@rneui/base';
 import DropDownMenu from '../components/DropDownMenu';
 import WisbScreens from './WisbScreens';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faMap } from '@fortawesome/free-regular-svg-icons';
+import { faBell, faColonSign, faLanguage, faSmile, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-interface Props  extends NativeStackScreenProps<NavigationParamsList, WisbScreens.SettingsScreen> {}
+interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.SettingsScreen> { }
 
-interface State {}
+interface State { }
 
 export default class SettingsScreen extends Component<Props, State> {
   resourcesListenerID = -1;
@@ -33,15 +35,15 @@ export default class SettingsScreen extends Component<Props, State> {
 
   render() {
     return (
-      <View style={[styles.mainContainer, {backgroundColor: Resources.Colors.White}]}>
+      <View style={[styles.mainContainer, { backgroundColor: Resources.Colors.White }]}>
         <View style={styles.topContainer}>
           {/* MAP TYPE */}
           <View style={styles.topSettingsItem}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <View style={styles.icon}>
-                <Icon name="map" color={Resources.Colors.Primary} />
+                <FontAwesomeIcon icon={faMap} color={Resources.Colors.Primary} />
               </View>
-              <Text style={[styles.itemLabel, {color: Resources.Colors.Black}]}>
+              <Text style={[styles.itemLabel, { color: Resources.Colors.Black }]}>
                 Mapa{' '}
                 {/* {Resources.settings.mapType == 'standard'
                   ? 'zwykła'
@@ -65,20 +67,20 @@ export default class SettingsScreen extends Component<Props, State> {
               switchWidthMultiplier={2.2}
               switchBorderRadius={40}
             />
+            <Text>Domyślna lokalizcja (z GPS / wpisz - wybierz)</Text>
           </View>
 
           {/* SHOWING BINS ON MAP */}
           <View style={styles.topSettingsItem}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <View style={styles.icon}>
-                <Icon
-                  name="trash"
-                  type="simple-line-icon"
+                <FontAwesomeIcon
+                  icon={faTrash}
                   color={Resources.Colors.Primary}
                   size={20}
                 />
               </View>
-              <Text style={[styles.itemLabel, {color: Resources.Colors.Black}]}>
+              <Text style={[styles.itemLabel, { color: Resources.Colors.Black }]}>
                 {/* {Resources.settings.showBinsOnMap
                   ? 'Pokazuj kosze na mapie'
                   : 'Nie pokazuj koszy na mapie'} */}
@@ -105,11 +107,11 @@ export default class SettingsScreen extends Component<Props, State> {
 
           {/* ADDS */}
           <View style={styles.topSettingsItem}>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <View style={styles.icon}>
-                <Icon name="smile" type="feather" color={Resources.Colors.Primary} />
+                <FontAwesomeIcon icon={faSmile} color={Resources.Colors.Primary} />
               </View>
-              <Text style={[styles.itemLabel, {color: Resources.Colors.Black}]}>
+              <Text style={[styles.itemLabel, { color: Resources.Colors.Black }]}>
                 {/* {Resources.settings.showAds
                   ? 'Wyświetlaj reklamy'
                   : 'Nie chcę widzieć żadnych reklam'} */}
@@ -142,7 +144,7 @@ export default class SettingsScreen extends Component<Props, State> {
           {/* LANGUAGE */}
           <View style={styles.topSettingsItem}>
             <View style={styles.icon}>
-              <Icon type="fontisto" name="language" color={Resources.Colors.Primary} />
+              <FontAwesomeIcon icon={faLanguage} color={Resources.Colors.Primary} />
             </View>
             <DropDownMenu
               onItemSelected={index => {
@@ -159,7 +161,7 @@ export default class SettingsScreen extends Component<Props, State> {
           {/* COLOR MODE */}
           <View style={styles.topSettingsItem}>
             <View style={styles.icon}>
-              <Icon type="MaterialIcons" name="color-lens" color={Resources.Colors.Primary} />
+              <FontAwesomeIcon icon={faColonSign} color={Resources.Colors.Primary} />
             </View>
             <DropDownMenu
               onItemSelected={index => {
@@ -167,7 +169,7 @@ export default class SettingsScreen extends Component<Props, State> {
               }}
               currentItem={
                 ['Zwykły', 'Ciemny'][0
-                  // Resources.settings.colorMode == 'normal' ? 0 : 1
+                // Resources.settings.colorMode == 'normal' ? 0 : 1
                 ]
               }
               // data={SupportedColorModes.map(it => {
@@ -183,7 +185,7 @@ export default class SettingsScreen extends Component<Props, State> {
           {/* PUSH NOTIFICATIONS MODE */}
           <View style={styles.topSettingsItem}>
             <View style={styles.icon}>
-              <Icon type="MaterialIcons" name="notifications" color={Resources.Colors.Primary} />
+              <FontAwesomeIcon icon={faBell} color={Resources.Colors.Primary} />
             </View>
             <DropDownMenu
               onItemSelected={(index, isActive) => {

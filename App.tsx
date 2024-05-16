@@ -12,9 +12,6 @@ import { Resources } from './res/Resources';
 import SplashScreen from './src/screens/SplashScreen';
 import MapScreen from './src/screens/MapScreen';
 import NavBar from './src/components/NavBar';
-import FastImage from 'react-native-fast-image';
-import { event_icon, map_icon, event_add_icon, trash_bin_icon, rank_icon, wasteland_icon } from './res/icons/icons';
-import { Icon } from '@rneui/base';
 import LoginScreen from './src/screens/LoginScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
@@ -24,9 +21,13 @@ import LeaderboardScreen from './src/screens/LeaderBoardScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import MyEventsScreen from './src/screens/MyEventsScreen';
 import NavigationParamsList from './src/screens/NavigationParamsList';
-import WastelandAddingDialog from './src/dialogs/WastelandAddingDialog';
-import EventAddingDialog from './src/dialogs/EventAddingDialog';
-import DumpsterAddingDialog from './src/dialogs/DumpsterAddingDialog';
+import WisbIcon, { IconType, ModificatorType } from './src/components/WisbIcon';
+import WastelandDialog, { Mode } from './src/dialogs/WastelandDialog';
+import Wasteland from './src/API/data_types/Wasteland';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faQrcode } from '@fortawesome/free-solid-svg-icons';
+import EventDialog from './src/dialogs/EventDialog';
+import DumpsterDialog from './src/dialogs/DumpsterDialog';
 
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
 
@@ -39,7 +40,8 @@ const Stack = createNativeStackNavigator<NavigationParamsList>();
 export default function App() {
   const [navBarIndex, setNavBarIndex] = React.useState(1)
   const [isNavigationBarVisible, setIsNavigationBarVisible] = React.useState(true)
-  const [isWastelandAddingDialogVisible, setIsWastelandAddingDialogVisible] = React.useState(false)
+
+  const [selectedWasteland, setSelectedWasteland] = React.useState<Wasteland | undefined>()
   const [isDumpsterAddingDialogVisible, setIsDumpsterAddingDialogVisible] = React.useState(false)
   const [isEventAddingDialogVisible, setIsEventAddingDialogVisible] = React.useState(false)
 
@@ -87,36 +89,20 @@ export default function App() {
         visible={isNavigationBarVisible}
         items={[
           {
-            activeComponent: (
-              <FastImage
-                source={event_icon}
-                style={{ height: 30, width: 30 }}
-              />
-            ),
-            inactiveComponent: (
-              <FastImage
-                source={event_icon}
-                style={{ height: 25, width: 25 }}
-              />
-            ),
+            render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
             onPress: () => {
               navigate(WisbScreens.MyEventsScreen, {})
               setNavBarIndex(0)
             },
             bubbles: [
               {
-                component: <Icon type="antdesign" name="qrcode" />,
+                component: <FontAwesomeIcon icon={faQrcode} />,
                 onPress: () => setState({ isQRDialogVisible: true }),
               },
             ],
           },
           {
-            activeComponent: (
-              <FastImage source={map_icon} style={{ height: 30, width: 30 }} />
-            ),
-            inactiveComponent: (
-              <FastImage source={map_icon} style={{ height: 25, width: 25 }} />
-            ),
+            render: () => <WisbIcon icon={IconType.Earth} size={30} />,
             onPress: () => {
               navigate(WisbScreens.MapScreen, {})
               setNavBarIndex(1)
@@ -124,11 +110,7 @@ export default function App() {
             bubbles: [
               {
                 component: (
-                  <FastImage
-                    source={event_add_icon}
-                    resizeMode="cover"
-                    style={{ width: 22, aspectRatio: 1 }}
-                  />
+                  <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
                 ),
                 onPress: () => {
                   setIsEventAddingDialogVisible(true)
@@ -138,13 +120,9 @@ export default function App() {
               },
               {
                 component: (
-                  <FastImage
-                    source={trash_bin_icon}
-                    resizeMode="cover"
-                    style={{ width: 22, aspectRatio: 1 }}
-                  />
+                  <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
                 ),
-                onPress: () => { 
+                onPress: () => {
                   setIsEventAddingDialogVisible(false)
                   setIsWastelandAddingDialogVisible(false)
                   setIsDumpsterAddingDialogVisible(true)
@@ -152,13 +130,9 @@ export default function App() {
               },
               {
                 component: (
-                  <FastImage
-                    source={wasteland_icon}
-                    resizeMode="cover"
-                    style={{ width: 50, aspectRatio: 1 }}
-                  />
+                  <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
                 ),
-                onPress: () => { 
+                onPress: () => {
                   setIsEventAddingDialogVisible(false)
                   setIsWastelandAddingDialogVisible(true)
                   setIsDumpsterAddingDialogVisible(false)
@@ -167,12 +141,7 @@ export default function App() {
             ],
           },
           {
-            activeComponent: (
-              <FastImage source={rank_icon} style={{ height: 30, width: 30 }} />
-            ),
-            inactiveComponent: (
-              <FastImage source={rank_icon} style={{ height: 25, width: 25 }} />
-            ),
+            render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
             onPress: () => {
               navigate(WisbScreens.LeaderBoardScreen, {})
               setNavBarIndex(2)
@@ -180,20 +149,16 @@ export default function App() {
           },
         ]} />
 
-      <DumpsterAddingDialog
-        visible={isDumpsterAddingDialogVisible}
-        onDismiss={() => setIsDumpsterAddingDialogVisible(false)}
+      <WastelandDialog
+        wasteland={selectedWasteland}
+        onDismiss={() => setSelectedWasteland(undefined)}
+        mode={Mode.Adding}
+        visible={selectedWasteland != null}
       />
 
-      <WastelandAddingDialog
-        visible={isWastelandAddingDialogVisible}
-        onDismiss={() => setIsWastelandAddingDialogVisible(false)}
-      />
+      <EventDialog visible={false}/>
 
-      <EventAddingDialog
-        visible={isEventAddingDialogVisible}
-        onDismiss={() => setIsEventAddingDialogVisible(false)}
-      />
+      <DumpsterDialog visible={false}/>
     </View>
   );
 }

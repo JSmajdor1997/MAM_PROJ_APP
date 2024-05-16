@@ -1,21 +1,24 @@
-import React, {Fragment} from 'react';
+import React, { Fragment } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import Spinner from 'react-native-spinkit';
 import LinearGradient from 'react-native-linear-gradient';
-import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
-import { Avatar, Icon } from '@rneui/base';
-import MoreButton from '../components/MoreButton';
+import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import WisbScreens from './WisbScreens';
+import { faAt, faCrown, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
+import Avatar from '../components/Avatar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> {}
+interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
 interface State {
   data: Array<any>;
@@ -31,246 +34,208 @@ interface State {
   isV: boolean;
 }
 
-export default class LeaderboardScreen extends React.Component<Props, State> {
-  private menu: any = null;
+export default function LeaderboardScreen({ navigation }: Props) {
+  const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
+  const [state, setState] = React.useState<State>({
+    data: [],
+    isLoading: true,
+    userPoints: 0,
+    userName: '',
+    userInitials: '',
+    userID: '',
+    userArrayIndex: '',
+    userImage: '',
+    userEmail: '',
+    isV: true,
+  })
 
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      data: [],
-      isLoading: true,
-      userPoints: 0,
-      userName: '',
-      userInitials: '',
-      userID: '',
-      userArrayIndex: '',
-      userImage: '',
-      userEmail: '',
-      isV: true,
-    };
-  }
-
-  componentDidMount() {
-    // fetch('https://moczala.com:2053/leaderboard/', {
-    //   method: 'GET',
-    // })
-    //   .then(response => response.json())
-    //   .then(responseJson => {
-    //     this.setState({
-    //       data: responseJson,
-    //       isLoading: false,
-    //     });
-    //   })
-    //   .catch(error => {
-    //     console.error(error);
-    //   });
-
-    // fetch('https://moczala.com:2053/users/whoami', {
-    //   method: 'GET',
-    // })
-    //   .then(response => response.json())
-    //   .then(responseJson => {
-    //     this.setState({
-    //       userName: responseJson.name,
-    //       userPoints: responseJson.points,
-    //       userID: responseJson._id,
-    //       userEmail: responseJson.mail,
-    //     });
-    //   })
-    //   .catch(error => {
-    //     console.error(error);
-    //   });
-
-    // this.myPlace();
-  }
-
-  logout() {
+  const logout = () => {
     fetch('https://moczala.com:2053/users/logout', {
       method: 'GET',
     });
   }
 
-  myPlace() {
-    for (let i: any; i < this.state.data.length; i++) {
-      if (this.state.data[i]._id == this.state.userID) {
-        this.setState({
+  const myPlace = () => {
+    for (let i: any; i < state.data.length; i++) {
+      if (state.data[i]._id == state.userID) {
+        setState({
+          ...state,
           userArrayIndex: i,
         });
       }
     }
   }
 
-  render() {
-    return (
-      <View style={{flex: 1, justifyContent: 'flex-start'}}>
+  return (
+    <SafeAreaView style={{ flex: 1, justifyContent: 'flex-start' }}>
+      <View
+        style={{
+          marginTop: StatusBar.currentHeight,
+          flexDirection: 'row',
+          height: 120,
+        }}>
+        <View style={{ flex: 1 }} />
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Avatar
+            size={100}
+            fontSize={52}
+            username={state.userName}
+            image={state.userImage}
+            onPress={() => { }}
+          />
+        </View>
         <View
           style={{
-            marginTop: StatusBar.currentHeight,
-            flexDirection: 'row',
-            height: 120,
+            flex: 1,
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            paddingRight: 8,
+            paddingBottom: 4,
           }}>
-          <View style={{flex: 1}} />
-          <View
-            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <Avatar
-              size={100}
-              fontSize={52}
-              username={this.state.userName}
-              image={this.state.userImage}
-              onPress={() => {}}
-            />
-          </View>
-          <View
-            style={{
-              flex: 1,
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              paddingRight: 8,
-              paddingBottom: 4,
-            }}>
-            <MoreButton
-              style={{marginRight: -0.1}}
-              onPress={() => {
-                if (this.menu) {
-                  this.menu.show();
-                }
-              }}
-              color="black"
-            />
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{marginRight: 6, fontWeight: 'bold'}}>
-                {this.state.userPoints}
-              </Text>
-              <Icon name="crown" type="foundation" color="#ffb005" />
-            </View>
-          </View>
           <Menu
-            style={{marginTop: StatusBar.currentHeight}}
-            ref={(ref: any) => (this.menu = ref)}>
-            <MenuItem onPress={this.logout}>Wyloguj</MenuItem>
+            visible={isMoreMenuVisible}
+            anchor={<TouchableOpacity onPress={() => setIsMoreMenuVisible(true)}>
+              <FontAwesomeIcon icon={faEllipsisV} size={25} />
+            </TouchableOpacity>}
+            onRequestClose={() => setIsMoreMenuVisible(false)}
+            style={{ marginTop: StatusBar.currentHeight }}>
+            <MenuItem onPress={() => {
+              logout()
+              setIsMoreMenuVisible(false)
+            }}>Wyloguj</MenuItem>
+            <MenuItem onPress={() => {
+              navigation.push(WisbScreens.SettingsScreen, {})
+              setIsMoreMenuVisible(false)
+            }}>Przejdź do ustawień</MenuItem>
           </Menu>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ marginRight: 6, fontWeight: 'bold' }}>
+              {state.userPoints}
+            </Text>
+            <FontAwesomeIcon icon={faCrown} color="#ffb005" />
+          </View>
+        </View>
+      </View>
+
+      <View
+        style={{
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          justifyContent: 'center',
+        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <FontAwesomeIcon icon={faPerson} size={18} />
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: 'bold',
+              marginLeft: 10,
+            }}>
+            {state.userName}
+          </Text>
         </View>
 
         <View
           style={{
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            justifyContent: 'center',
+            flexDirection: 'row',
+            marginTop: 10,
+            justifyContent: 'space-between',
           }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
             }}>
-            <Icon name="user" type="antdesign" size={18} />
+            <FontAwesomeIcon icon={faAt} size={18} />
             <Text
               style={{
                 fontSize: 16,
                 fontWeight: 'bold',
                 marginLeft: 10,
               }}>
-              {this.state.userName}
+              {state.userEmail}
             </Text>
           </View>
+        </View>
+      </View>
 
+      <FlatList
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+        data={state.data}
+        onScroll={e => {
+          if (e.nativeEvent.contentOffset.y > 10) {
+            setState({ ...state, isV: false });
+          } else {
+            setState({ ...state, isV: true });
+          }
+        }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          alignItems: state.data.length == 0 ? 'center' : undefined,
+        }}
+        ItemSeparatorComponent={() => (
+          <LinearGradient
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            colors={['#ffffff', '#bcbaba', '#ffffff']}
+            style={{ width: '100%', height: StyleSheet.hairlineWidth }}
+          />
+        )}
+        ListEmptyComponent={() => (
+          <Spinner
+            isVisible={true}
+            color="#00bfa5"
+            type="ChasingDots"
+            size={50}
+          />
+        )}
+        style={{ marginBottom: 75 }}
+        renderItem={({ item, index, separators }) => (
           <View
             style={{
               flexDirection: 'row',
-              marginTop: 10,
+              backgroundColor: 'white',
+              alignItems: 'center',
               justifyContent: 'space-between',
             }}>
             <View
               style={{
                 flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Icon name="email" type="entypo" size={18} />
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: 'bold',
-                  marginLeft: 10,
-                }}>
-                {this.state.userEmail}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <FlatList
-          showsHorizontalScrollIndicator={false}
-          showsVerticalScrollIndicator={false}
-          data={this.state.data}
-          onScroll={e => {
-            if (e.nativeEvent.contentOffset.y > 10) {
-              this.setState({isV: false});
-            } else {
-              this.setState({isV: true});
-            }
-          }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            alignItems: this.state.data.length == 0 ? 'center' : undefined,
-          }}
-          ItemSeparatorComponent={() => (
-            <LinearGradient
-              start={{x: 0, y: 0}}
-              end={{x: 1, y: 0}}
-              colors={['#ffffff', '#bcbaba', '#ffffff']}
-              style={{width: '100%', height: StyleSheet.hairlineWidth}}
-            />
-          )}
-          ListEmptyComponent={() => (
-            <Spinner
-              isVisible={true}
-              color="#00bfa5"
-              type="ChasingDots"
-              size={50}
-            />
-          )}
-          style={{marginBottom: 75}}
-          renderItem={({item, index, separators}) => (
-            <View
-              style={{
-                flexDirection: 'row',
                 backgroundColor: 'white',
+                marginVertical: 10,
                 alignItems: 'center',
-                justifyContent: 'space-between',
               }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  backgroundColor: 'white',
-                  marginVertical: 10,
-                  alignItems: 'center',
-                }}>
-                <Text style={[styles.placeText]}>
-                  {index < 9 ? index + 1 : '○'}
-                </Text>
-                <Avatar
-                  image={item.avatar.scaledImageSrc}
-                  size={30}
-                  fontSize={12}
-                  username={item.name}
-                />
-                <Text style={styles.nameText}>{item.name}</Text>
-              </View>
-              <Text
-                style={{
-                  marginRight: 15,
-                  fontSize: 17,
-                  fontWeight: 'bold',
-                }}>
-                {item.points}
+              <Text style={[styles.placeText]}>
+                {index < 9 ? index + 1 : '○'}
               </Text>
+              <Avatar
+                image={item.avatar.scaledImageSrc}
+                size={30}
+                fontSize={12}
+                username={item.name}
+              />
+              <Text style={styles.nameText}>{item.name}</Text>
             </View>
-          )}
-        />
-      </View>
-    );
-  }
+            <Text
+              style={{
+                marginRight: 15,
+                fontSize: 17,
+                fontWeight: 'bold',
+              }}>
+              {item.points}
+            </Text>
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

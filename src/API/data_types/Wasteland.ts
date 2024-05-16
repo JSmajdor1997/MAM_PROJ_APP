@@ -1,5 +1,4 @@
 import { LatLng } from "react-native-maps"
-import Event from "./Event"
 import User from "./User"
 
 export default interface Wasteland {

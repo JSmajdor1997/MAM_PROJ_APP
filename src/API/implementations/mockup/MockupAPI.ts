@@ -20,7 +20,15 @@ export default class MockupAPI extends API {
 
     private listeners: ChangeListener[] = []
 
-    private loggedInUser: User | null = null
+    private loggedInUser: User | null = {
+        id: 0,
+        email: "aaa@bbb.com",
+        userName: "Zeriusz",
+        password: "zaq1@WSX",
+        nrOfClearedWastelands: 0,
+        addedDumpsters: 0,
+        deletedDumpsters: 0
+    }
 
     private calculateUserRank(user: User) {
         return 10 * user.nrOfClearedWastelands + 2 * user.addedDumpsters + user.deletedDumpsters
@@ -174,7 +182,7 @@ export default class MockupAPI extends API {
                         return true
                     }
 
-                    return false
+                    return true
                 }).sort((a, b) => a.dateRange[0] > b.dateRange[1] ? -1 : +1)
             }
         }
@@ -469,6 +477,20 @@ export default class MockupAPI extends API {
 
         return {
             data: {}
+        }
+    }
+
+    async getDumpsters(query: {}): APIResponse<GeneralError, {dumpsters: Dumpster[]}> {
+        if (this.loggedInUser == null) {
+            return {
+                error: GeneralError.UserNotAuthorized
+            }
+        }
+
+        return {
+            data: {
+                dumpsters: this.dumpsters
+            }
         }
     }
 

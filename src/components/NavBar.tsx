@@ -1,4 +1,4 @@
-import React, {Component, ReactElement, SyntheticEvent, Fragment} from 'react';
+import React, { Component, ReactElement, SyntheticEvent, Fragment } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,7 +9,7 @@ import {
   ViewStyle,
   TouchableOpacity,
 } from 'react-native';
-import Svg, {Circle, Path} from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import Ripple from 'react-native-material-ripple';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -23,8 +23,7 @@ interface Bubble {
 }
 
 interface Item {
-  activeComponent: ReactElement;
-  inactiveComponent: ReactElement;
+  render: (isActive: boolean) => ReactElement
   bubbles?: Array<Bubble>;
   onPress: () => void;
 }
@@ -49,7 +48,7 @@ interface State {
   bubbleAnim: Animated.Value;
 }
 
-export default function NavBar({style, visible, items, selectedIndex, enabled}: Props) {
+export default function NavBar({ style, visible, items, selectedIndex, enabled }: Props) {
   const circleRef = React.useRef<any>(null)
 
   const [state, setState] = React.useState<State>({
@@ -76,10 +75,10 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
   }
 
   //componentDidMount
-  React.useEffect(()=>{
+  React.useEffect(() => {
     state.circleRadius.addListener(circleRadius => {
       circleRef.current &&
-      circleRef.current.setNativeProps({cx: circleRadius.value.toString()});
+        circleRef.current.setNativeProps({ cx: circleRadius.value.toString() });
     });
 
     state.pathD.addListener((a: any) => {
@@ -96,7 +95,7 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
   }, [])
 
   //componentDidUpdate
-  React.useEffect(()=>{
+  React.useEffect(() => {
     showBubbles(false);
 
     setState(state => ({
@@ -145,12 +144,12 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
     showBubbles(true);
 
     setTimeout(() => {
-      setState(state => ({...state, showIcon: true}));
+      setState(state => ({ ...state, showIcon: true }));
     }, 80);
   }, [selectedIndex])
 
   const renderBubbles = () => {
-    if(!enabled) return null
+    if (!enabled) return null
 
     const bubbles = items[selectedIndex].bubbles;
 
@@ -178,20 +177,20 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
           } else {
             style = styleForRight;
           }
-        } else if(bubbles.length == 3) {
+        } else if (bubbles.length == 3) {
           if (index == 0) {
             style = styleForLeft;
-          } else if(index == 2) {
+          } else if (index == 2) {
             style = styleForRight;
-          } else if(index == 1) {
-            style ={
+          } else if (index == 1) {
+            style = {
               marginBottom: 20
             }
           }
         }
 
         return (
-          <BubbleItem key={index} onPress={bubble.onPress} style={style} component={bubble.component} bubbleAnim={state.bubbleAnim}/>
+          <BubbleItem key={index} onPress={bubble.onPress} style={style} component={bubble.component} bubbleAnim={state.bubbleAnim} />
         )
       });
     }
@@ -206,8 +205,7 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
   M30,
   60h
   ${state.pathX}
-  ${
-    enabled
+  ${enabled
       ? `c17.2,
   0,
   31,
@@ -226,17 +224,16 @@ export default function NavBar({style, visible, items, selectedIndex, enabled}: 
   130.6-58,
   130.6-130c0-2.7-0.1-5.4-0.2-8.1C`
       : ''
-  }
+    }
   ${state.pathY}.7,74.5,
-  ${state.pathA}.5,60,${
-state.pathB
-}.7,60H1062c16.6,0,30,13.4,30,30v94c0,42-34,76-76,
+  ${state.pathA}.5,60,${state.pathB
+    }.7,60H1062c16.6,0,30,13.4,30,30v94c0,42-34,76-76,
   76H76c-42,0-76-34-76-76V90C0,73.4,13.4,60,30,60z`;
 
   return (
     visible && (
       <Fragment>
-        <View style={{...styles.content, ...style}}>
+        <View style={{ ...styles.content, ...style }}>
           <View style={styles.subContent}>
             {items.map((item: Item, index: number) => {
               const isSelected = selectedIndex == index && showIcon;
@@ -251,10 +248,10 @@ state.pathB
                         flex: 1,
                       },
                     ]}>
-                    {item.activeComponent}
+                    {item.render(true)}
                   </View>
                 ) : (
-                  item.inactiveComponent
+                  item.render(false)
                 );
               return (
                 <Ripple
@@ -344,7 +341,7 @@ const styles = StyleSheet.create({
 });
 
 
-function BubbleItem({style, onPress, component, bubbleAnim}: {onPress: ()=>void, style: ViewStyle, component: React.ReactNode, bubbleAnim: Animated.Value}) {
+function BubbleItem({ style, onPress, component, bubbleAnim }: { onPress: () => void, style: ViewStyle, component: React.ReactNode, bubbleAnim: Animated.Value }) {
   return (
     <AnimatedTouchable
       onPress={onPress}

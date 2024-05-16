@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import { clear_icon } from '../../res/icons/icons';
+import WisbIcon, { IconType } from './WisbIcon';
 
 interface Props {
   item: any;
@@ -57,11 +57,12 @@ export default class WastelandItem extends Component<Props, State> {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
+          {/* <WisbIcon icon={IconType.}/>
           <FastImage
             source={clear_icon}
             resizeMode="contain"
             style={{marginTop: 4, height: 30, width: 30}}
-          />
+          /> */}
         </View>
         <View style={{flex: 1, marginLeft: 8}}>
           <Text

@@ -8,8 +8,8 @@ import Dumpster from "./data_types/Dumpster";
 
 export interface EventsWastelandsQuery {
     phrase?: string
-    sortByDate: boolean
-    onlyOwn: boolean
+    sortByDate?: boolean
+    onlyOwn?: boolean
     place?: unknown
 }
 
@@ -52,6 +52,7 @@ export default abstract class API {
     abstract clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: unknown[]): APIResponse<ClearingWastelandError, {}>
 
     ////////////dumpsters related functions
+    abstract getDumpsters(query: {}): APIResponse<GeneralError, {dumpsters: Dumpster[]}>
     abstract updateDumpster(newDumpster: Omit<Dumpster, "id">): APIResponse<GeneralError, { updatedDumpster: Dumpster }>
     abstract deleteDumpster(dumpster: Dumpster): APIResponse<GeneralError, {}>
 

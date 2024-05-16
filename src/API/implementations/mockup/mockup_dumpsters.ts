@@ -7,8 +7,10 @@ export default function getMockupDumpsters(users: User[]): Dumpster[] {
     return faker.helpers.multiple(() => ({
         id: 0,
         addedBy: faker.helpers.arrayElement(users),
-        placeCoords: getRandomLatLngInPoland(),
-        placeDescription: faker.location.streetAddress({ useFullAddress: true }),
+        place: {
+            coords: getRandomLatLngInPoland(),
+            asText: faker.location.streetAddress({ useFullAddress: true })
+        },
         description: faker.word.words(),
         photos: faker.helpers.multiple(() => faker.image.urlLoremFlickr({ category: "nature" }))
     }), {

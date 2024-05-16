@@ -1,4 +1,3 @@
-import { Icon } from '@rneui/base';
 import React, { Component, VoidFunctionComponent } from 'react';
 import {
     View,
@@ -8,10 +7,12 @@ import {
     StyleProp,
     ViewStyle,
 } from 'react-native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
     onClear: () => void;
-    onPress: ()=>void
+    onPress: () => void
     style?: ViewStyle
 }
 
@@ -50,7 +51,7 @@ export default function SearchBar({ style, onPress, onClear }: Props) {
                     justifyContent: 'space-between',
                 }}>
                 <TouchableOpacity>
-                    <Icon type="font-awesome" name="search" color="black" size={16} />
+                    <FontAwesomeIcon icon={faSearch} color="black" size={16} />
                 </TouchableOpacity>
                 <Text
                     numberOfLines={1}
@@ -66,7 +67,7 @@ export default function SearchBar({ style, onPress, onClear }: Props) {
                 <TouchableOpacity
                     onPress={onClear}
                     style={{ paddingLeft: 4, paddingTop: 4, paddingBottom: 4 }}>
-                    <Icon name="close" type="material" color="black" size={16} />
+                    <FontAwesomeIcon icon={faSearch} color="black" size={16} />
                 </TouchableOpacity>
             </TouchableOpacity>
         </View>

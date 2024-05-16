@@ -4,6 +4,7 @@ import getRandomDateRangeInRange from './getRandomDateRange';
 import User from '../../data_types/User';
 import Wasteland from '../../data_types/Wasteland';
 import Message from '../../data_types/Message';
+import getRandomLatLngInPoland from './getRandomLatLngInPoland';
 
 function getYearDateRange(): [Date, Date] {
     const nextYearDate = new Date()
@@ -33,13 +34,15 @@ export default function getMockupEvents(users: User[], wastelands: Wasteland[]):
             id: 0,
             name: faker.word.words(),
             dateRange,
-            meetPlace: faker.location.streetAddress(),
+            meetPlace: {
+                asText: faker.location.streetAddress(),
+                coords: getRandomLatLngInPoland()
+            },
             admins,
             members,
             description: faker.word.words(),
             messages,
             wastelands: faker.helpers.arrayElements(wastelands),
-            isFinished: dateRange[1] < new Date() ? faker.datatype.boolean() : false
         }
     }, {
         count: 30,

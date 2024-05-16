@@ -3,8 +3,10 @@ import User from "./User"
 
 export default interface Dumpster {
     id: number
-    placeCoords: LatLng
-    placeDescription: string
+    place: {
+        coords: LatLng,
+        asText: string
+    }
     description: string
     photos: unknown[]
     addedBy: User

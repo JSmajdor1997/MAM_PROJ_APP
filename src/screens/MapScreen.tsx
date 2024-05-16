@@ -7,24 +7,23 @@ import {
   ToastAndroid,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import FastImage from 'react-native-fast-image';
-import { Menu, MenuItem } from 'react-native-material-menu';
 import { Region } from 'react-native-maps';
 import { LatLng } from 'react-native-maps';
-import { event_icon, map_pin_icon, trash_bin_icon } from '../../res/icons/icons';
-import { Icon } from '@rneui/base';
 import SearchBar from '../components/SearchBar';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import MoreButton from '../components/MoreButton';
-import WastelandInfoDialog from '../dialogs/WastelandInfoDialog';
-import EventAddingDialog from '../dialogs/EventAddingDialog';
-import EventInfoDialog from '../dialogs/EventInfoDialog';
-import WastelandAddingDialog from '../dialogs/WastelandAddingDialog';
-import map_style from '../../res/map_style';
+const map_style = require('../../res/map_style.json');
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
 import Geolocation from '@react-native-community/geolocation';
 import EventsPlacesFilteringDialog from '../dialogs/EventsPlacesFilteringDialog';
+import getAPI from '../API/getAPI';
+import Wasteland from '../API/data_types/Wasteland';
+import Dumpster from '../API/data_types/Dumpster';
+import Event from '../API/data_types/Event';
+import WisbIcon, { IconType } from '../components/WisbIcon';
+import { faCheck, faClose } from '@fortawesome/free-solid-svg-icons';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> {
 
@@ -46,6 +45,10 @@ interface State {
   currentlyShownRegion: Region;
 
   isEventsWastelandsFilteringDialogVisible: boolean
+
+  wastelands: Wasteland[]
+  dumpsters: Dumpster[]
+  events: Event[]
 }
 
 export default class MapScreen extends Component<Props, State> {
@@ -63,6 +66,10 @@ export default class MapScreen extends Component<Props, State> {
     super(props);
 
     this.state = {
+      events: [],
+      dumpsters: [],
+      wastelands: [],
+
       place: null,
       userPos: null,
 
@@ -132,6 +139,22 @@ export default class MapScreen extends Component<Props, State> {
 
   componentDidMount() {
     this.getPosition();
+
+    Promise.all([
+      getAPI().getEvents({}),
+      getAPI().getWastelands({}),
+      getAPI().getDumpsters({})
+    ]).then(result => {
+      const events = result[0].error == null ? result[0].data!.events! : []
+      const wastelands = result[1].error == null ? result[1].data!.wastelands! : []
+      const dumpsters = result[2].error == null ? result[2].data!.dumpsters! : []
+
+      this.setState({
+        dumpsters,
+        events,
+        wastelands
+      })
+    })
   }
 
   private renderUser(): ReactElement | null {
@@ -141,17 +164,13 @@ export default class MapScreen extends Component<Props, State> {
           title="Tu jesteś"
           onPress={() => { }}
           coordinate={this.state.userPos}>
-          <FastImage
-            source={map_pin_icon}
-            resizeMode="contain"
-            style={{ height: 25, width: 25 }}
-          />
+          <WisbIcon size={25} icon={IconType.MapPin} />
         </Marker>
       )
     );
   }
 
-  private renderWasteland(wasteland: any): ReactElement {
+  private renderWasteland(wasteland: Wasteland): ReactElement {
     return (
       <Marker
         onPress={() =>
@@ -159,28 +178,34 @@ export default class MapScreen extends Component<Props, State> {
             wastelandToShow: wasteland,
           })
         }
-        coordinate={wasteland.position}>
-        <FastImage
-          source={trash_bin_icon}
-          resizeMode="contain"
-          style={{ height: 30, width: 30 }}
-        />
+        coordinate={wasteland.placeCoords}>
+        <WisbIcon size={30} icon={IconType.WastelandIcon} />
       </Marker>
     );
   }
 
-  private renderEvent(event: any): ReactElement | null {
-    return event.position && event.position.latitude && event.position.longitude ? (
+  private renderDumpster(dumpster: Dumpster): ReactElement {
+    return (
+      <Marker
+        onPress={() =>
+          this.setState({
+            wastelandToShow: dumpster,
+          })
+        }
+        coordinate={dumpster.placeCoords}>
+        <WisbIcon size={30} icon={IconType.Dumpster} />
+      </Marker>
+    );
+  }
+
+  private renderEvent(event: Event): ReactElement | null {
+    return (
       <Marker
         onPress={() => this.setState({ eventToShow: event })}
-        coordinate={event.position}>
-        <FastImage
-          source={event_icon}
-          resizeMode="contain"
-          style={{ height: 30, width: 30 }}
-        />
+        coordinate={event.meetPlace.coords}>
+        <WisbIcon size={30} icon={IconType.Calendar} />
       </Marker>
-    ) : null;
+    )
   }
 
   private renderDraggableMarker(): ReactElement {
@@ -191,7 +216,7 @@ export default class MapScreen extends Component<Props, State> {
           this.setState({ userSelectedPosition: e.nativeEvent.coordinate })
         }
         draggable>
-        <FastImage source={map_pin_icon} style={{ aspectRatio: 1, width: 28 }} />
+        <WisbIcon size={28} icon={IconType.MapPin} />
       </Marker>
     );
   }
@@ -202,7 +227,9 @@ export default class MapScreen extends Component<Props, State> {
     if (operationMode == 'Normal') {
       return (
         <Fragment>
-          {/* {any.all.map(event => this.renderEvent(event))} */}
+          {this.state.events.map(event => this.renderEvent(event))}
+          {this.state.wastelands.map(wasteland => this.renderWasteland(wasteland))}
+          {this.state.dumpsters.map(dumpster => this.renderDumpster(dumpster))}
 
           {this.renderUser()}
         </Fragment>
@@ -277,7 +304,7 @@ export default class MapScreen extends Component<Props, State> {
 
         {this.state.operationMode == 'GetSelectedPosition' &&
           this.renderFAB(
-            <Icon type="material" name="close" color="white" />,
+            <FontAwesomeIcon icon={faClose} color="white" />,
             '#db887b',
             this.onUserDismissedSelectingPosition,
             'Anuluj',
@@ -285,7 +312,7 @@ export default class MapScreen extends Component<Props, State> {
           )}
         {this.state.operationMode == 'GetSelectedPosition' &&
           this.renderFAB(
-            <Icon type="material" name="check" color="white" />,
+            <FontAwesomeIcon icon={faCheck} color="white" />,
             '#60b580',
             this.onUserSelectedPosition,
             'Wybierz',
@@ -308,6 +335,9 @@ export default class MapScreen extends Component<Props, State> {
           onRegionChange={region =>
             this.setState({ currentlyShownRegion: region })
           }
+          showsScale={false}
+          showsIndoors={false}
+          showsTraffic={false}
           showsMyLocationButton={false}
           toolbarEnabled={false}
           showsCompass={false}
@@ -339,7 +369,7 @@ export default class MapScreen extends Component<Props, State> {
             marginTop: (StatusBar.currentHeight ?? 20) + 5,
           }}>
           <SearchBar
-            onPress={()=>this.setState({isEventsWastelandsFilteringDialogVisible: true})}
+            onPress={() => this.setState({ isEventsWastelandsFilteringDialogVisible: true })}
             onClear={() => {
               this.setState({ eventToShow: null, wastelandToShow: null });
               this.getPosition();
@@ -347,9 +377,9 @@ export default class MapScreen extends Component<Props, State> {
           />
         </View>
 
-        <EventsPlacesFilteringDialog 
+        <EventsPlacesFilteringDialog
           visible={isEventsWastelandsFilteringDialogVisible}
-          onDismiss={()=>this.setState({isEventsWastelandsFilteringDialogVisible: false})}/>
+          onDismiss={() => this.setState({ isEventsWastelandsFilteringDialogVisible: false })} />
       </View>
     );
   }

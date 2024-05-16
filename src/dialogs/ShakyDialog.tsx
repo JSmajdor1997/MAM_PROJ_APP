@@ -82,7 +82,7 @@ export default class ShakyDialog extends Component<Props, State> {
 
     return (
       <Modal
-        animationType='fade'
+        animationType='slide'
         transparent
         visible={this.props.visible}
         onDismiss={onDismiss}>
@@ -90,7 +90,7 @@ export default class ShakyDialog extends Component<Props, State> {
         <Pressable
           style={{ height: "100%", display: "flex" }}
           onPress={onDismiss} >
-          <SafeAreaView style={{ backgroundColor: "#00000055", flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <SafeAreaView style={{ backgroundColor: "#00000055", flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
             <Animated.View
               onStartShouldSetResponder={(event) => true}
               onTouchEnd={(e) => {
@@ -103,14 +103,15 @@ export default class ShakyDialog extends Component<Props, State> {
                   ],
                   minWidth: 50,
                   minHeight: 50,
-                  maxWidth: "90%",
-                  maxHeight: "90%",
+                  width: "100%",
+                  height: "95%",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
                   backgroundColor: "white",
-                  borderRadius: 20,
-                  overflow: "hidden"
+                  borderTopLeftRadius: 15,
+                  borderTopRightRadius: 15,
+                  overflow: "hidden",
                 }
               ]}>
               {this.props.children}

@@ -1,4 +1,4 @@
-import React, {Component, ReactElement} from 'react';
+import React, { Component, ReactElement } from 'react';
 import {
   View,
   StatusBar,
@@ -8,16 +8,16 @@ import {
   Platform,
   TextInput,
 } from 'react-native';
-import {GiftedChat, Message} from 'react-native-gifted-chat';
-import {Menu, MenuItem} from 'react-native-material-menu';
+import { GiftedChat, Message } from 'react-native-gifted-chat';
+import { Menu, MenuItem } from 'react-native-material-menu';
 import emojiUtils from 'emoji-utils';
 import LoadingImage from "../components/LoadingImage"
-import { Icon } from '@rneui/base';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { Resources } from '../../res/Resources';
-import ImagesPicker from '../dialogs/ImagesPicker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
+import { faArrowLeft, faCamera, faGripVertical, faMessage } from '@fortawesome/free-solid-svg-icons';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> {
 
@@ -122,12 +122,11 @@ export default class ChatScreen extends Component<Props, State> {
             justifyContent: 'space-between',
           }}>
           <TouchableOpacity
-            onPress={() => {}}
-            style={{marginLeft: 8}}>
-            <Icon
+            onPress={() => { }}
+            style={{ marginLeft: 8 }}>
+            <FontAwesomeIcon
               color={Resources.Colors.Primary}
-              type="materialicons"
-              name="keyboard-arrow-left"
+              icon={faArrowLeft}
             />
           </TouchableOpacity>
           <LoadingImage
@@ -162,8 +161,8 @@ export default class ChatScreen extends Component<Props, State> {
           button={
             <TouchableOpacity
               onPress={this.showMenu.bind(this, true)}
-              style={{alignSelf: 'flex-end', marginRight: 2}}>
-              <Icon color={Resources.Colors.Primary} type="feather" name="more-vertical" />
+              style={{ alignSelf: 'flex-end', marginRight: 2 }}>
+              <FontAwesomeIcon color={Resources.Colors.Primary} icon={faGripVertical} />
             </TouchableOpacity>
           }
           ref={(ref: any) => (this.menu = ref)}>
@@ -212,20 +211,15 @@ export default class ChatScreen extends Component<Props, State> {
           elevation: 10,
         }}>
         <TouchableOpacity
-          onPress={() => this.setState({isImagePickerVisible: true})}
+          onPress={() => this.setState({ isImagePickerVisible: true })}
           style={{
             justifyContent: 'center',
             alignContent: 'center',
             padding: 4,
           }}>
-          <Icon type="entypo" name="camera" color={Resources.Colors.Primary} size={18} />
+          <FontAwesomeIcon icon={faCamera} color={Resources.Colors.Primary} size={18} />
         </TouchableOpacity>
 
-        <ImagesPicker
-          onImage={() => {}}
-          onDismiss={() => this.setState({isImagePickerVisible: false})}
-          visible={this.state.isImagePickerVisible}
-        />
         <View
           style={{
             flex: 1,
@@ -237,7 +231,7 @@ export default class ChatScreen extends Component<Props, State> {
           }}>
           <TextInput
             placeholder="Wpisz wiadomość..."
-            style={{flex: 1, padding: 0}}
+            style={{ flex: 1, padding: 0 }}
           />
         </View>
         <TouchableOpacity
@@ -246,7 +240,7 @@ export default class ChatScreen extends Component<Props, State> {
             alignContent: 'center',
             padding: 4,
           }}>
-          <Icon type="font-awesome" name="send" color={Resources.Colors.Primary} size={20} />
+          <FontAwesomeIcon icon={faMessage} color={Resources.Colors.Primary} size={20} />
         </TouchableOpacity>
       </View>
     );
@@ -254,7 +248,7 @@ export default class ChatScreen extends Component<Props, State> {
 
   renderMessage(props: any): ReactElement {
     const {
-      currentMessage: {text: currText},
+      currentMessage: { text: currText },
     } = props;
 
     let messageTextStyle;
