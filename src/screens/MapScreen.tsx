@@ -6,381 +6,216 @@ import {
   ViewStyle,
   ToastAndroid,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import { Region } from 'react-native-maps';
-import { LatLng } from 'react-native-maps';
+import MapView, { Marker, Region, LatLng } from 'react-native-maps';
 import SearchBar from '../components/SearchBar';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import MoreButton from '../components/MoreButton';
-const map_style = require('../../res/map_style.json');
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
 import Geolocation from '@react-native-community/geolocation';
-import EventsPlacesFilteringDialog from '../dialogs/EventsPlacesFilteringDialog';
+import ListDialog from '../dialogs/ListDialog';
 import getAPI from '../API/getAPI';
+import Toast from 'react-native-simple-toast';
 import Wasteland from '../API/data_types/Wasteland';
 import Dumpster from '../API/data_types/Dumpster';
 import Event from '../API/data_types/Event';
 import WisbIcon, { IconType } from '../components/WisbIcon';
-import { faCheck, faClose } from '@fortawesome/free-solid-svg-icons';
+import getRandomLatLngInPoland from '../API/implementations/mockup/getRandomLatLngInPoland';
+import metersToLatLngDelta from '../utils/metersToDelta';
+import scaleRegion from '../utils/scaleRegion';
+import APIResponse from '../API/APIResponse';
+import { GeneralError } from '../API/API';
+import doesRegionInclude from '../utils/doesRegionInclude';
+import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
+import { MapObjects, Query, Type } from '../API/helpers';
+const map_style = require('../../res/map_style.json');
+
+const MarkerIdSeparator = '-'
+
+const UserMarkerId = 'USER-MARKER'
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> {
 
 }
 
-interface State {
-  place: string | null;
-  userPos: LatLng | null;
-
-  isWastelandAddingDialogVisible: boolean;
-  isEventAddingDialogVisible: boolean;
-
-  wastelandToShow: any | null;
-  eventToShow: any | null;
-
-  operationMode: 'GetSelectedPosition' | 'Normal';
-  userSelectedPosition: LatLng;
-
-  currentlyShownRegion: Region;
-
-  isEventsWastelandsFilteringDialogVisible: boolean
-
-  wastelands: Wasteland[]
-  dumpsters: Dumpster[]
-  events: Event[]
+const InitialRegion = {
+  ...getRandomLatLngInPoland(),
+  latitudeDelta: 1,
+  longitudeDelta: 1,
 }
 
-export default class MapScreen extends Component<Props, State> {
-  static openWastelandAddingDialog: () => void;
-  static openEventAddingDialog: () => void;
+export default function MapScreen({ }: Props) {
+  const [selectedItem, setSelectedItem] = React.useState<Wasteland | Dumpster | Event | null>(null)
 
-  static getUserSelectedPosition: (
-    onChosen: (position: LatLng) => void,
-    onDismissed: () => void,
-  ) => void;
+  const mapRef = React.useRef<MapView>(null)
+  const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
 
-  private map: MapView | null = null;
+  const [userPosition, setUserPosition] = React.useState<LatLng | null>(null)
 
-  constructor(props: Props) {
-    super(props);
+  const [query, setQuery] = React.useState<Query>({ phrase: "", type: [Type.Dumpster, Type.Event, Type.Wasteland] })
+  const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
 
-    this.state = {
-      events: [],
-      dumpsters: [],
-      wastelands: [],
+  const [mapObjects, setMapObjects] = React.useState<MapObjects&{region: Region}>({
+    [Type.Dumpster]: [],
+    [Type.Event]: [],
+    [Type.Wasteland]: [],
+    region: InitialRegion
+  })
 
-      place: null,
-      userPos: null,
-
-      isWastelandAddingDialogVisible: false,
-      isEventAddingDialogVisible: false,
-
-      operationMode: 'Normal',
-      userSelectedPosition: { latitude: 0, longitude: 0 },
-
-      currentlyShownRegion: {
-        latitude: 52,
-        longitude: 19.1,
-        latitudeDelta: 12,
-        longitudeDelta: 12,
-      },
-
-      eventToShow: null,
-      wastelandToShow: null,
-      isEventsWastelandsFilteringDialogVisible: false
-    };
-
-    MapScreen.getUserSelectedPosition = () => {
-      (ToastAndroid as any).showWithGravityAndOffset(
-        'Przesuń marker na pozycję śmieciowiska',
-        ToastAndroid.SHORT,
-        ToastAndroid.CENTER,
-        0,
-        50,
-      );
-
-      this.setState({
-        operationMode: 'GetSelectedPosition',
-        userSelectedPosition: this.state.currentlyShownRegion,
-      });
-
-      this.map &&
-        this.map.animateToRegion({
-          ...this.state.currentlyShownRegion,
-        });
-    };
-  }
-
-  private getPosition() {
-    try {
-      Geolocation.getCurrentPosition(info => {
-        const region: Region = {
-          ...info.coords,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        };
-
-        this.map && this.map.animateToRegion(region);
-
-        this.setState({ userPos: info.coords });
-      });
-    } catch {
-      const region = {
-        latitude: 52,
-        longitude: 19.1,
-        latitudeDelta: 12,
-        longitudeDelta: 10,
-      };
-
-      this.map && this.map.animateToRegion(region);
+  const updateMapObjects = (region: Region) => {
+    function handleUpdate<T>(type: Type, getter: (wrapper: any) => T[]): (rsp: APIResponse<GeneralError, T>) => void {
+      return (rsp: APIResponse<GeneralError, T>) => {
+        if (rsp.error) {
+          Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
+        } else {
+          setMapObjects(mapObjects => ({
+            ...mapObjects,
+            [type]: getter(rsp.data)
+          }))
+        }
+      }
     }
+
+    const api = getAPI()
+    const commonQuery = { phrase: query.phrase, region: region }
+    const promises: Promise<unknown>[] = []
+    if (query.type.includes(Type.Dumpster)) {
+      api.getDumpsters(commonQuery).then(handleUpdate(Type.Dumpster, wrapper => wrapper.dumpsters))
+    }
+    if (query.type.includes(Type.Event)) {
+      api.getEvents(commonQuery).then(handleUpdate(Type.Event, wrapper => wrapper.events))
+    }
+    if (query.type.includes(Type.Wasteland)) {
+      api.getWastelands(commonQuery).then(handleUpdate(Type.Wasteland, wrapper => wrapper.wastelands))
+    }
+
+    Promise.allSettled(promises)
   }
 
-  componentDidMount() {
-    this.getPosition();
+  React.useEffect(() => {
+    Geolocation.watchPosition(location => {
+      const deltas = metersToLatLngDelta(2000, location.coords.latitude)
+      const region: Region = {
+        ...location.coords,
+        latitudeDelta: deltas.latitudeDelta,
+        longitudeDelta: deltas.longitudeDelta,
+      }
 
-    Promise.all([
-      getAPI().getEvents({}),
-      getAPI().getWastelands({}),
-      getAPI().getDumpsters({})
-    ]).then(result => {
-      const events = result[0].error == null ? result[0].data!.events! : []
-      const wastelands = result[1].error == null ? result[1].data!.wastelands! : []
-      const dumpsters = result[2].error == null ? result[2].data!.dumpsters! : []
+      setUserPosition(location.coords)
+      setMapObjects(mapObjects => ({
+        ...mapObjects,
+        region: region
+      }));
 
-      this.setState({
-        dumpsters,
-        events,
-        wastelands
-      })
+      (mapRef.current as any)?.animateToRegion(region, 100)
+
+      updateMapObjects(region)
     })
-  }
+  }, [])
 
-  private renderUser(): ReactElement | null {
-    return (
-      this.state.userPos && (
-        <Marker
-          title="Tu jesteś"
-          onPress={() => { }}
-          coordinate={this.state.userPos}>
-          <WisbIcon size={25} icon={IconType.MapPin} />
-        </Marker>
-      )
-    );
-  }
-
-  private renderWasteland(wasteland: Wasteland): ReactElement {
-    return (
+  const renderUser = () => {
+    return userPosition == null ?
+      null :
       <Marker
-        onPress={() =>
-          this.setState({
-            wastelandToShow: wasteland,
-          })
-        }
-        coordinate={wasteland.placeCoords}>
-        <WisbIcon size={30} icon={IconType.WastelandIcon} />
+        id={UserMarkerId}
+        title="Tu jesteś!"
+        coordinate={userPosition}>
+        <WisbIcon size={25}
+          icon={IconType.MapPin} />
       </Marker>
-    );
   }
 
-  private renderDumpster(dumpster: Dumpster): ReactElement {
-    return (
-      <Marker
-        onPress={() =>
-          this.setState({
-            wastelandToShow: dumpster,
-          })
-        }
-        coordinate={dumpster.placeCoords}>
-        <WisbIcon size={30} icon={IconType.Dumpster} />
-      </Marker>
-    );
-  }
+  return (
+    <View
+      style={{
+        flex: 1,
+      }}>
+      <MapView
+        ref={mapRef}
+        region={displayedRegion}
+        onRegionChangeComplete={region => {
+          if (!doesRegionInclude(mapObjects.region, region) && calcRegionAreaInMeters(region) < 100000) {
+            updateMapObjects(scaleRegion(region, 1.5))
+          }
 
-  private renderEvent(event: Event): ReactElement | null {
-    return (
-      <Marker
-        onPress={() => this.setState({ eventToShow: event })}
-        coordinate={event.meetPlace.coords}>
-        <WisbIcon size={30} icon={IconType.Calendar} />
-      </Marker>
-    )
-  }
-
-  private renderDraggableMarker(): ReactElement {
-    return (
-      <Marker
-        coordinate={this.state.userSelectedPosition}
-        onDragEnd={e =>
-          this.setState({ userSelectedPosition: e.nativeEvent.coordinate })
-        }
-        draggable>
-        <WisbIcon size={28} icon={IconType.MapPin} />
-      </Marker>
-    );
-  }
-
-  private renderAllMarkers(): ReactElement {
-    const { operationMode, eventToShow, wastelandToShow } = this.state;
-
-    if (operationMode == 'Normal') {
-      return (
+          setDisplayedRegion(region => region)
+        }}
+        showsScale={false}
+        showsIndoors={false}
+        showsTraffic={false}
+        showsMyLocationButton={false}
+        toolbarEnabled={false}
+        showsCompass={false}
+        provider="google"
+        showsPointsOfInterest={false}
+        style={{ height: '100%', width: '100%' }}
+        customMapStyle={map_style}>
         <Fragment>
-          {this.state.events.map(event => this.renderEvent(event))}
-          {this.state.wastelands.map(wasteland => this.renderWasteland(wasteland))}
-          {this.state.dumpsters.map(dumpster => this.renderDumpster(dumpster))}
+          {renderUser()}
 
-          {this.renderUser()}
+          {mapObjects[Type.Wasteland].map(wasteland => (
+            <Marker
+              key={`${Type.Wasteland}${MarkerIdSeparator}${wasteland.id}`}
+              onPress={() => setSelectedItem(wasteland)}
+              tracksViewChanges={false}
+              coordinate={wasteland.place.coords}>
+              <WisbIcon size={30} icon={IconType.WastelandIcon} />
+            </Marker>
+          ))}
+
+          {mapObjects[Type.Event].map(event => (
+            <Marker
+              key={`${Type.Event}${MarkerIdSeparator}${event.id}`}
+              onPress={() => setSelectedItem(event)}
+              tracksViewChanges={false}
+              coordinate={event.meetPlace.coords}>
+              <WisbIcon size={30} icon={IconType.Calendar} />
+            </Marker>
+          ))}
+
+          {mapObjects[Type.Dumpster].map(dumpster => (
+            <Marker
+              key={`${Type.Dumpster}${MarkerIdSeparator}${dumpster.id}`}
+              onPress={() => setSelectedItem(dumpster)}
+              tracksViewChanges={false}
+              coordinate={dumpster.place.coords}>
+              <WisbIcon size={30} icon={IconType.Dumpster} />
+            </Marker>
+          ))}
         </Fragment>
-      );
-    } else {
-      return this.renderDraggableMarker();
-    }
-  }
+      </MapView>
 
-  private renderFAB(
-    icon: ReactElement,
-    color: string,
-    onPress: () => void,
-    label: string,
-    style: ViewStyle,
-  ): ReactElement {
-    return (
       <View
         style={{
-          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 10,
+          },
+          shadowOpacity: 0.51,
+          shadowRadius: 13.16,
+
+          elevation: 20,
+          backgroundColor: 'white',
+          borderRadius: 10,
+          marginHorizontal: 10,
+          flexDirection: 'row',
           alignItems: 'center',
           position: 'absolute',
-          ...style,
+          marginTop: (StatusBar.currentHeight ?? 20) + 5,
         }}>
-        <Ripple
-          rippleCentered={true}
-          rippleSize={45}
-          onPress={onPress}
-          style={{
-            aspectRatio: 1,
-            width: 54,
-            backgroundColor: color,
-            borderRadius: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 0,
-              height: 5,
-            },
-            shadowOpacity: 1,
-            shadowRadius: 16,
-
-            elevation: 20,
-          }}>
-          {icon}
-        </Ripple>
-        {label && label != '' ? (
-          <View
-            style={{
-              width: '100%',
-              backgroundColor: 'white',
-              paddingHorizontal: 5,
-              paddingVertical: 3,
-              borderRadius: 5,
-              marginTop: 8,
-
-              shadowColor: '#000',
-              shadowOffset: {
-                width: 0,
-                height: 5,
-              },
-              shadowOpacity: 1,
-              shadowRadius: 16,
-
-              elevation: 20,
-            }}>
-            <Text style={{ textAlign: 'center' }}>{label}</Text>
-          </View>
-        ) : null}
-
-        {this.state.operationMode == 'GetSelectedPosition' &&
-          this.renderFAB(
-            <FontAwesomeIcon icon={faClose} color="white" />,
-            '#db887b',
-            this.onUserDismissedSelectingPosition,
-            'Anuluj',
-            { bottom: 10, left: 10 },
-          )}
-        {this.state.operationMode == 'GetSelectedPosition' &&
-          this.renderFAB(
-            <FontAwesomeIcon icon={faCheck} color="white" />,
-            '#60b580',
-            this.onUserSelectedPosition,
-            'Wybierz',
-            { bottom: 10, right: 10 },
-          )}
+        <SearchBar
+          query={query}
+          isFocused={isSearchDialogVisible}
+          onQueryChanged={newQuery => setQuery(newQuery)}
+          onPress={() => setIsSearchDialogVisible(true)}
+        />
       </View>
-    );
-  }
 
-  render() {
-    const { wastelandToShow, isEventsWastelandsFilteringDialogVisible } = this.state;
-
-    return (
-      <View
-        style={{
-          flex: 1,
-        }}>
-
-        <MapView
-          onRegionChange={region =>
-            this.setState({ currentlyShownRegion: region })
-          }
-          showsScale={false}
-          showsIndoors={false}
-          showsTraffic={false}
-          showsMyLocationButton={false}
-          toolbarEnabled={false}
-          showsCompass={false}
-          provider="google"
-          showsPointsOfInterest={false}
-          ref={(ref: any) => (this.map = ref)}
-          style={{ height: '100%', width: '100%' }}
-          customMapStyle={map_style}>
-          {this.renderAllMarkers()}
-        </MapView>
-
-        <View
-          style={{
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 0,
-              height: 10,
-            },
-            shadowOpacity: 0.51,
-            shadowRadius: 13.16,
-
-            elevation: 20,
-            backgroundColor: 'white',
-            borderRadius: 10,
-            marginHorizontal: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            position: 'absolute',
-            marginTop: (StatusBar.currentHeight ?? 20) + 5,
-          }}>
-          <SearchBar
-            onPress={() => this.setState({ isEventsWastelandsFilteringDialogVisible: true })}
-            onClear={() => {
-              this.setState({ eventToShow: null, wastelandToShow: null });
-              this.getPosition();
-            }}
-          />
-        </View>
-
-        <EventsPlacesFilteringDialog
-          visible={isEventsWastelandsFilteringDialogVisible}
-          onDismiss={() => this.setState({ isEventsWastelandsFilteringDialogVisible: false })} />
-      </View>
-    );
-  }
+      <ListDialog
+        query={query}
+        visible={isSearchDialogVisible}
+        onDismiss={() => setIsSearchDialogVisible(false)}
+        onItemSelected={item => { }} />
+    </View>
+  );
 }

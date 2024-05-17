@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import Event from '../../data_types/Event';
+import Event, { EventUser } from '../../data_types/Event';
 import getRandomDateRangeInRange from './getRandomDateRange';
 import User from '../../data_types/User';
 import Wasteland from '../../data_types/Wasteland';
@@ -13,7 +13,7 @@ function getYearDateRange(): [Date, Date] {
     return [new Date(), nextYearDate]
 }
 
-export default function getMockupEvents(users: User[], wastelands: Wasteland[]): Event[] {
+export default function getMockupEvents(users: User[], wastelands: Wasteland[]): { event: Event, members: EventUser[], admins: EventUser[] }[] {
     return faker.helpers.multiple(() => {
         const dateRange = getRandomDateRangeInRange(getYearDateRange())
 
@@ -31,23 +31,29 @@ export default function getMockupEvents(users: User[], wastelands: Wasteland[]):
         }))
 
         return {
-            id: 0,
-            name: faker.word.words(),
-            dateRange,
-            meetPlace: {
-                asText: faker.location.streetAddress(),
-                coords: getRandomLatLngInPoland()
+            event: {
+                id: 0,
+                name: faker.word.words(),
+                iconUrl: faker.image.urlLoremFlickr({ category: "forest" }),
+                dateRange,
+                meetPlace: {
+                    asText: faker.location.streetAddress(),
+                    coords: getRandomLatLngInPoland()
+                },
+                description: faker.word.words(),
+                messages,
+                wastelands: faker.helpers.arrayElements(wastelands),
             },
             admins,
             members,
-            description: faker.word.words(),
-            messages,
-            wastelands: faker.helpers.arrayElements(wastelands),
         }
     }, {
         count: 30,
     }).map((it, index) => ({
         ...it,
-        id: index
+        event: {
+            ...it.event,
+            id: index
+        }
     }))
 }

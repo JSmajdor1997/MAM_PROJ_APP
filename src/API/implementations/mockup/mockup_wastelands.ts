@@ -6,8 +6,10 @@ import User from '../../data_types/User';
 export default function getMockupWastelands(users: User[]): Wasteland[] {
     return faker.helpers.multiple(() => ({
         id: 0,
-        placeCoords: getRandomLatLngInPoland(),
-        placeDescription: faker.location.streetAddress({ useFullAddress: true }),
+        place: {
+            coords: getRandomLatLngInPoland(),
+            asText: faker.location.streetAddress({ useFullAddress: true })
+        },
         photos: faker.helpers.multiple(() => faker.image.urlLoremFlickr({ category: "nature" })),
         description: faker.word.words(),
         creationDate: faker.date.recent(),

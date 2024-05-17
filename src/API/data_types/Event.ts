@@ -6,15 +6,19 @@ import Wasteland from "./Wasteland"
 export default interface Event {
     id: number
     name: string
-    iconUrl: string
+    iconUrl?: string
     dateRange: [Date, Date]
     meetPlace: {
         coords: LatLng,
         asText: string
     }
-    admins: User[]
-    members: User[]
     description: string
     messages: Message[]
     wastelands: Wasteland[]
+}
+
+export interface EventUser {
+    id: number
+    userName: string
+    photoUrl?: string
 }

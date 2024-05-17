@@ -3,8 +3,10 @@ import User from "./User"
 
 export default interface Wasteland {
     id: number
-    placeCoords: LatLng
-    placeDescription: string
+    place: {
+        coords: LatLng
+        asText: string
+    }
     photos: unknown[]
     description: string
     creationDate: Date

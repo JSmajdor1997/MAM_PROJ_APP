@@ -1,6 +1,6 @@
-import API, { ChangeListener, ChangeSource, ClearingWastelandError, EventsWastelandsQuery, GeneralError, LeadershipQuery, LoginError, LogoutError, RemoveAccountError, SignUpError } from "../../API";
+import API, { ChangeListener, ChangeSource, ClearingWastelandError, DumpstersQuery, EventsQuery, GeneralError, LeadershipQuery, LoginError, LogoutError, RemoveAccountError, SignUpError, WastelandsQuery } from "../../API";
 import Dumpster from "../../data_types/Dumpster";
-import Event from "../../data_types/Event";
+import Event, { EventUser } from "../../data_types/Event";
 import LeadershipRecord from "../../data_types/LeadershipRecord";
 import Message from "../../data_types/Message";
 import User from "../../data_types/User";
@@ -11,6 +11,7 @@ import getMockupDumpsters from "./mockup_dumpsters";
 import getMockupEvents from "./mockup_events";
 import getMockupWastelands from "./mockup_wastelands";
 import { faker } from '@faker-js/faker';
+import isLatLngInRegion from "../../../utils/isLatLngInRegion";
 
 export default class MockupAPI extends API {
     private users = getMockupUsers()
@@ -43,7 +44,7 @@ export default class MockupAPI extends API {
         return this.loggedInUser != null
     }
 
-    async login(email: string, password: string): APIResponse<LoginError, User> {
+    async login(email: string, password: string): Promise<APIResponse<LoginError, User>> {
         const fittingUser = this.users.find(it => it.email == email)
 
         if (fittingUser == null) {
@@ -65,7 +66,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async logout(): APIResponse<LogoutError, {}> {
+    async logout(): Promise<APIResponse<LogoutError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: LogoutError.UserNotAuthorized
@@ -79,7 +80,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async signUp(data: Omit<User, "id" | "photoUrl" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters"> & { photoFile: File }): APIResponse<SignUpError, {}> {
+    async signUp(data: Omit<User, "id" | "photoUrl" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters"> & { photoFile: File }): Promise<APIResponse<SignUpError, {}>> {
         //checking if userName is unique
         if (this.users.some(existing => existing.userName == data.userName)) {
             return {
@@ -118,7 +119,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async removeAccount(): APIResponse<RemoveAccountError, {}> {
+    async removeAccount(): Promise<APIResponse<RemoveAccountError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: RemoveAccountError.UserNotAuthorized
@@ -133,7 +134,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async updateSelf(newData: Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">): APIResponse<GeneralError, { newUser: User }> {
+    async updateSelf(newData: Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">): Promise<APIResponse<GeneralError, { newUser: User }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -160,35 +161,67 @@ export default class MockupAPI extends API {
         }
     }
 
-    async resetPassword(): APIResponse<GeneralError, { newUser: User; }> {
+    async resetPassword(): Promise<APIResponse<GeneralError, { newUser: User; }>> {
         throw new Error("Method not implemented.");
     }
 
-    async getEvents(query: EventsWastelandsQuery): APIResponse<GeneralError, { events: Event[]; }> {
+    async getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { events: Event[]; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
+        const events = this.events.filter(({ event, members, admins }) => {
+            if (query.onlyOwn && !members.some(member => member.id == this.loggedInUser!.id)) {
+                return false
+            }
+
+            if ((query.phrase != null && query.phrase.length != 0) && !event.name.includes(query.phrase) && !event.description.includes(query.phrase)) {
+                return false
+            }
+
+            if (query.region != null && !isLatLngInRegion(query.region, event.meetPlace.coords)) {
+                return false
+            }
+
+            return true
+        }).sort((a, b) => a.event.dateRange[0] > b.event.dateRange[1] ? -1 : +1).map(it => it.event)
+
+        const from = range == null ? 0 : range[0]
+        const to = range == null ? events.length : range[1]
+
         return {
             data: {
-                events: this.events.filter(event => {
-                    if (query.onlyOwn && !event.members.some(member => member.id == this.loggedInUser!.id)) {
-                        return false
-                    }
-
-                    if (query.phrase != null && (event.name.includes(query.phrase) || event.description.includes(query.phrase))) {
-                        return true
-                    }
-
-                    return true
-                }).sort((a, b) => a.dateRange[0] > b.dateRange[1] ? -1 : +1)
+                events: events
             }
         }
     }
 
-    async createEvent(newEvent: Omit<Event, "id" | "isFinished" | "messages">): APIResponse<GeneralError, { createdEvent: Event }> {
+    async getEventMembers(event: Event, range: [number, number]): Promise<APIResponse<GeneralError, { members: EventUser[]; admins: EventUser[]; }>> {
+        if (this.loggedInUser == null) {
+            return {
+                error: GeneralError.UserNotAuthorized
+            }
+        }
+
+        const item = this.events.find(it => it.event.id == event.id)
+
+        if (item == null) {
+            return {
+                error: GeneralError.InvalidDataProvided
+            }
+        }
+
+        return {
+            data: {
+                members: item.members.slice(range[0], range[1]),
+                admins: item.admins,
+            }
+        }
+    }
+
+    async createEvent(newEvent: Omit<Event, "id" | "isFinished" | "messages">): Promise<APIResponse<GeneralError, { createdEvent: Event }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -197,16 +230,17 @@ export default class MockupAPI extends API {
 
         const createdEvent: Event = {
             ...newEvent,
-            isFinished: false,
-            members: [this.loggedInUser],
-            admins: [this.loggedInUser],
             messages: [],
-            id: Math.max(...this.events.map(event => event.id)) + 1
+            id: Math.max(...this.events.map(event => event.event.id)) + 1
         }
 
         this.events = [
             ...this.events,
-            createdEvent
+            {
+                event: createdEvent,
+                members: [this.loggedInUser],
+                admins: [this.loggedInUser],
+            }
         ]
 
         this.callAllListeners(ChangeSource.Events)
@@ -218,21 +252,21 @@ export default class MockupAPI extends API {
         }
     }
 
-    async deleteEvent(eventToDelete: Event): APIResponse<GeneralError, {}> {
+    async deleteEvent(eventToDelete: Event): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        if (eventToDelete.admins.some(admin => admin.id == this.loggedInUser?.id)) {
+        if (this.events.find(it => it.event.id == eventToDelete.id)!.admins.some(admin => admin.id == this.loggedInUser?.id)) {
             return {
                 error: GeneralError.UserNotAuthorized,
                 description: "User must be admin of event"
             }
         }
 
-        this.events = this.events.filter(event => eventToDelete.id != event.id)
+        this.events = this.events.filter(event => eventToDelete.id != event.event.id)
 
         this.callAllListeners(ChangeSource.Events)
 
@@ -241,14 +275,14 @@ export default class MockupAPI extends API {
         }
     }
 
-    async updateEvent(eventToUpdate: Event): APIResponse<GeneralError, { updatedEvent: Event; }> {
+    async updateEvent(eventToUpdate: Event): Promise<APIResponse<GeneralError, { updatedEvent: Event; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        if (eventToUpdate.admins.some(admin => admin.id == this.loggedInUser?.id)) {
+        if (this.events.find(it => it.event.id == eventToUpdate.id)!.admins.some(admin => admin.id == this.loggedInUser?.id)) {
             return {
                 error: GeneralError.UserNotAuthorized,
                 description: "User must be admin of event"
@@ -256,7 +290,7 @@ export default class MockupAPI extends API {
         }
 
         this.events = this.events.map(event => {
-            if (event.id == eventToUpdate.id) {
+            if (event.event.id == eventToUpdate.id) {
                 return {
                     ...event,
                     ...eventToUpdate
@@ -275,28 +309,31 @@ export default class MockupAPI extends API {
         }
     }
 
-    async joinEvent(eventToJoin: Event): APIResponse<GeneralError, { updatedEvent: Event; }> {
+    async joinEvent(eventToJoin: Event): Promise<APIResponse<GeneralError, { updatedEvent: Event; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        if (eventToJoin.members.some(member => member.id == this.loggedInUser!.id)) {
+        const foundEvent = this.events.find(it => it.event.id == eventToJoin.id)!
+
+        if (foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "User already in event"
             }
         }
 
-        const updatedEvent = {
-            ...eventToJoin,
-            members: [...eventToJoin.members, this.loggedInUser!]
-        }
-
         this.events = this.events.map(event => {
-            if (event.id == eventToJoin.id) {
-                return updatedEvent
+            if (event.event.id == eventToJoin.id) {
+                return {
+                    ...event,
+                    members: [
+                        ...event.members,
+                        this.loggedInUser!
+                    ]
+                }
             }
 
             return event
@@ -306,19 +343,21 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                updatedEvent: updatedEvent
+                updatedEvent: foundEvent.event
             }
         }
     }
 
-    async leaveEvent(eventToLeave: Event): APIResponse<GeneralError, { updatedEvent: Event; }> {
+    async leaveEvent(eventToLeave: Event): Promise<APIResponse<GeneralError, { updatedEvent: Event; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        if (!eventToLeave.members.some(member => member.id == this.loggedInUser!.id)) {
+        const foundEvent = this.events.find(it => it.event.id == eventToLeave.id)!
+
+        if (!foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "User not in event"
@@ -326,13 +365,13 @@ export default class MockupAPI extends API {
         }
 
         const updatedEvent = {
-            ...eventToLeave,
-            admins: eventToLeave.admins.filter(admin => admin.id != this.loggedInUser!.id),
-            members: eventToLeave.members.filter(member => member.id != this.loggedInUser!.id),
+            event: eventToLeave,
+            admins: foundEvent.admins.filter(admin => admin.id != this.loggedInUser!.id),
+            members: foundEvent.members.filter(member => member.id != this.loggedInUser!.id),
         }
 
         this.events = this.events.map(event => {
-            if (event.id == eventToLeave.id) {
+            if (event.event.id == eventToLeave.id) {
                 return updatedEvent
             }
 
@@ -343,19 +382,20 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                updatedEvent: updatedEvent
+                updatedEvent: updatedEvent.event
             }
         }
     }
 
-    async getEventMessages(event: Event, dateRange: [Date, Date]): APIResponse<GeneralError, { messages: Message[]; }> {
+    async getEventMessages(event: Event, dateRange: [Date, Date]): Promise<APIResponse<GeneralError, { messages: Message[]; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        if (!event.members.some(member => member.id == this.loggedInUser!.id)) {
+        const foundEvent = this.events.find(it => it.event.id == event.id)!
+        if (!foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "User not in event"
@@ -369,14 +409,15 @@ export default class MockupAPI extends API {
         }
     }
 
-    async sendEventMessage(event: Event, message: Omit<Message, "id" | "date">): APIResponse<GeneralError, {}> {
+    async sendEventMessage(event: Event, message: Omit<Message, "id" | "date">): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        if (!event.members.some(member => member.id == this.loggedInUser!.id)) {
+        const foundEvent = this.events.find(it => it.event.id == event.id)!
+        if (!foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "User not in event"
@@ -389,8 +430,11 @@ export default class MockupAPI extends API {
         })
 
         this.events = this.events.map(ev => {
-            if (ev.id == event.id) {
-                return event
+            if (ev.event.id == event.id) {
+                return {
+                    ...ev,
+                    event
+                }
             }
 
             return ev
@@ -403,27 +447,36 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getWastelands(query: EventsWastelandsQuery): APIResponse<GeneralError, { wastelands: Wasteland[]; }> {
+    async getWastelands(query: WastelandsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { wastelands: Wasteland[]; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
+        const wastelands = this.wastelands.filter(wasteland => {
+            if ((query.phrase != null && query.phrase.length != 0) && !wasteland.description.includes(query.phrase)) {
+                return false
+            }
+
+            if (query.region != null && !isLatLngInRegion(query.region, wasteland.place.coords)) {
+                return false
+            }
+
+            return true
+        }).sort((a, b) => a.creationDate > b.creationDate ? -1 : +1)
+
+        const from = range == null ? 0 : range[0]
+        const to = range == null ? wastelands.length : range[1]
+
         return {
             data: {
-                wastelands: this.wastelands.filter(wasteland => {
-                    if (query.onlyOwn && wasteland.reportedBy.id == this.loggedInUser?.id) {
-                        return false
-                    }
-
-                    return query.phrase == null || wasteland.description.includes(query.phrase)
-                }).sort((a, b) => a.creationDate > b.creationDate ? -1 : +1)
+                wastelands: wastelands.slice(from, to)
             }
         }
     }
 
-    async createWasteland(newWasteland: Omit<Wasteland, "id" | "createdDate" | "afterCleaningData" | "reportedBy">): APIResponse<GeneralError, { createdWasteland: Wasteland; }> {
+    async createWasteland(newWasteland: Omit<Wasteland, "id" | "createdDate" | "afterCleaningData" | "reportedBy">): Promise<APIResponse<GeneralError, { createdWasteland: Wasteland; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -451,7 +504,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: unknown[]): APIResponse<ClearingWastelandError, {}> {
+    async clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: unknown[]): Promise<APIResponse<ClearingWastelandError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: ClearingWastelandError.UserNotAuthorized
@@ -480,21 +533,36 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getDumpsters(query: {}): APIResponse<GeneralError, {dumpsters: Dumpster[]}> {
+    async getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { dumpsters: Dumpster[] }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
+        const dumpsters = this.dumpsters.filter(dumpster => {
+            if ((query.phrase != null && query.phrase.length != 0) && !dumpster.description.includes(query.phrase)) {
+                return false
+            }
+
+            if (query.region != null && !isLatLngInRegion(query.region, dumpster.place.coords)) {
+                return false
+            }
+
+            return true
+        })
+
+        const from = range == null ? 0 : range[0]
+        const to = range == null ? dumpsters.length : range[1]
+
         return {
             data: {
-                dumpsters: this.dumpsters
+                dumpsters: dumpsters.slice(from, to)
             }
         }
     }
 
-    async addDumpster(newDumpster: Omit<Dumpster, "id">): APIResponse<GeneralError, { addedDumpster: Dumpster; }> {
+    async addDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { addedDumpster: Dumpster; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -520,7 +588,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async deleteDumpster(dumpster: Dumpster): APIResponse<GeneralError, {}> {
+    async deleteDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -536,7 +604,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async updateDumpster(dumpster: Dumpster): APIResponse<GeneralError, { updatedDumpster: Dumpster; }> {
+    async updateDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, { updatedDumpster: Dumpster; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -544,7 +612,7 @@ export default class MockupAPI extends API {
         }
 
         this.events = this.events.map(event => {
-            if (event.id == dumpster.id) {
+            if (event.event.id == dumpster.id) {
                 return {
                     ...event,
                     ...dumpster
@@ -563,7 +631,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getLeadership(query: LeadershipQuery): APIResponse<GeneralError, { users: LeadershipRecord[]; ownPosition: number; }> {
+    async getLeadership(query: LeadershipQuery): Promise<APIResponse<GeneralError, { users: LeadershipRecord[]; ownPosition: number; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -592,7 +660,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async registerListener(listener: ChangeListener): APIResponse<GeneralError, {}> {
+    async registerListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -606,7 +674,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async removeListener(listener: ChangeListener): APIResponse<GeneralError, {}> {
+    async removeListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized

@@ -12,14 +12,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import WisbIcon, { IconType } from './WisbIcon';
 import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
-import Event from '../API/data_types/Event';
+import Dumpster from '../API/data_types/Dumpster';
 import { Resources } from '../../res/Resources';
 
 interface Props {
-  item: Event;
+  item: Dumpster;
 }
 
-export default function EventItem({ item }: Props) {
+export default function DumpsterItem({item}: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.6}
@@ -56,25 +56,10 @@ export default function EventItem({ item }: Props) {
                 height: 39,
                 width: 39,
                 borderRadius: 50,
-                backgroundColor: item.iconUrl ? 'black' : 'white',
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-              {
-                item.iconUrl
-                  ? <FastImage
-                    style={{
-                      height: item.iconUrl ? 36 : 26,
-                      width: item.iconUrl ? 36 : 26,
-                      borderRadius: item.iconUrl ? 50 : 0,
-                    }}
-                    resizeMode="cover"
-                    source={{
-                      uri: item.iconUrl,
-                    }}
-                  />
-                  : <WisbIcon size={22} icon={IconType.Earth} />
-              }
+
             </View>
             <Text
               numberOfLines={1}
@@ -84,35 +69,9 @@ export default function EventItem({ item }: Props) {
                 fontWeight: 'bold',
                 fontSize: 16,
               }}>
-              {item.name}
+              {item.description}
             </Text>
           </View>
-
-          <Menu
-            style={{ marginTop: StatusBar.currentHeight }}
-            anchor={
-              <TouchableOpacity
-                style={{ marginRight: -6 }}>
-                <FontAwesomeIcon color={Resources.Colors.White} icon={faMobileRetro} />
-              </TouchableOpacity>
-            }>
-            <MenuItem
-              onPress={() => {
-
-              }}>
-              Uczestnicy
-            </MenuItem>
-            <MenuItem
-              onPress={() => {
-              }}>
-              Udostępnij
-            </MenuItem>
-            <MenuItem
-              onPress={() => {
-              }}>
-              Edytuj
-            </MenuItem>
-          </Menu>
         </View>
 
         <Text

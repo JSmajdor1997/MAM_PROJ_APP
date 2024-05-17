@@ -14,7 +14,7 @@ import Swiper from 'react-native-swiper';
 import { Resources } from '../../res/Resources';
 import ProgressInput from '../components/ProgressInput';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import useShaky from './useShaky';
+import useShaky from '../components/useShaky';
 import IdType from '../utils/IdType';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
