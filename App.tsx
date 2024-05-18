@@ -25,144 +25,147 @@ import EventDialog from './src/dialogs/EventDialog';
 import WastelandDialog from './src/dialogs/WastelandDialog';
 import { Mode } from './src/dialogs/WisbDialog';
 import { PortalProvider } from '@gorhom/portal';
-import { WisbContextProvider } from './src/WisbContext/WisbContext';
-import LocationInput from './src/components/LocationInput';
-import getRandomLatLngInPoland from './src/API/implementations/mockup/getRandomLatLngInPoland';
 import { ClickOutsideProvider } from 'react-native-click-outside';
 import { LatLng } from 'react-native-maps';
+import Dumpster from './src/API/data_types/Dumpster';
+import Event from './src/API/data_types/Event';
+import { isDumpster, isEvent, isWasteland } from './src/API/data_types/type_guards';
+
+enum NavBarIndices {
+  MyEvents = 0,
+  Map = 1,
+  Leadership = 2
+}
 
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
-
-function navigate<ScreenType extends WisbScreens>(name: WisbScreens, params: NavigationParamsList[ScreenType]) {
-  navigationRef.navigate(name, params);
-}
 
 const Stack = createNativeStackNavigator<NavigationParamsList>();
 
 export default function App() {
-  const [navBarIndex, setNavBarIndex] = React.useState(1)
+  const [navBarIndex, setNavBarIndex] = React.useState(NavBarIndices.Map)
   const [isNavigationBarVisible, setIsNavigationBarVisible] = React.useState(true)
 
-  const [location, setLocation] = React.useState<{coords: LatLng, asText: string}>({coords: {latitude: 50.2949017208049, longitude: 18.67531230922992}, asText: "domek"})
+  const [dialogMode, setDialogMode] = React.useState<Mode>(Mode.Viewing)
+  const [selectedItem, setSelectedItem] = React.useState<Wasteland | Dumpster | Event | null>(null)
 
   return (
     <ClickOutsideProvider>
       <PortalProvider>
-        <WisbContextProvider>
-          <View style={styles.root}>
-            <NavigationContainer ref={navigationRef} onStateChange={state => {
-              const currentScreen = state?.routes[state.index].name
+        <View style={styles.root}>
+          <NavigationContainer ref={navigationRef} onStateChange={state => {
+            const currentScreen = state?.routes[state.index].name
 
-              if (currentScreen == null) {
-                return
-              }
+            if (currentScreen == null) {
+              return
+            }
 
-              switch (currentScreen) {
-                case WisbScreens.MapScreen:
-                case WisbScreens.LeaderBoardScreen:
-                case WisbScreens.MyEventsScreen:
-                  setIsNavigationBarVisible(true)
-                  break
+            switch (currentScreen) {
+              case WisbScreens.MapScreen:
+              case WisbScreens.LeaderBoardScreen:
+              case WisbScreens.MyEventsScreen:
+                setIsNavigationBarVisible(true)
+                break
 
-                case WisbScreens.ChatScreen:
-                case WisbScreens.LoginScreen:
-                case WisbScreens.SettingsScreen:
-                case WisbScreens.SplashScreen:
-                case WisbScreens.ChatScreen:
-                  setIsNavigationBarVisible(false)
-                  break;
-              }
-            }}>
-              <Stack.Navigator
-                initialRouteName={WisbScreens.MapScreen}
-                screenOptions={{ headerShown: false, animation: "fade", animationDuration: 100 }}>
-                <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
-                <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
-                <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
-                <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} />
-                <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} />
-                <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
-                <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} />
-              </Stack.Navigator>
-            </NavigationContainer>
+              case WisbScreens.ChatScreen:
+              case WisbScreens.LoginScreen:
+              case WisbScreens.SettingsScreen:
+              case WisbScreens.SplashScreen:
+              case WisbScreens.ChatScreen:
+                setIsNavigationBarVisible(false)
+                break;
+            }
+          }}>
+            <Stack.Navigator
+              initialRouteName={WisbScreens.MapScreen}
+              screenOptions={{ headerShown: false, animation: "fade", animationDuration: 100 }}>
+              <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
+              <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
+              <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
+              <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
+                onItemSelected: setSelectedItem
+              }} />
+              <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} />
+              <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
+              <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
 
-            <NavBar
-              enabled
-              selectedIndex={navBarIndex}
-              visible={isNavigationBarVisible}
-              items={[
-                {
-                  render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
-                  onPress: () => {
-                    navigate(WisbScreens.MyEventsScreen, {})
-                    setNavBarIndex(0)
-                  },
-                  bubbles: [
-                    {
-                      component: <FontAwesomeIcon icon={faQrcode} />,
-                      onPress: () => setState({ isQRDialogVisible: true }),
-                    },
-                  ],
+          <NavBar
+            enabled
+            selectedIndex={navBarIndex}
+            visible={isNavigationBarVisible}
+            items={[
+              {
+                render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
+                onPress: () => {
+                  navigationRef.navigate(WisbScreens.MyEventsScreen, {})
+                  setNavBarIndex(NavBarIndices.MyEvents)
                 },
-                {
-                  render: () => <WisbIcon icon={IconType.Earth} size={30} />,
-                  onPress: () => {
-                    navigate(WisbScreens.MapScreen, {})
-                    setNavBarIndex(1)
+                bubbles: [
+                  {
+                    component: <FontAwesomeIcon icon={faQrcode} />,
+                    onPress: () => setState({ isQRDialogVisible: true }),
                   },
-                  bubbles: [
-                    {
-                      component: (
-                        <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
-                      ),
-                      onPress: () => {
-                        // setIsEventAddingDialogVisible(true)
-                        // setIsWastelandAddingDialogVisible(false)
-                        // setIsDumpsterAddingDialogVisible(false)
-                      },
-                    },
-                    {
-                      component: (
-                        <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
-                      ),
-                      onPress: () => {
-                        // setIsEventAddingDialogVisible(false)
-                        // setIsWastelandAddingDialogVisible(false)
-                        // setIsDumpsterAddingDialogVisible(true)
-                      },
-                    },
-                    {
-                      component: (
-                        <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
-                      ),
-                      onPress: () => {
-                        // setIsEventAddingDialogVisible(false)
-                        // setIsWastelandAddingDialogVisible(true)
-                        // setIsDumpsterAddingDialogVisible(false)
-                      },
-                    },
-                  ],
+                ],
+              },
+              {
+                render: () => <WisbIcon icon={IconType.Earth} size={30} />,
+                onPress: () => {
+                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected: setSelectedItem })
+                  setNavBarIndex(NavBarIndices.Map)
                 },
-                {
-                  render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
-                  onPress: () => {
-                    navigate(WisbScreens.LeaderBoardScreen, {})
-                    setNavBarIndex(2)
+                bubbles: [
+                  {
+                    component: (
+                      <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
+                    ),
+                    onPress: () => {
+                      // setIsEventAddingDialogVisible(true)
+                      // setIsWastelandAddingDialogVisible(false)
+                      // setIsDumpsterAddingDialogVisible(false)
+                    },
                   },
+                  {
+                    component: (
+                      <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
+                    ),
+                    onPress: () => {
+                      // setIsEventAddingDialogVisible(false)
+                      // setIsWastelandAddingDialogVisible(false)
+                      // setIsDumpsterAddingDialogVisible(true)
+                    },
+                  },
+                  {
+                    component: (
+                      <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
+                    ),
+                    onPress: () => {
+                      // setIsEventAddingDialogVisible(false)
+                      // setIsWastelandAddingDialogVisible(true)
+                      // setIsDumpsterAddingDialogVisible(false)
+                    },
+                  },
+                ],
+              },
+              {
+                render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
+                onPress: () => {
+                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected: setSelectedItem })
+                  setNavBarIndex(NavBarIndices.Leadership)
                 },
-              ]} />
+              },
+            ]} />
 
-            <EventDialog visible={false} mode={Mode.Adding} onDismiss={()=>{
-              
-            }} />
-            <WastelandDialog visible={false} mode={Mode.Adding} onDismiss={()=>{
+          <EventDialog visible={selectedItem != null && isEvent(selectedItem)} mode={Mode.Viewing} onDismiss={() => {
 
-            }} />
-            <DumpsterDialog visible={false} mode={Mode.Adding} onDismiss={()=>{
-              
-            }} />
-          </View>
-        </WisbContextProvider>
+          }} />
+          <WastelandDialog visible={selectedItem != null && isWasteland(selectedItem)} mode={Mode.Viewing} onDismiss={() => {
+
+          }} />
+          <DumpsterDialog visible={selectedItem != null && isDumpster(selectedItem)} mode={Mode.Viewing} onDismiss={() => {
+
+          }} />
+        </View>
       </PortalProvider>
     </ClickOutsideProvider>
   );

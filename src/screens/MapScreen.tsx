@@ -53,9 +53,8 @@ const InitialRegion = {
   longitudeDelta: 1,
 }
 
-export default function MapScreen({ }: Props) {
+export default function MapScreen({ route: {params: {onItemSelected}} }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
-  const [selectedItem, setSelectedItem] = React.useState<Wasteland | Dumpster | Event | null>(null)
 
   const mapRef = React.useRef<MapView>(null)
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
@@ -103,15 +102,15 @@ export default function MapScreen({ }: Props) {
   })
 
   const updateMapObjects = (region: Region) => {
-    getAPI().getObjects(query.type, {phrase: query.phrase, region}).then(rsp => {
-        if(rsp.error == null) {
-          setMapObjects(mapObjects => ({
-            ...mapObjects,
-            ...rsp.data
-          }))
-        } else {
-          Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
-        }
+    getAPI().getObjects(query.type, { phrase: query.phrase, region }).then(rsp => {
+      if (rsp.error == null) {
+        setMapObjects(mapObjects => ({
+          ...mapObjects,
+          ...rsp.data
+        }))
+      } else {
+        Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
+      }
     })
   }
 
@@ -198,8 +197,7 @@ export default function MapScreen({ }: Props) {
           {mapObjects[Type.Wasteland].map(wasteland => (
             <Marker
               key={`${Type.Wasteland}${MarkerIdSeparator}${wasteland.id}`}
-              onPress={() => setSelectedItem(wasteland)}
-              tracksViewChanges={false}
+              onPress={() => onItemSelected(wasteland)}
               coordinate={wasteland.place.coords}>
               <WisbIcon size={30} icon={IconType.WastelandIcon} />
             </Marker>
@@ -208,8 +206,7 @@ export default function MapScreen({ }: Props) {
           {mapObjects[Type.Event].map(event => (
             <Marker
               key={`${Type.Event}${MarkerIdSeparator}${event.id}`}
-              onPress={() => setSelectedItem(event)}
-              tracksViewChanges={false}
+              onPress={() => onItemSelected(event)}
               coordinate={event.meetPlace.coords}>
               <WisbIcon size={30} icon={IconType.Calendar} />
             </Marker>
@@ -218,8 +215,7 @@ export default function MapScreen({ }: Props) {
           {mapObjects[Type.Dumpster].map(dumpster => (
             <Marker
               key={`${Type.Dumpster}${MarkerIdSeparator}${dumpster.id}`}
-              onPress={() => setSelectedItem(dumpster)}
-              tracksViewChanges={false}
+              onPress={() => onItemSelected(dumpster)}
               coordinate={dumpster.place.coords}>
               <WisbIcon size={30} icon={IconType.Dumpster} />
             </Marker>
