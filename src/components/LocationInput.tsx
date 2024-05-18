@@ -15,6 +15,7 @@ import formatDistance from "../utils/formatDistance";
 import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng";
 import Separator from "./Separator";
 import reverseGeoCode from "../utils/GooglePlacesAPI/reverseGeoCode";
+import LocationItem from "./LocationItem";
 
 export interface Props {
     style?: ViewStyle
@@ -33,7 +34,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
     const [containerHeight, setContainerHeight] = React.useState(0)
     const [searchBarHeight, setSearchBarHeight] = React.useState(0)
     const [isDropdownVisible, setIsDropdownVisible] = React.useState(false)
-    
+
     const heightAnim = React.useRef(new Animated.Value(0)).current;
     const [phrase, setPhrase] = React.useState<string>("")
     const [places, setPlaces] = React.useState<Place[]>()
@@ -75,7 +76,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
 
     const previousCoords = React.useRef(location.coords)
     React.useEffect(() => {
-        if(previousCoords.current.latitude != location.coords.latitude || previousCoords.current.longitude != location.coords.longitude) {
+        if (previousCoords.current.latitude != location.coords.latitude || previousCoords.current.longitude != location.coords.longitude) {
             mapViewRef.current?.animateToRegion({
                 ...location.coords,
                 latitudeDelta: 0.5,
@@ -120,7 +121,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                 onPress={() => openMapsAndNavigate(location.coords)} />
                         </React.Fragment>
                     ) : (
-                        <View style={{width: '100%', height: "100%", justifyContent: "center", alignItems: "center", overflow: "hidden"}}>
+                        <View style={{ width: '100%', height: "100%", justifyContent: "center", alignItems: "center", overflow: "hidden" }}>
                             <MapView
                                 ref={mapViewRef}
                                 onRegionChangeComplete={newRegion => {
@@ -178,20 +179,17 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                 ItemSeparatorComponent={Separator}
                 keyExtractor={place => place.id}
                 renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={{ padding: 8, alignItems: "flex-end", justifyContent: "space-between" }}
+                    <LocationItem
                         onPress={() => {
                             setPhrase("")
                             onLocationChanged?.(item.location, item.formattedAddress)
                             setIsDropdownVisible(false)
-                        }}>
-                        <View style={{ flexDirection: "row", padding: 8, alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                            <WisbIcon icon={IconType.MapPin} size={15} />
-                            <Text style={{ color: "blue", fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>{item.formattedAddress}</Text>
-                        </View>
-
-                        <Text style={{ color: "black", textAlign: "center", fontSize: 10 }}>ok. {formatDistance(calcApproxDistanceBetweenLatLngInMeters(item.location, userLocation))} od ciebie</Text>
-                    </TouchableOpacity>
+                        }}
+                        userLocation={userLocation}
+                        location={{
+                            asText: item.formattedAddress,
+                            coords: location.coords
+                        }} />
                 )} />
         </View>
     )

@@ -22,9 +22,10 @@ interface Props {
     query: Query
     onQueryChanged: (newQuery: Query) => void
     isFocused: boolean
+    onClear: ()=>void
 }
 
-export default function MapQueryInput({ style, onPress, query, onQueryChanged, isFocused }: Props) {
+export default function MapQueryInput({ style, onPress, query, onQueryChanged, isFocused, onClear }: Props) {
     const heightAnim = React.useRef(new Animated.Value(0)).current;
 
     React.useEffect(() => {
@@ -61,7 +62,10 @@ export default function MapQueryInput({ style, onPress, query, onQueryChanged, i
                 onPress={onPress}
                 phrase={query.phrase}
                 onPhraseChanged={newPhrase => onQueryChanged({ ...query, phrase: newPhrase })}
-                onClear={() => onQueryChanged({ type: [Type.Dumpster, Type.Event, Type.Dumpster], phrase: "" })} />
+                onClear={() => {
+                    onQueryChanged({ type: [Type.Dumpster, Type.Event, Type.Dumpster], phrase: "" })
+                    onClear()
+                }} />
 
             <Animated.View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%", height: heightAnim, overflow: "hidden", alignItems: "center", maxWidth: "100%" }}>
                 <TouchableOpacity

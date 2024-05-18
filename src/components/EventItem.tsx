@@ -17,12 +17,14 @@ import { Resources } from '../../res/Resources';
 
 interface Props {
   item: Event;
+  onPress: (item: Event) => void
 }
 
-export default function EventItem({ item }: Props) {
+export default function EventItem({ item, onPress }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.6}
+      onPress={() => onPress(item)}
       style={{
         flex: 1,
         backgroundColor: Resources.Colors.Primary,

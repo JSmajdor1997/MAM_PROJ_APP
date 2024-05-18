@@ -9,13 +9,15 @@ import { Resources } from '../../res/Resources';
 
 interface Props {
   item: Wasteland;
+  onPress: (item: Wasteland) => void
 }
 
-export default function WastelandItem({ item }: Props) {
+export default function WastelandItem({ item, onPress }: Props) {
   const [isExpanded, setIsExpanded] = React.useState(false)
 
   return (
     <TouchableOpacity
+      onPress={() => onPress(item)}
       style={{
         padding: 8,
         flexDirection: 'row',

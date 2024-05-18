@@ -18,15 +18,17 @@ export interface PlacesResponse {
     status: "OK" | string;
 }
 
-export default async function searchPlaces(apiKey: string, query: string, languageCode: string, currentLocation: LatLng): Promise<Place[]> {
+export default async function searchPlaces(apiKey: string, query: string, languageCode: string, {latitude, longitude}: LatLng, nrOfResults: number = 30): Promise<Place[]> {
     return fetch("https://places.googleapis.com/v1/places:searchText", {
         method: "POST",
-        body: JSON.stringify({ textQuery: query, languageCode, pageSize: 30, locationBias: {
-            "circle": {
-                "center": currentLocation,
-                "radius": 5000.0
-              }
-        } }),
+        body: JSON.stringify({
+            textQuery: query, languageCode, pageSize: nrOfResults, locationBias: {
+                "circle": {
+                    "center": {latitude, longitude},
+                    "radius": 5000.0
+                }
+            }
+        }),
         headers: {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": apiKey,

@@ -30,10 +30,11 @@ import doesRegionInclude from '../utils/doesRegionInclude';
 import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
 import { MapObjects, Query, Type } from '../API/helpers';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faArrowUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faArrowUp, faChevronDown, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import MapQueryInput from '../components/MapQueryInput';
 import isLatLngInRegion from '../utils/isLatLngInRegion';
 import { Resources } from '../../res/Resources';
+import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -53,16 +54,18 @@ const InitialRegion = {
   longitudeDelta: 1,
 }
 
-export default function MapScreen({ route: {params: {onItemSelected}} }: Props) {
+export default function MapScreen({ route: { params: { onItemSelected } } }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
 
   const mapRef = React.useRef<MapView>(null)
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
 
-  const [userPosition, setUserPosition] = React.useState<LatLng | null>(null)
+  const [userPosition, setUserPosition] = React.useState<LatLng>(getRandomLatLngInPoland())
 
   const [query, setQuery] = React.useState<Query>({ phrase: "", type: [Type.Dumpster, Type.Event, Type.Wasteland] })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
+
+  const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
 
 
   const getTrackingIconPosition = (region: Region) => {
@@ -129,23 +132,11 @@ export default function MapScreen({ route: {params: {onItemSelected}} }: Props) 
         region: region
       }));
 
-      (mapRef.current as any)?.animateToRegion(region, 100)
+      mapRef.current?.animateToRegion(region, 100)
 
       updateMapObjects(region)
     })
   }, [])
-
-  const renderUser = () => {
-    return userPosition == null ?
-      null :
-      <Marker
-        id={UserMarkerId}
-        title="Tu jesteś!"
-        coordinate={userPosition}>
-        <WisbIcon size={25}
-          icon={IconType.MapPin} />
-      </Marker>
-  }
 
   return (
     <View
@@ -192,7 +183,25 @@ export default function MapScreen({ route: {params: {onItemSelected}} }: Props) 
         style={{ height: '100%', width: '100%' }}
         customMapStyle={map_style}>
         <Fragment>
-          {renderUser()}
+          {userPosition == null ?
+            null :
+            <Marker
+              id={UserMarkerId}
+              title="Tu jesteś!"
+              coordinate={userPosition}>
+              <WisbIcon size={25}
+                icon={IconType.MapPin} />
+            </Marker>}
+
+          {searchedPlace == null ? null : (
+            <Marker
+              key={`searched-place`}
+              style={{alignItems: "center"}}
+              coordinate={searchedPlace.location}>
+                <Text style={{marginBottom: 5, backgroundColor: Resources.Colors.Primary, color: Resources.Colors.White, padding: 5, borderRadius: 5, overflow: "hidden", borderColor: Resources.Colors.White, borderWidth: 2, fontWeight: "500", letterSpacing: 1, maxWidth: 200}}>{searchedPlace.formattedAddress}</Text>
+              <FontAwesomeIcon icon={faMapPin} size={30} />
+            </Marker>
+          )}
 
           {mapObjects[Type.Wasteland].map(wasteland => (
             <Marker
@@ -275,6 +284,20 @@ export default function MapScreen({ route: {params: {onItemSelected}} }: Props) 
           marginTop: (StatusBar.currentHeight ?? 20) + 5,
         }}>
         <MapQueryInput
+          onClear={() => {
+            if (userPosition == null) {
+              return
+            }
+
+            const deltas = metersToLatLngDelta(2000, userPosition.latitude)
+            const region: Region = {
+              ...userPosition,
+              latitudeDelta: deltas.latitudeDelta,
+              longitudeDelta: deltas.longitudeDelta,
+            }
+
+            mapRef.current?.animateToRegion(region, 100)
+          }}
           query={query}
           isFocused={isSearchDialogVisible}
           onQueryChanged={newQuery => setQuery(newQuery)}
@@ -283,10 +306,24 @@ export default function MapScreen({ route: {params: {onItemSelected}} }: Props) 
       </View>
 
       <ListDialog
+        googleMapsApiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
+        onPlaceSelected={selectedPlace => {
+          setIsSearchDialogVisible(false)
+          setSearchedPlace(selectedPlace)
+          mapRef.current?.animateToRegion({
+            ...selectedPlace.location,
+            latitudeDelta: 0.1,
+            longitudeDelta: 0.1,
+          })
+        }}
+        userLocation={userPosition}
         query={query}
         visible={isSearchDialogVisible}
         onDismiss={() => setIsSearchDialogVisible(false)}
-        onItemSelected={item => { }} />
+        onItemSelected={item => {
+          setIsSearchDialogVisible(false)
+          onItemSelected(item)
+        }} />
     </View>
   );
 }

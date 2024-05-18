@@ -17,11 +17,13 @@ import { Resources } from '../../res/Resources';
 
 interface Props {
   item: Dumpster;
+  onPress: (item: Dumpster) => void
 }
 
-export default function DumpsterItem({item}: Props) {
+export default function DumpsterItem({ item, onPress }: Props) {
   return (
     <TouchableOpacity
+      onPress={()=>onPress(item)}
       activeOpacity={0.6}
       style={{
         flex: 1,
