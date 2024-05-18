@@ -5,9 +5,11 @@ import {
   StatusBar,
   ViewStyle,
   ToastAndroid,
+  TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import MapView, { Marker, Region, LatLng } from 'react-native-maps';
-import SearchBar from '../components/SearchBar';
+import SearchBar from '../components/MapQueryInput';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
@@ -27,7 +29,15 @@ import { GeneralError } from '../API/API';
 import doesRegionInclude from '../utils/doesRegionInclude';
 import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
 import { MapObjects, Query, Type } from '../API/helpers';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faArrowUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import MapQueryInput from '../components/MapQueryInput';
+import isLatLngInRegion from '../utils/isLatLngInRegion';
+import { Resources } from '../../res/Resources';
 const map_style = require('../../res/map_style.json');
+
+const TrackingIconRadius = 150
+const TrackingIconSize = 35
 
 const MarkerIdSeparator = '-'
 
@@ -44,6 +54,7 @@ const InitialRegion = {
 }
 
 export default function MapScreen({ }: Props) {
+  const trackingIconRef = React.useRef<TouchableOpacity>(null)
   const [selectedItem, setSelectedItem] = React.useState<Wasteland | Dumpster | Event | null>(null)
 
   const mapRef = React.useRef<MapView>(null)
@@ -54,7 +65,37 @@ export default function MapScreen({ }: Props) {
   const [query, setQuery] = React.useState<Query>({ phrase: "", type: [Type.Dumpster, Type.Event, Type.Wasteland] })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
 
-  const [mapObjects, setMapObjects] = React.useState<MapObjects&{region: Region}>({
+
+  const getTrackingIconPosition = (region: Region) => {
+    if (userPosition != null && !isLatLngInRegion(region, userPosition)) {
+      const visibleMapCenter = {
+        latitude: region.latitude,
+        longitude: region.longitude
+      };
+
+      const correctedUserMarkerPosition = {
+        latitude: userPosition.latitude - visibleMapCenter.latitude,
+        longitude: userPosition.longitude - visibleMapCenter.longitude
+      };
+
+      let userMarkerAngle = Math.atan2(
+        correctedUserMarkerPosition.latitude,
+        correctedUserMarkerPosition.longitude
+      );
+
+      if (userMarkerAngle < 0) {
+        userMarkerAngle += 2 * Math.PI;
+      }
+
+      return {
+        angle: userMarkerAngle
+      }
+    }
+
+    return null
+  }
+
+  const [mapObjects, setMapObjects] = React.useState<MapObjects & { region: Region }>({
     [Type.Dumpster]: [],
     [Type.Event]: [],
     [Type.Wasteland]: [],
@@ -131,13 +172,32 @@ export default function MapScreen({ }: Props) {
       }}>
       <MapView
         ref={mapRef}
-        region={displayedRegion}
-        onRegionChangeComplete={region => {
-          if (!doesRegionInclude(mapObjects.region, region) && calcRegionAreaInMeters(region) < 100000) {
-            updateMapObjects(scaleRegion(region, 1.5))
+        onRegionChangeComplete={newRegion => {
+          if (!doesRegionInclude(mapObjects.region, newRegion) && calcRegionAreaInMeters(newRegion) < 100000) {
+            updateMapObjects(scaleRegion(newRegion, 1.5))
           }
 
-          setDisplayedRegion(region => region)
+          setDisplayedRegion(region => newRegion)
+        }}
+        onRegionChange={newRegion => {
+          const trackingIconPosition = getTrackingIconPosition(newRegion)
+
+          if (trackingIconPosition == null) {
+            trackingIconRef.current?.setNativeProps({
+              style: {
+                display: "none"
+              }
+            })
+          } else {
+            trackingIconRef.current?.setNativeProps({
+              style: {
+                display: "flex",
+                transform: [
+                  { rotate: `${-trackingIconPosition.angle}rad` },
+                ]
+              }
+            })
+          }
         }}
         showsScale={false}
         showsIndoors={false}
@@ -184,6 +244,38 @@ export default function MapScreen({ }: Props) {
         </Fragment>
       </MapView>
 
+      <View style={{ width: "100%", height: "100%", position: "absolute", justifyContent: "center", alignItems: "center", pointerEvents: "box-none" }}>
+        <View ref={trackingIconRef} style={{
+          position: "absolute",
+          justifyContent: "center", alignItems: "center", pointerEvents: "box-none", width: TrackingIconRadius * 2, height: TrackingIconRadius * 2, borderRadius: TrackingIconRadius
+        }}>
+          <TouchableOpacity
+            onPress={() => {
+              if (userPosition != null) {
+                mapRef.current?.animateToRegion({ ...userPosition, latitudeDelta: 0.1, longitudeDelta: 0.1 })
+              }
+            }}
+            style={{
+              position: "absolute",
+              backgroundColor: "white",
+              borderRadius: 100,
+              justifyContent: "center",
+              alignItems: "center",
+              height: TrackingIconSize,
+              width: TrackingIconSize,
+              transform: [
+                { translateX: TrackingIconRadius }
+              ],
+              shadowColor: "black",
+              shadowOpacity: 0.2,
+              shadowOffset: { width: 0, height: 0 },
+              shadowRadius: 10
+            }}>
+            <FontAwesomeIcon icon={faArrowUp} color={Resources.Colors.Primary} style={{ transform: [{ rotate: "90deg" }] }} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <View
         style={{
           shadowColor: '#000',
@@ -203,7 +295,7 @@ export default function MapScreen({ }: Props) {
           position: 'absolute',
           marginTop: (StatusBar.currentHeight ?? 20) + 5,
         }}>
-        <SearchBar
+        <MapQueryInput
           query={query}
           isFocused={isSearchDialogVisible}
           onQueryChanged={newQuery => setQuery(newQuery)}

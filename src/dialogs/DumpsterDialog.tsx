@@ -7,7 +7,7 @@ import MapView from "react-native-maps";
 import QRCode from "react-native-qrcode-svg";
 import ShareButton, { ShareDestination } from "../components/ShareButton";
 import { Resources } from "../../res/Resources";
-import StaticMap from "../components/StaticMap";
+import LocationInput from "../components/LocationInput";
 
 enum Sections {
     BasicInfo,
@@ -33,15 +33,15 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible 
             moreActions={[
                 {
                     label: "Usuń",
-                    icon: <FontAwesomeIcon icon={faTrash}/>,
+                    icon: <FontAwesomeIcon icon={faTrash} />,
                     color: "#c74926",
-                    onPress: ()=>{}
+                    onPress: () => { }
                 },
                 {
                     label: "Edytuj",
-                    icon: <FontAwesomeIcon icon={faEdit}/>,
+                    icon: <FontAwesomeIcon icon={faEdit} />,
                     color: "#FFFFFF",
-                    onPress: ()=>{}
+                    onPress: () => { }
                 }
             ]}
             sections={{
@@ -65,14 +65,17 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible 
                 [Sections.Location]: {
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: "#8ae364", name: "Lokalizacja", renderPage: (props) => (
                         <View style={{ flex: 1, padding: 15 }}>
-                            <StaticMap
+                            <LocationInput
+                                readonly
                                 style={{ flex: 1 }}
                                 apiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
-                                latLng={{
-                                    latitude: 51.246452,
-                                    longitude: 22.568445
-                                }}
-                                locationName={"Jakaś lokalizacja"} />
+                                location={{
+                                    coords: {
+                                        latitude: 51.246452,
+                                        longitude: 22.568445
+                                    },
+                                    asText: "Jakaś lokalizacja"
+                                }} />
                         </View>
                     )
                 }

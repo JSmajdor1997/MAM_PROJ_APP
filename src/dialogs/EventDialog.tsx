@@ -3,11 +3,10 @@ import { IconType } from "../components/WisbIcon";
 import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { Text, TextInput, View } from "react-native";
-import MapView from "react-native-maps";
 import QRCode from "react-native-qrcode-svg";
 import ShareButton, { ShareDestination } from "../components/ShareButton";
-import StaticMap from "../components/StaticMap";
 import { Resources } from "../../res/Resources";
+import LocationInput from "../components/LocationInput";
 
 enum Sections {
     BasicInfo,
@@ -98,14 +97,17 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible }: 
                 [Sections.MeetPlace]: {
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: "#8ae364", name: "Miejsce spotkania", renderPage: () => (
                         <View style={{ flex: 1, padding: 15 }}>
-                            <StaticMap
+                            <LocationInput
+                                readonly
                                 style={{ flex: 1 }}
                                 apiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
-                                latLng={{
-                                    latitude: 51.246452,
-                                    longitude: 22.568445
-                                }}
-                                locationName={"Jakaś lokalizacja"} />
+                                location={{
+                                    coords: {
+                                        latitude: 51.246452,
+                                        longitude: 22.568445
+                                    },
+                                    asText: "Jakaś lokalizacja"
+                                }} />
                         </View>
                     )
                 },

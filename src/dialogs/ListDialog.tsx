@@ -7,7 +7,6 @@ import {
   FlatList,
   Dimensions,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import EventItem from '../components/EventItem';
 import WastelandItem from '../components/WastelandItem';
 import { Resources } from '../../res/Resources';
@@ -25,6 +24,7 @@ import getAPI from '../API/getAPI';
 import Toast from 'react-native-simple-toast';
 import { isDumpster, isEvent, isWasteland } from '../API/data_types/type_guards';
 import DumpsterItem from '../components/DumpsterItem';
+import Separator from '../components/Separator';
 
 export interface Props {
   visible: boolean;
@@ -121,7 +121,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query }
       visible={visible}
       backdropStyle={{ backgroundColor: undefined }}
       position={Position.Bottom}
-      dialogStyle={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 120, bottom: 0, height: Dimensions.get("screen").height - 100, backgroundColor: "white", justifyContent: "space-between", width: "100%", flexDirection: "column" }}
+      dialogStyle={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: "white", justifyContent: "space-between", width: "100%", flexDirection: "column" }}
       dismissOnBackdropPress={false}>
       <FlatList
         onEndReachedThreshold={0.5}
@@ -137,12 +137,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query }
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => (
-          <LinearGradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            colors={['#ffffff', '#bcbaba', '#ffffff']}
-            style={styles.sectionsSeparator}
-          />
+          <Separator/>
         )}
         data={[
           ...mapObjects[Type.Dumpster],

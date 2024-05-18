@@ -7,7 +7,7 @@ import MapView from "react-native-maps";
 import { Resources } from "../../res/Resources";
 import FAB from "../components/FAB";
 import ImagesGallery from "../components/ImagesGallery";
-import StaticMap from "../components/StaticMap";
+import LocationInput from "../components/LocationInput";
 
 enum Sections {
     BasicInfo,
@@ -70,14 +70,17 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: "#fcfa6a", name: "Podstawowe informacje", renderPage: () => (
                         <View style={{ flex: 1, margin: 5 }}>
                             <View style={{ flex: 1, padding: 10 }}>
-                                <StaticMap
+                                <LocationInput
+                                    readonly
                                     style={{ flex: 1 }}
                                     apiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
-                                    latLng={{
-                                        latitude: 51.246452,
-                                        longitude: 22.568445
-                                    }}
-                                    locationName={"Jakaś lokalizacja"} />
+                                    location={{
+                                        coords: {
+                                            latitude: 51.246452,
+                                            longitude: 22.568445
+                                        },
+                                        asText: "Jakaś lokalizacja"
+                                    }} />
                             </View>
 
                             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10 }}>

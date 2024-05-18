@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Wasteland from '../API/data_types/Wasteland';
+import { Resources } from '../../res/Resources';
 
 interface Props {
   item: Wasteland;
@@ -63,7 +64,7 @@ export default function WastelandItem({ item }: Props) {
               alignSelf: 'flex-end',
               fontSize: 12,
             }}>
-            {item.creationDate.toLocaleDateString("pl-PL", { year: "numeric", month: "short", day: "numeric" })}
+            {item.creationDate.toLocaleDateString(Resources.Locale.LanguageCode, { year: "numeric", month: "short", day: "numeric" })}
           </Text>
         </View>
       </View>

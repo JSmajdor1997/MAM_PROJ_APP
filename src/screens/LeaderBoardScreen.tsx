@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Spinner from 'react-native-spinkit';
-import LinearGradient from 'react-native-linear-gradient';
 import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
@@ -17,6 +16,7 @@ import WisbScreens from './WisbScreens';
 import { faAt, faCrown, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
 import Avatar from '../components/Avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Separator from '../components/Separator';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -181,12 +181,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
           alignItems: state.data.length == 0 ? 'center' : undefined,
         }}
         ItemSeparatorComponent={() => (
-          <LinearGradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            colors={['#ffffff', '#bcbaba', '#ffffff']}
-            style={{ width: '100%', height: StyleSheet.hairlineWidth }}
-          />
+          <Separator/>
         )}
         ListEmptyComponent={() => (
           <Spinner

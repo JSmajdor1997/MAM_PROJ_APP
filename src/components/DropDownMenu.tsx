@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { Menu, MenuItem } from 'react-native-material-menu';
 import Ripple from 'react-native-material-ripple';
-import LinearGradient from 'react-native-linear-gradient';
 import ComponentDisabler from './ComponentDisabler';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircle, faDotCircle } from '@fortawesome/free-regular-svg-icons';
 import { faExpand } from '@fortawesome/free-solid-svg-icons';
+import Separator from './Separator';
 
 interface Props {
   data: Array<{ label: string; isActive?: boolean }>;
@@ -87,12 +87,7 @@ export default class DropDownMenu extends React.PureComponent<Props, State> {
             )
           ) : null}
         </TouchableOpacity>
-        <LinearGradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          colors={['#ffffff', '#e3e3e3', '#ffffff']}
-          style={{ width: '100%', height: StyleSheet.hairlineWidth }}
-        />
+        <Separator/>
       </Fragment>
     ));
   }
