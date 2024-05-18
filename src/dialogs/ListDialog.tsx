@@ -47,61 +47,29 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query }
   })
 
   const updateMapObjects = () => {
-    if(isLoading || !hasMore) {
+    if (isLoading || !hasMore) {
       return
     }
 
     setIsLoading(true)
 
-    function handleUpdate<T>(type: Type, getter: (wrapper: any) => T[]): (rsp: APIResponse<GeneralError, T>) => void {
-      return (rsp: APIResponse<GeneralError, T>) => {
-        if (rsp.error) {
-          Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
-        } else {
-          const items = getter(rsp.data)
-
-          if (items.length == 0) {
-            const index = hasMore.indexOf(type)
-
-            if (index != -1) {
-              items.splice(index, 1)
-
-              setHasMore(hasMore)
-            }
-          } else {
-            const index = hasMore.indexOf(type)
-
-            if (index == -1) {
-              setHasMore([
-                ...hasMore,
-                type
-              ])
-            }
-          }
-
-          setMapObjects(mapObjects => ({
-            ...mapObjects,
-            [type]: items
-          }))
-        }
-      }
-    }
-
-    const api = getAPI()
-    const commonQuery = { phrase: query.phrase }
-    const promises: Promise<unknown>[] = []
-    if (query.type.includes(Type.Dumpster)) {
-      api.getDumpsters(commonQuery, [index, index + PageSize]).then(handleUpdate(Type.Dumpster, wrapper => wrapper.dumpsters))
-    }
-    if (query.type.includes(Type.Event)) {
-      api.getEvents(commonQuery, [index, index + PageSize]).then(handleUpdate(Type.Event, wrapper => wrapper.events))
-    }
-    if (query.type.includes(Type.Wasteland)) {
-      api.getWastelands(commonQuery, [index, index + PageSize]).then(handleUpdate(Type.Wasteland, wrapper => wrapper.wastelands))
-    }
-
-    Promise.allSettled(promises).then(result => {
+    getAPI().getObjects(query.type, { phrase: query.phrase }).then(rsp => {
       setIsLoading(false)
+      
+      if (rsp.error == null) {
+        setHasMore([
+          ...(mapObjects[Type.Dumpster].length > 0 ? [] : [Type.Dumpster]),
+          ...(mapObjects[Type.Event].length > 0 ? [] : [Type.Event]),
+          ...(mapObjects[Type.Wasteland].length > 0 ? [] : [Type.Wasteland])
+        ])
+
+        setMapObjects(mapObjects => ({
+          ...mapObjects,
+          ...rsp.data
+        }))
+      } else {
+        Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
+      }
     })
   }
 
@@ -137,7 +105,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query }
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => (
-          <Separator/>
+          <Separator />
         )}
         data={[
           ...mapObjects[Type.Dumpster],
@@ -154,41 +122,3 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query }
     </Dialog>
   );
 }
-
-const styles = StyleSheet.create({
-  topContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 0,
-    paddingVertical: 8,
-  },
-  dialog: {},
-  buttonsContainer: {
-    flexDirection: 'row',
-  },
-  button: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  leftButton: {
-    borderBottomStartRadius: 5,
-  },
-  rightButton: {
-    borderBottomEndRadius: 5,
-  },
-  label: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  sectionsSeparator: {
-    width: '100%',
-    height: StyleSheet.hairlineWidth * 2,
-  },
-  buttonsSeparator: {
-    height: '100%',
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: '#bcbaba',
-  },
-});

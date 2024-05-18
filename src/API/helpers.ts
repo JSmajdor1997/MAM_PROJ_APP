@@ -1,4 +1,3 @@
-import { Region } from "react-native-maps"
 import Dumpster from "./data_types/Dumpster"
 import Wasteland from "./data_types/Wasteland"
 import Event from "./data_types/Event"

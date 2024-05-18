@@ -103,33 +103,16 @@ export default function MapScreen({ }: Props) {
   })
 
   const updateMapObjects = (region: Region) => {
-    function handleUpdate<T>(type: Type, getter: (wrapper: any) => T[]): (rsp: APIResponse<GeneralError, T>) => void {
-      return (rsp: APIResponse<GeneralError, T>) => {
-        if (rsp.error) {
-          Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
-        } else {
+    getAPI().getObjects(query.type, {phrase: query.phrase, region}).then(rsp => {
+        if(rsp.error == null) {
           setMapObjects(mapObjects => ({
             ...mapObjects,
-            [type]: getter(rsp.data)
+            ...rsp.data
           }))
+        } else {
+          Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
         }
-      }
-    }
-
-    const api = getAPI()
-    const commonQuery = { phrase: query.phrase, region: region }
-    const promises: Promise<unknown>[] = []
-    if (query.type.includes(Type.Dumpster)) {
-      api.getDumpsters(commonQuery).then(handleUpdate(Type.Dumpster, wrapper => wrapper.dumpsters))
-    }
-    if (query.type.includes(Type.Event)) {
-      api.getEvents(commonQuery).then(handleUpdate(Type.Event, wrapper => wrapper.events))
-    }
-    if (query.type.includes(Type.Wasteland)) {
-      api.getWastelands(commonQuery).then(handleUpdate(Type.Wasteland, wrapper => wrapper.wastelands))
-    }
-
-    Promise.allSettled(promises)
+    })
   }
 
   React.useEffect(() => {

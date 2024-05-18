@@ -165,7 +165,7 @@ export default class MockupAPI extends API {
         throw new Error("Method not implemented.");
     }
 
-    async getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { events: Event[]; }>> {
+    async getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Event[]; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -193,7 +193,7 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                events: events
+                items: events.slice(from, to)
             }
         }
     }
@@ -221,7 +221,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async createEvent(newEvent: Omit<Event, "id" | "isFinished" | "messages">): Promise<APIResponse<GeneralError, { createdEvent: Event }>> {
+    async createEvent(newEvent: Omit<Event, "id" | "isFinished" | "messages">): Promise<APIResponse<GeneralError, { createdItem: Event }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -247,7 +247,7 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                createdEvent
+                createdItem: createdEvent
             }
         }
     }
@@ -275,7 +275,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async updateEvent(eventToUpdate: Event): Promise<APIResponse<GeneralError, { updatedEvent: Event; }>> {
+    async updateEvent(eventToUpdate: Event): Promise<APIResponse<GeneralError, { updatedItem: Event; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -304,12 +304,12 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                updatedEvent: eventToUpdate
+                updatedItem: eventToUpdate
             }
         }
     }
 
-    async joinEvent(eventToJoin: Event): Promise<APIResponse<GeneralError, { updatedEvent: Event; }>> {
+    async joinEvent(eventToJoin: Event): Promise<APIResponse<GeneralError, { updatedItem: Event; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -343,12 +343,12 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                updatedEvent: foundEvent.event
+                updatedItem: foundEvent.event
             }
         }
     }
 
-    async leaveEvent(eventToLeave: Event): Promise<APIResponse<GeneralError, { updatedEvent: Event; }>> {
+    async leaveEvent(eventToLeave: Event): Promise<APIResponse<GeneralError, { updatedItem: Event; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -382,7 +382,7 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                updatedEvent: updatedEvent.event
+                updatedItem: updatedEvent.event
             }
         }
     }
@@ -447,7 +447,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getWastelands(query: WastelandsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { wastelands: Wasteland[]; }>> {
+    async getWastelands(query: WastelandsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Wasteland[]; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -471,12 +471,12 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                wastelands: wastelands.slice(from, to)
+                items: wastelands.slice(from, to)
             }
         }
     }
 
-    async createWasteland(newWasteland: Omit<Wasteland, "id" | "createdDate" | "afterCleaningData" | "reportedBy">): Promise<APIResponse<GeneralError, { createdWasteland: Wasteland; }>> {
+    async createWasteland(newWasteland: Omit<Wasteland, "id" | "createdDate" | "afterCleaningData" | "reportedBy">): Promise<APIResponse<GeneralError, { createdItem: Wasteland; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -499,7 +499,7 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                createdWasteland
+                createdItem: createdWasteland
             }
         }
     }
@@ -533,7 +533,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { dumpsters: Dumpster[] }>> {
+    async getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Dumpster[] }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -557,12 +557,12 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                dumpsters: dumpsters.slice(from, to)
+                items: dumpsters.slice(from, to)
             }
         }
     }
 
-    async addDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { addedDumpster: Dumpster; }>> {
+    async createDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { createdItem: Dumpster; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -583,7 +583,7 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                addedDumpster
+                createdItem: addedDumpster
             }
         }
     }
@@ -604,7 +604,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async updateDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, { updatedDumpster: Dumpster; }>> {
+    async updateDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, { updatedItem: Dumpster; }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -626,7 +626,7 @@ export default class MockupAPI extends API {
 
         return {
             data: {
-                updatedDumpster: dumpster
+                updatedItem: dumpster
             }
         }
     }
