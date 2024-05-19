@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import Ripple from 'react-native-material-ripple';
+import { Resources } from '../../../res/Resources';
+import BubbleItem from './BubbleItem';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface Bubble {
   component: ReactElement;
@@ -49,7 +49,7 @@ interface State {
 }
 
 export default function NavBar({ style, visible, items, selectedIndex, enabled }: Props) {
-  const circleRef = React.useRef<any>(null)
+  const circleRef = React.useRef<Circle>(null)
 
   const [state, setState] = React.useState<State>({
     circleRadius: new Animated.Value(546),
@@ -81,13 +81,13 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
         circleRef.current.setNativeProps({ cx: circleRadius.value.toString() });
     });
 
-    state.pathD.addListener((a: any) => {
+    state.pathD.addListener(a => {
       setState(state => ({
         ...state,
         pathX: a.value.toString(),
-        pathY: (318 + parseInt(a.value)).toString(),
-        pathA: (330 + parseInt(a.value)).toString(),
-        pathB: (350 + parseInt(a.value)).toString(),
+        pathY: (318 + parseInt(a.value.toString())).toString(),
+        pathA: (330 + parseInt(a.value.toString())).toString(),
+        pathB: (350 + parseInt(a.value.toString())).toString(),
       }));
     });
 
@@ -169,7 +169,7 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
 
     if (bubbles != undefined) {
       return bubbles.map((bubble, index) => {
-        let style: any;
+        let style: ViewStyle = {};
 
         if (bubbles.length == 2) {
           if (index == 0) {
@@ -270,7 +270,7 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
           </View>
           <Svg
             style={{
-              shadowColor: '#000',
+              shadowColor: Resources.Colors.Black,
               shadowOffset: {
                 width: 0,
                 height: 11,
@@ -282,12 +282,12 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
             width="100%"
             height="100"
             viewBox="0 0 1092 260">
-            <AnimatedPath fill="#f0f0f0" stroke="#f0f0f0" d={d} />
+            <AnimatedPath fill={Resources.Colors.LightBeige} stroke={Resources.Colors.LightBeige} d={d} />
             {enabled && (
               <AnimatedCircle
-                ref={(ref: any) => (circleRef.current = ref)}
-                fill="#f0f0f0"
-                stroke="#f0f0f0"
+                ref={circleRef}
+                fill={Resources.Colors.LightBeige}
+                stroke={Resources.Colors.LightBeige}
                 cx="546"
                 cy="100"
                 r="100"
@@ -309,8 +309,9 @@ const styles = StyleSheet.create({
     bottom: 5,
     alignSelf: 'center',
     position: 'absolute',
+    zIndex: Resources.zIndices.NavBarContainer,
 
-    shadowColor: '#000',
+    shadowColor: Resources.Colors.Black,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -339,39 +340,3 @@ const styles = StyleSheet.create({
     bottom: 18,
   },
 });
-
-
-function BubbleItem({ style, onPress, component, bubbleAnim }: { onPress: () => void, style: ViewStyle, component: React.ReactNode, bubbleAnim: Animated.Value }) {
-  return (
-    <AnimatedTouchable
-      onPress={onPress}
-      style={{
-        bottom: bubbleAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 90],
-        }),
-        ...style,
-
-        backgroundColor: 'white',
-        width: 40,
-        aspectRatio: 1,
-        borderRadius: 50,
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 10,
-        },
-        shadowOpacity: 0.51,
-        shadowRadius: 13.16,
-        elevation: 8,
-        zIndex: 0,
-      }}>
-      {component}
-    </AnimatedTouchable>
-  );
-}

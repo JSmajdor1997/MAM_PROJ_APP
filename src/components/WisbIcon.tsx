@@ -11,6 +11,8 @@ import {
     contrast,
     saturate
 } from 'react-native-color-matrix-image-filters'
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import { faAdd, faClose } from "@fortawesome/free-solid-svg-icons";
 
 export enum IconType {
     Chevron = require('../../res/images/chevron.png'),
@@ -39,7 +41,7 @@ export interface Props {
 
 export default function WisbIcon({ style, size, icon, modificator, greyOut }: Props) {
     return (
-        <View style={{ justifyContent: "center", alignItems: "center", ...(style as any) }}>
+        <View style={{ justifyContent: "center", alignItems: "center", ...style }}>
             {greyOut ? (
                 <Grayscale amount={greyOut ? 1 : 0}>
                     <FastImage
@@ -54,31 +56,19 @@ export default function WisbIcon({ style, size, icon, modificator, greyOut }: Pr
                     source={icon} />
             )}
 
-            {modificator == ModificatorType.Add ? <AddIcon size={size / 4} /> :
-                modificator == ModificatorType.Delete ? <DeleteIcon size={size / 4} /> :
-                    null}
+
+
+            {modificator == null ? null : <Modificator modificator={modificator} />}
         </View>
     )
 }
 
-interface ModificatorProps {
-    size: number
-}
-
-function AddIcon({ size }: ModificatorProps) {
+function Modificator({ modificator }: { modificator: ModificatorType }) {
     return (
         <View style={{ position: "absolute", top: -22, width: 20, height: 20, justifyContent: "center", alignItems: "center", backgroundColor: "white", borderTopStartRadius: 100, borderTopEndRadius: 100 }}>
-            <View style={{ position: "absolute", backgroundColor: Resources.Colors.Primary, width: 12, height: 3 }} />
-            <View style={{ position: "absolute", backgroundColor: Resources.Colors.Primary, width: 12, height: 3, transform: [{ rotate: "90deg" }] }} />
-        </View>
-    )
-}
-
-function DeleteIcon({ size }: ModificatorProps) {
-    return (
-        <View>
-            <View style={{ position: "absolute", backgroundColor: Resources.Colors.Red, width: 30, height: 5, transform: [{ rotate: "-45deg" }] }} />
-            <View style={{ position: "absolute", backgroundColor: Resources.Colors.Red, width: 30, height: 5, transform: [{ rotate: "+45deg" }] }} />
+            {modificator == ModificatorType.Add ?
+                <FontAwesomeIcon icon={faAdd} color={Resources.Colors.Primary} /> :
+                <FontAwesomeIcon icon={faClose} color={Resources.Colors.Primary} />}
         </View>
     )
 }

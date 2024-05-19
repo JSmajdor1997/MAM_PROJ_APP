@@ -13,8 +13,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import WisbIcon, { IconType } from './WisbIcon';
 import { Query, Type } from '../API/helpers';
-import flipArrayElement from '../utils/flipArrayElement';
 import SearchBar from './SearchBar';
+import { Resources } from '../../res/Resources';
 
 interface Props {
     onPress: () => void
@@ -22,7 +22,7 @@ interface Props {
     query: Query
     onQueryChanged: (newQuery: Query) => void
     isFocused: boolean
-    onClear: ()=>void
+    onClear: () => void
 }
 
 export default function MapQueryInput({ style, onPress, query, onQueryChanged, isFocused, onClear }: Props) {
@@ -52,48 +52,49 @@ export default function MapQueryInput({ style, onPress, query, onQueryChanged, i
                 padding: 6,
                 alignItems: 'center',
                 justifyContent: 'center',
-                zIndex: 100,
                 ...style
             }}>
             <SearchBar
-                leftIcon={<FontAwesomeIcon icon={faSearch} color="black" size={16} />}
-                rightIcon={<FontAwesomeIcon icon={faChevronDown} color="black" size={16} />}
+                leftIcon={<FontAwesomeIcon icon={faSearch} color={Resources.Colors.Black} size={16} />}
+                rightIcon={<FontAwesomeIcon icon={faChevronDown} color={Resources.Colors.Black} size={16} />}
                 placeholder='Szukaj wydarzeń i wysypisk...'
                 onPress={onPress}
                 phrase={query.phrase}
                 onPhraseChanged={newPhrase => onQueryChanged({ ...query, phrase: newPhrase })}
                 onClear={() => {
-                    onQueryChanged({ type: [Type.Dumpster, Type.Event, Type.Dumpster], phrase: "" })
                     onClear()
                 }} />
 
             <Animated.View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%", height: heightAnim, overflow: "hidden", alignItems: "center", maxWidth: "100%" }}>
                 <TouchableOpacity
+                    disabled={query.type == Type.Dumpster}
                     style={{ opacity: query.type.includes(Type.Dumpster) ? 1 : 0.4 }}
                     onPress={() =>
                         onQueryChanged({
                             ...query,
-                            type: flipArrayElement(query.type, Type.Dumpster)
+                            type: Type.Dumpster
                         })}>
                     <WisbIcon icon={IconType.Dumpster} size={20} greyOut={!query.type.includes(Type.Dumpster)} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                    disabled={query.type == Type.Event}
                     style={{ opacity: query.type.includes(Type.Event) ? 1 : 0.4 }}
                     onPress={() =>
                         onQueryChanged({
                             ...query,
-                            type: flipArrayElement(query.type, Type.Event)
+                            type: Type.Event
                         })}>
                     <WisbIcon icon={IconType.Calendar} size={20} greyOut={!query.type.includes(Type.Event)} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                    disabled={query.type == Type.Wasteland}
                     style={{ opacity: query.type.includes(Type.Wasteland) ? 1 : 0.4 }}
                     onPress={() =>
                         onQueryChanged({
                             ...query,
-                            type: flipArrayElement(query.type, Type.Wasteland)
+                            type: Type.Wasteland
                         })}>
                     <WisbIcon icon={IconType.WastelandIcon} size={20} greyOut={!query.type.includes(Type.Wasteland)} />
                 </TouchableOpacity>

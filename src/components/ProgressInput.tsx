@@ -91,7 +91,7 @@ export default function ProgressInput({ style, selectedOptionIndex, options, onS
             style={{ width: "100%", height: 100, justifyContent: "space-between", flexDirection: "row", paddingTop: circleBorderWidth, ...style }}>
             {options.map((option, index) => (
                 <Fragment>
-                    {index == 0 ? null : <View key={`track-${index}`} style={{ flex: 1, backgroundColor: "black", height: trackPadHeight, marginTop: circlesDiameter / 2 - trackPadHeight / 2 }} />}
+                    {index == 0 ? null : <View key={`track-${index}`} style={{ flex: 1, backgroundColor: Resources.Colors.Black, height: trackPadHeight, marginTop: circlesDiameter / 2 - trackPadHeight / 2 }} />}
 
                     <Pressable disabled={option.disabled} key={`circle-${index}`} style={{ alignItems: "center", opacity: option.disabled ? 0.4 : 1 }} onPress={() => onSelectedOptionChanged?.(index)}>
                         <View style={{ borderRadius: 100, borderWidth: circleBorderWidth, height: circlesDiameter, width: circlesDiameter, transformOrigin: "center center" }} />

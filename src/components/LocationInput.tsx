@@ -88,7 +88,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
     }, [location.coords])
 
     return (
-        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: "white", width: 300, height: 200 }} onLayout={e => {
+        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.Colors.White, width: 300, height: 200 }} onLayout={e => {
             const newHeight = e.nativeEvent.layout.height
 
             if (newHeight != containerHeight) {
@@ -111,7 +111,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
 
                             <FAB
                                 color={Resources.Colors.White}
-                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={"black"} />}
+                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={Resources.Colors.Black} />}
                                 style={{
                                     position: "absolute",
                                     right: 10,
@@ -157,7 +157,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                     setPhrase("")
                     setIsDropdownVisible(true)
                 }}
-                leftIcon={<FontAwesomeIcon icon={faEarth} color="black" size={16} />}
+                leftIcon={<FontAwesomeIcon icon={faEarth} color={Resources.Colors.Black} size={16} />}
                 onPhraseChanged={setPhrase}
                 phrase={isDropdownVisible ? phrase : location.asText}
                 readonly={readonly}
@@ -168,13 +168,13 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                 }}
                 rightIcon={(
                     <TouchableOpacity onPress={() => isDropdownVisible ? setIsDropdownVisible(false) : setIsDropdownVisible(true)}>
-                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color="black" size={16} /> : <FontAwesomeIcon icon={faChevronDown} color="black" size={16} />}
+                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={Resources.Colors.Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={Resources.Colors.Black} size={16} />}
                     </TouchableOpacity>
                 )}
                 placeholder="Wpisz miejsce" />
 
             <Animated.FlatList
-                style={{ width: "100%", backgroundColor: "white", maxHeight: heightAnim, height: "100%" }}
+                style={{ width: "100%", backgroundColor: Resources.Colors.White, maxHeight: heightAnim, height: "100%" }}
                 data={places}
                 ItemSeparatorComponent={Separator}
                 keyExtractor={place => place.id}

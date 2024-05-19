@@ -14,7 +14,7 @@ import Swiper from 'react-native-swiper';
 import { Resources } from '../../res/Resources';
 import ProgressInput from '../components/ProgressInput';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import useShaky from '../components/useShaky';
+import useShaky from '../hooks/useShaky';
 import IdType from '../utils/IdType';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -67,7 +67,7 @@ const ShakeOffset = 15
 const ShakingDuration = 15
 const TranslationAnimationDuration = 300
 
-export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, visible, sections, sectionsOrder, actions, moreActions }: Props<IndexType>) {
+export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, visible, sections, sectionsOrder, actions, moreActions, mainIcon }: Props<IndexType>) {
     const shadowAnim = React.useRef(new Animated.Value(0)).current;
     const swiperRef = React.useRef<Swiper>(null)
     const [currentIndex, setCurrentIndex] = React.useState<IndexType>(sectionsOrder[0])
@@ -110,7 +110,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
             <Pressable
                 style={{ height: "100%", display: "flex" }}
                 onPress={onDismiss} >
-                <SafeAreaView style={{ backgroundColor: "#00000055", flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
+                <SafeAreaView style={{ backgroundColor: Resources.Colors.BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
                     <Animated.View
                         onStartShouldSetResponder={(event) => true}
                         onTouchEnd={(e) => {
@@ -128,7 +128,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
-                                backgroundColor: "white",
+                                backgroundColor: Resources.Colors.White,
                                 borderTopLeftRadius: 15,
                                 borderTopRightRadius: 15,
                                 overflow: "hidden",
@@ -136,12 +136,12 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                             }
                         ]}>
                         <Animated.View style={{
-                            width: "100%", backgroundColor: Resources.Colors.Primary, padding: 5, shadowColor: "black", shadowOffset: { height: 1, width: 1 }, shadowOpacity: shadowAnim.interpolate({
+                            width: "100%", backgroundColor: Resources.Colors.Primary, padding: 5, shadowColor: Resources.Colors.Black, shadowOffset: { height: 1, width: 1 }, shadowOpacity: shadowAnim.interpolate({
                                 inputRange: [0, 10],
                                 outputRange: [0, 1],
-                            }), shadowRadius: 5, zIndex: 2
+                            }), shadowRadius: 5
                         }}>
-                            <WisbIcon icon={IconType.Calendar} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : undefined} />
+                            <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : undefined} />
 
                             {moreActions == null ? null :
                                 <Menu
@@ -180,10 +180,10 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                         {
                             mode == Mode.Adding ?
                                 <Animated.View style={{
-                                    width: "100%", paddingBottom: 5, paddingTop: 5, flexDirection: "column", alignItems: "center", shadowColor: "black", shadowOffset: { height: -1, width: 0 }, shadowOpacity: shadowAnim.interpolate({
+                                    width: "100%", paddingBottom: 5, paddingTop: 5, flexDirection: "column", alignItems: "center", shadowColor: Resources.Colors.Black, shadowOffset: { height: -1, width: 0 }, shadowOpacity: shadowAnim.interpolate({
                                         inputRange: [0, 10],
                                         outputRange: [0, 1],
-                                    }), shadowRadius: 5, backgroundColor: "white"
+                                    }), shadowRadius: 5, backgroundColor: Resources.Colors.White
                                 }}>
                                     <Text style={{ fontWeight: "bold", fontStyle: "italic" }}>{sections[currentIndex].name}</Text>
                                     <ProgressInput
@@ -207,7 +207,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
 
                         {makeConfetti ? <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> : null}
 
-                        {actions == null ? null : (
+                        {actions == null || mode == Mode.Adding ? null : (
                             <View style={{ flexDirection: 'column', justifyContent: "space-around" }}>
                                 {actions.map(action => (
                                     <FAB {...action} />

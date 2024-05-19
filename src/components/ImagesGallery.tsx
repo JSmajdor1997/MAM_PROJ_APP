@@ -74,7 +74,7 @@ interface ImageComponentProps {
 function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageComponentProps) {
     return (
         <View style={{
-            padding: margin, shadowColor: '#000',
+            padding: margin, shadowColor: Resources.Colors.Black,
             shadowOffset: {
                 width: 0,
                 height: 2,
@@ -94,7 +94,7 @@ function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageCompo
                 height: 20,
                 justifyContent: "center",
                 alignItems: "center",
-                shadowColor: 'white',
+                shadowColor: Resources.Colors.White,
                 shadowOffset: {
                     width: 0,
                     height: 5,
@@ -130,7 +130,7 @@ function ImageAddingComponent({ margin, width, onPress }: ImageAddingComponentPr
             onPress={onPress}
             style={{
                 margin,
-                shadowColor: '#000',
+                shadowColor: Resources.Colors.Black,
                 width,
                 height: width,
                 justifyContent: "center",

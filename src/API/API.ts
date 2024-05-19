@@ -76,7 +76,7 @@ export default abstract class API {
     abstract registerListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>>
     abstract removeListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>>
 
-    async getObjects(types: Type[], query: {region?: Region, indicesRange?: [number, number], phrase?: string}): Promise<APIResponse<GeneralError, MapObjects>> {
+    async getObjects(types: Type[], query: {region?: Region, indicesRange?: [number, number], phrase?: string, range?: [number, number]}): Promise<APIResponse<GeneralError, MapObjects>> {
         const response: MapObjects = {
             [Type.Event]: [],
             [Type.Dumpster]: [],
@@ -84,9 +84,9 @@ export default abstract class API {
         };
 
         const typeToFunctionMap = {
-            [Type.Event]: this.getEvents.bind(this, query),
-            [Type.Dumpster]: this.getDumpsters.bind(this, query),
-            [Type.Wasteland]: this.getWastelands.bind(this, query)
+            [Type.Event]: this.getEvents.bind(this, query, query.range),
+            [Type.Dumpster]: this.getDumpsters.bind(this, query, query.range),
+            [Type.Wasteland]: this.getWastelands.bind(this, query, query.range)
         };
     
         const promises: Promise<unknown>[] = [];

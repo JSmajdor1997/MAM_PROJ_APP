@@ -12,7 +12,7 @@ interface Props {
   onPress: (item: Wasteland) => void
 }
 
-export default function WastelandItem({ item, onPress }: Props) {
+function WastelandItem({ item, onPress }: Props) {
   const [isExpanded, setIsExpanded] = React.useState(false)
 
   return (
@@ -25,7 +25,7 @@ export default function WastelandItem({ item, onPress }: Props) {
       }}>
       <View
         style={{
-          borderColor: '#ad374f',
+          borderColor: Resources.Colors.Red,
           borderWidth: 1,
           borderRadius: 50,
           aspectRatio: 1,
@@ -73,3 +73,5 @@ export default function WastelandItem({ item, onPress }: Props) {
     </TouchableOpacity>
   );
 }
+
+export default React.memo(WastelandItem)

@@ -20,7 +20,7 @@ interface Props {
   onPress: (item: Dumpster) => void
 }
 
-export default function DumpsterItem({ item, onPress }: Props) {
+function DumpsterItem({ item, onPress }: Props) {
   return (
     <TouchableOpacity
       onPress={()=>onPress(item)}
@@ -34,7 +34,7 @@ export default function DumpsterItem({ item, onPress }: Props) {
         borderRadius: 10,
         justifyContent: 'space-between',
 
-        shadowColor: '#000',
+        shadowColor: Resources.Colors.Black,
         shadowOffset: {
           width: 0,
           height: 1,
@@ -66,7 +66,7 @@ export default function DumpsterItem({ item, onPress }: Props) {
             <Text
               numberOfLines={1}
               style={{
-                color: 'black',
+                color: Resources.Colors.Black,
                 marginLeft: 8,
                 fontWeight: 'bold',
                 fontSize: 16,
@@ -78,7 +78,7 @@ export default function DumpsterItem({ item, onPress }: Props) {
 
         <Text
           style={{
-            color: 'black',
+            color: Resources.Colors.Black,
             marginLeft: 52,
             marginRight: 40,
             marginTop: 5,
@@ -115,3 +115,5 @@ export default function DumpsterItem({ item, onPress }: Props) {
     </TouchableOpacity>
   );
 }
+
+export default React.memo(DumpsterItem)

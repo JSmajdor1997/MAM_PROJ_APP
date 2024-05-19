@@ -35,6 +35,7 @@ import MapQueryInput from '../components/MapQueryInput';
 import isLatLngInRegion from '../utils/isLatLngInRegion';
 import { Resources } from '../../res/Resources';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
+import { useLocation } from '../hooks/LocationContext';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -60,13 +61,20 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
   const mapRef = React.useRef<MapView>(null)
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
 
-  const [userPosition, setUserPosition] = React.useState<LatLng>(getRandomLatLngInPoland())
-
-  const [query, setQuery] = React.useState<Query>({ phrase: "", type: [Type.Dumpster, Type.Event, Type.Wasteland] })
+  const [query, setQuery] = React.useState<Query>({ phrase: "", type: Type.Event })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
 
   const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
 
+  const [userPosition, setUserPosition] = React.useState(getRandomLatLngInPoland())
+  
+  const cleanup = useLocation(setUserPosition)
+
+  React.useEffect(()=>{
+    return ()=> {
+      cleanup()
+    }
+  })
 
   const getTrackingIconPosition = (region: Region) => {
     if (userPosition != null && !isLatLngInRegion(region, userPosition)) {
@@ -105,7 +113,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
   })
 
   const updateMapObjects = (region: Region) => {
-    getAPI().getObjects(query.type, { phrase: query.phrase, region }).then(rsp => {
+    getAPI().getObjects([Type.Dumpster, Type.Event, Type.Wasteland], { phrase: query.phrase, region }).then(rsp => {
       if (rsp.error == null) {
         setMapObjects(mapObjects => ({
           ...mapObjects,
@@ -116,27 +124,6 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
       }
     })
   }
-
-  React.useEffect(() => {
-    Geolocation.watchPosition(location => {
-      const deltas = metersToLatLngDelta(2000, location.coords.latitude)
-      const region: Region = {
-        ...location.coords,
-        latitudeDelta: deltas.latitudeDelta,
-        longitudeDelta: deltas.longitudeDelta,
-      }
-
-      setUserPosition(location.coords)
-      setMapObjects(mapObjects => ({
-        ...mapObjects,
-        region: region
-      }));
-
-      mapRef.current?.animateToRegion(region, 100)
-
-      updateMapObjects(region)
-    })
-  }, [])
 
   return (
     <View
@@ -196,9 +183,13 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
           {searchedPlace == null ? null : (
             <Marker
               key={`searched-place`}
-              style={{alignItems: "center"}}
+              onPress={() => {
+                setIsSearchDialogVisible(true)
+                setSearchedPlace(null)
+              }}
+              style={{ alignItems: "center" }}
               coordinate={searchedPlace.location}>
-                <Text style={{marginBottom: 5, backgroundColor: Resources.Colors.Primary, color: Resources.Colors.White, padding: 5, borderRadius: 5, overflow: "hidden", borderColor: Resources.Colors.White, borderWidth: 2, fontWeight: "500", letterSpacing: 1, maxWidth: 200}}>{searchedPlace.formattedAddress}</Text>
+              <Text style={{ marginBottom: 5, backgroundColor: Resources.Colors.Primary, color: Resources.Colors.White, padding: 5, borderRadius: 5, overflow: "hidden", borderColor: Resources.Colors.White, borderWidth: 2, fontWeight: "500", letterSpacing: 1, maxWidth: 200 }}>{searchedPlace.formattedAddress}</Text>
               <FontAwesomeIcon icon={faMapPin} size={30} />
             </Marker>
           )}
@@ -245,7 +236,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
             }}
             style={{
               position: "absolute",
-              backgroundColor: "white",
+              backgroundColor: Resources.Colors.White,
               borderRadius: 100,
               justifyContent: "center",
               alignItems: "center",
@@ -254,7 +245,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
               transform: [
                 { translateX: TrackingIconRadius }
               ],
-              shadowColor: "black",
+              shadowColor: Resources.Colors.Black,
               shadowOpacity: 0.2,
               shadowOffset: { width: 0, height: 0 },
               shadowRadius: 10
@@ -266,7 +257,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
 
       <View
         style={{
-          shadowColor: '#000',
+          shadowColor: Resources.Colors.Black,
           shadowOffset: {
             width: 0,
             height: 10,
@@ -275,7 +266,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
           shadowRadius: 13.16,
 
           elevation: 20,
-          backgroundColor: 'white',
+          backgroundColor: Resources.Colors.White,
           borderRadius: 10,
           marginHorizontal: 10,
           flexDirection: 'row',
@@ -288,6 +279,11 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
             if (userPosition == null) {
               return
             }
+
+            setQuery({
+              ...query,
+              phrase: ""
+            })
 
             const deltas = metersToLatLngDelta(2000, userPosition.latitude)
             const region: Region = {

@@ -9,7 +9,7 @@ export enum Type {
 }
 
 export interface Query {
-    type: Type[]
+    type: Type
     phrase: string
 }
 

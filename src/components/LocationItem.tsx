@@ -23,7 +23,7 @@ export default function LocationItem({ onPress, userLocation, location }: Props)
                 <Text style={{ color: "blue", fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>{location.asText}</Text>
             </View>
 
-            <Text style={{ color: "black", textAlign: "center", fontSize: 10 }}>ok. {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} od ciebie</Text>
+            <Text style={{ color: Resources.Colors.Black, textAlign: "center", fontSize: 10 }}>ok. {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} od ciebie</Text>
         </TouchableOpacity>
     )
 }

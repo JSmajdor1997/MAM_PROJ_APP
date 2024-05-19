@@ -20,7 +20,7 @@ interface Props {
   onPress: (item: Event) => void
 }
 
-export default function EventItem({ item, onPress }: Props) {
+function EventItem({ item, onPress }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.6}
@@ -34,7 +34,7 @@ export default function EventItem({ item, onPress }: Props) {
         borderRadius: 10,
         justifyContent: 'space-between',
 
-        shadowColor: '#000',
+        shadowColor: Resources.Colors.Black,
         shadowOffset: {
           width: 0,
           height: 1,
@@ -58,7 +58,7 @@ export default function EventItem({ item, onPress }: Props) {
                 height: 39,
                 width: 39,
                 borderRadius: 50,
-                backgroundColor: item.iconUrl ? 'black' : 'white',
+                backgroundColor: item.iconUrl ? Resources.Colors.Black : Resources.Colors.White,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
@@ -81,7 +81,7 @@ export default function EventItem({ item, onPress }: Props) {
             <Text
               numberOfLines={1}
               style={{
-                color: 'black',
+                color: Resources.Colors.Black,
                 marginLeft: 8,
                 fontWeight: 'bold',
                 fontSize: 16,
@@ -119,7 +119,7 @@ export default function EventItem({ item, onPress }: Props) {
 
         <Text
           style={{
-            color: 'black',
+            color: Resources.Colors.Black,
             marginLeft: 52,
             marginRight: 40,
             marginTop: 5,
@@ -156,3 +156,5 @@ export default function EventItem({ item, onPress }: Props) {
     </TouchableOpacity>
   );
 }
+
+export default React.memo(EventItem)

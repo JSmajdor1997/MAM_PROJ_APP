@@ -17,12 +17,13 @@ import { faAt, faCrown, faEllipsisV, faPerson } from '@fortawesome/free-solid-sv
 import Avatar from '../components/Avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Separator from '../components/Separator';
+import { Resources } from '../../res/Resources';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
 interface State {
   data: Array<any>;
-  userID: any;
+  userID: string;
   isLoading: boolean;
   userPoints: number;
   userName: string;
@@ -78,6 +79,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Avatar
+            colors={Resources.Colors.AvatarColors}
             size={100}
             fontSize={52}
             username={state.userName}
@@ -113,7 +115,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
             <Text style={{ marginRight: 6, fontWeight: 'bold' }}>
               {state.userPoints}
             </Text>
-            <FontAwesomeIcon icon={faCrown} color="#ffb005" />
+            <FontAwesomeIcon icon={faCrown} color={Resources.Colors.Green} />
           </View>
         </View>
       </View>
@@ -181,12 +183,12 @@ export default function LeaderboardScreen({ navigation }: Props) {
           alignItems: state.data.length == 0 ? 'center' : undefined,
         }}
         ItemSeparatorComponent={() => (
-          <Separator/>
+          <Separator backgroundColor={Resources.Colors.White} color={Resources.Colors.Beige} />
         )}
         ListEmptyComponent={() => (
           <Spinner
             isVisible={true}
-            color="#00bfa5"
+            color={Resources.Colors.OceanBlue}
             type="ChasingDots"
             size={50}
           />
@@ -196,14 +198,14 @@ export default function LeaderboardScreen({ navigation }: Props) {
           <View
             style={{
               flexDirection: 'row',
-              backgroundColor: 'white',
+              backgroundColor: Resources.Colors.White,
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
             <View
               style={{
                 flexDirection: 'row',
-                backgroundColor: 'white',
+                backgroundColor: Resources.Colors.White,
                 marginVertical: 10,
                 alignItems: 'center',
               }}>
@@ -211,6 +213,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
                 {index < 9 ? index + 1 : '○'}
               </Text>
               <Avatar
+                colors={Resources.Colors.AvatarColors}
                 image={item.avatar.scaledImageSrc}
                 size={30}
                 fontSize={12}
@@ -240,13 +243,13 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   header: {
-    backgroundColor: '#00bfa5',
+    backgroundColor: Resources.Colors.OceanBlue,
     alignItems: 'center',
     padding: 20,
     paddingTop: StatusBar.currentHeight,
   },
   headerText: {
-    color: 'white',
+    color: Resources.Colors.White,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -273,13 +276,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     fontSize: 15,
     fontWeight: '300',
-    color: '#919191',
+    color: Resources.Colors.DarkBeige,
   },
   avatar: {
     height: 30,
     width: 30,
     borderRadius: 30 / 2,
-    shadowColor: '#000',
+    shadowColor: Resources.Colors.Black,
     shadowOffset: {
       width: 0,
       height: 5,

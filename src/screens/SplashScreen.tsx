@@ -41,7 +41,7 @@ export default function SplashScreen({ navigation }: Props) {
         height: '100%',
         width: '100%',
       }}>
-      <StatusBar backgroundColor="transparent" translucent />
+      <StatusBar backgroundColor={Resources.Colors.Transparent} translucent />
       <Animated.View
         style={{
           height: '100%',

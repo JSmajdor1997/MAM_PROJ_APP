@@ -12,6 +12,7 @@ import {
     Dimensions,
     Easing
 } from 'react-native';
+import { Resources } from '../../res/Resources';
 
 export enum Position {
     Center,
@@ -97,18 +98,17 @@ export default function Dialog({
 
 const styles = StyleSheet.create({
     backdrop: {
-        backgroundColor: "#00000055",
+        backgroundColor: Resources.Colors.BackdropBlack,
         position: "absolute",
         width: "100%",
         height: "100%",
     },
     dialog: {
-        zIndex: 200,
         position: "absolute",
         borderRadius: 15,
         flexDirection: "column",
-        backgroundColor: "white",
-        shadowColor: "black",
+        backgroundColor: Resources.Colors.White,
+        shadowColor: Resources.Colors.Black,
         shadowOpacity: 0.2,
         shadowRadius: 2,
         shadowOffset: {

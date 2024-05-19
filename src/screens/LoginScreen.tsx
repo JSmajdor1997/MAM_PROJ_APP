@@ -18,6 +18,8 @@ import FastImage from 'react-native-fast-image';
 import { SvgUri } from 'react-native-svg';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons';
+import BambooImage from "../../res/images/bamboo.svg"
+import LeavesImage from "../../res/images/leaves_on_stick.svg"
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LoginScreen> { }
 
@@ -77,7 +79,7 @@ export default function LoginScreen({ navigation }: Props) {
             bottom: 5,
             justifyContent: 'flex-end',
           }}>
-          <Text style={{ color: 'white', fontSize: 40, fontFamily: 'leafy' }}>
+          <Text style={{ color: Resources.Colors.White, fontSize: 40, fontFamily: 'leafy' }}>
             {mode == Mode.Login ? "LOGOWANIE" : "REJESTRACJA"}
           </Text>
         </View>
@@ -87,11 +89,11 @@ export default function LoginScreen({ navigation }: Props) {
             width: 350,
             borderTopRightRadius: 80,
             borderBottomRightRadius: 80,
-            backgroundColor: '#eee',
+            backgroundColor: Resources.Colors.Beige,
             shadowOffset: { width: 5, height: 0 },
             shadowRadius: 10,
             shadowOpacity: 0.4,
-            shadowColor: '#000',
+            shadowColor: Resources.Colors.Black,
             elevation: 2,
           }}>
           <TextInput
@@ -145,7 +147,7 @@ export default function LoginScreen({ navigation }: Props) {
                     toast('Nie udało się zalogować :(');
                   } else {
                     toast('Zalogowano pomyślnie');
-                    navigation.push(WisbScreens.MapScreen, {})
+                    navigation.push(WisbScreens.MapScreen, {} as any)
                   }
                 })
               } else {
@@ -161,7 +163,7 @@ export default function LoginScreen({ navigation }: Props) {
             }}
             style={{
               borderRadius: 50,
-              backgroundColor: 'white',
+              backgroundColor: Resources.Colors.White,
               aspectRatio: 1,
               height: 54,
               position: 'absolute',
@@ -169,7 +171,6 @@ export default function LoginScreen({ navigation }: Props) {
               alignItems: 'center',
               right: 0,
               top: 0,
-              zIndex: 100,
               elevation: 20,
             }}>
             <FontAwesomeIcon icon={faArrowRight} color={Resources.Colors.Primary} />
@@ -190,18 +191,18 @@ export default function LoginScreen({ navigation }: Props) {
           position: 'absolute',
         }}>
         <View style={{ flexDirection: "row" }}>
-          <Text style={{ color: '#dedede' }}>{mode == Mode.SignUp ? "Masz konto?" : "Nie masz konta?"}</Text>
+          <Text style={{ color: Resources.Colors.Beige }}>{mode == Mode.SignUp ? "Masz konto?" : "Nie masz konta?"}</Text>
           <TouchableOpacity
             onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
             <Text style={styles.login}>{mode == Mode.SignUp ? "Zaloguj się!" : "Utwórz konto!"}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={{ color: '#dedede' }}>LUB</Text>
+        <Text style={{ color: Resources.Colors.Beige }}>LUB</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-          <FontAwesomeIcon icon={faFacebookF} style={{ marginRight: 10 }} color={"#4267B2"} />
-          <FontAwesomeIcon icon={faGoogle} style={{ marginLeft: 10 }} color={"#ba2618"} />
+          <FontAwesomeIcon icon={faFacebookF} style={{ marginRight: 10 }} color={Resources.Colors.Blue} />
+          <FontAwesomeIcon icon={faGoogle} style={{ marginLeft: 10 }} color={Resources.Colors.Blue} />
         </View>
       </View>
     </View>
@@ -211,13 +212,13 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eee',
+    backgroundColor: Resources.Colors.Beige,
   },
   header: {
     alignSelf: 'center',
     marginBottom: 1,
     fontSize: 45,
-    color: '#00bfa5',
+    color: Resources.Colors.OceanBlue,
     fontFamily: 'leafy',
   },
   input: {
@@ -229,11 +230,11 @@ const styles = StyleSheet.create({
     marginTop: 100,
     borderTopRightRadius: 80,
     borderBottomRightRadius: 80,
-    backgroundColor: '#eee',
+    backgroundColor: Resources.Colors.Beige,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: '#000',
+    shadowColor: Resources.Colors.Black,
     elevation: 2,
   },
   submitWrapper: {
@@ -243,20 +244,20 @@ const styles = StyleSheet.create({
     top: 460,
     left: 320,
     // alignSelf: 'center',
-    backgroundColor: '#00bfa5',
+    backgroundColor: Resources.Colors.OceanBlue,
     borderRadius: 50,
     height: 60,
     width: 60,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: '#000',
+    shadowColor: Resources.Colors.Black,
     elevation: 2,
   },
   loginWrapper: {},
   login: {
     marginLeft: 8,
-    color: 'white',
+    color: Resources.Colors.White,
   },
   bambooImage: {
     height: 275,
@@ -273,8 +274,5 @@ const styles = StyleSheet.create({
     top: 50,
     right: -20,
     transform: [{ rotate: '180deg' }],
-  },
-  contentWrapper: {
-    zIndex: 2,
-  },
+  }
 });
