@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, ViewStyle, Image, LayoutChangeEvent, TouchableHighlight, TouchableOpacity } from "react-native";
-import { Resources } from "../../res/Resources";
+import Resources from "../../res/Resources";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faClose, faPen } from "@fortawesome/free-solid-svg-icons";
 
@@ -74,7 +74,7 @@ interface ImageComponentProps {
 function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageComponentProps) {
     return (
         <View style={{
-            padding: margin, shadowColor: Resources.Colors.Black,
+            padding: margin, shadowColor: Resources.get().getColors().Black,
             shadowOffset: {
                 width: 0,
                 height: 2,
@@ -88,13 +88,13 @@ function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageCompo
                 position: "absolute",
                 right: 14,
                 top: 10,
-                backgroundColor: Resources.Colors.White,
+                backgroundColor: Resources.get().getColors().White,
                 borderRadius: 100,
                 width: 20,
                 height: 20,
                 justifyContent: "center",
                 alignItems: "center",
-                shadowColor: Resources.Colors.White,
+                shadowColor: Resources.get().getColors().White,
                 shadowOffset: {
                     width: 0,
                     height: 5,
@@ -102,7 +102,7 @@ function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageCompo
                 shadowOpacity: 0.5,
                 shadowRadius: 4,
             }}>
-                <FontAwesomeIcon icon={faClose} color={Resources.Colors.Red} size={15} />
+                <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Red} size={15} />
             </TouchableOpacity>
             }
         </View>
@@ -130,7 +130,7 @@ function ImageAddingComponent({ margin, width, onPress }: ImageAddingComponentPr
             onPress={onPress}
             style={{
                 margin,
-                shadowColor: Resources.Colors.Black,
+                shadowColor: Resources.get().getColors().Black,
                 width,
                 height: width,
                 justifyContent: "center",
@@ -138,9 +138,9 @@ function ImageAddingComponent({ margin, width, onPress }: ImageAddingComponentPr
                 borderRadius: 10,
                 borderStyle: "dashed",
                 borderWidth: 2,
-                borderColor: Resources.Colors.Blue,
+                borderColor: Resources.get().getColors().Blue,
             }}>
-            <FontAwesomeIcon icon={faPen} color={Resources.Colors.Blue} />
+            <FontAwesomeIcon icon={faPen} color={Resources.get().getColors().Blue} />
         </TouchableOpacity>
     )
 }

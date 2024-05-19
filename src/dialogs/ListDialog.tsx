@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import EventItem from '../components/EventItem';
 import WastelandItem from '../components/WastelandItem';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 import Dialog, { Position } from './Dialog';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -93,7 +93,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
 
     searchPlacesTimeoutId.current = setTimeout(() => {
       setIsLoading(true)
-      searchPlaces(googleMapsApiKey, query.phrase, Resources.Locale.LanguageCode, userLocation, 1).then(places => {
+      searchPlaces(googleMapsApiKey, query.phrase, Resources.get().getSettings().language, userLocation, 1).then(places => {
         setPlaces(places ?? [])
         setIsLoading(false)
       })
@@ -113,7 +113,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       visible={visible}
       backdropStyle={{ backgroundColor: undefined }}
       position={Position.Bottom}
-      dialogStyle={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: Resources.Colors.White, justifyContent: "space-between", width: "100%", flexDirection: "column" }}
+      dialogStyle={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: Resources.get().getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column" }}
       dismissOnBackdropPress={false}>
       <FlatList
         ref={flatListRef}
@@ -124,7 +124,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
         removeClippedSubviews
         ListHeaderComponent={
           <View>
-            {places.length == 0 ? <Text>{Resources.Strings.get().Dialogs.ListDialog.PlaceNotFoundMessage}</Text> : null}
+            {places.length == 0 ? <Text>{Resources.get().getStrings().Dialogs.ListDialog.PlaceNotFoundMessage}</Text> : null}
             {places.map(place => (
               <LocationItem key={place.id} onPress={() => onPlaceSelected(place)} userLocation={userLocation} location={{
                 coords: place.location,
@@ -145,7 +145,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => (
-          <Separator backgroundColor={Resources.Colors.White} color={Resources.Colors.Beige}/>
+          <Separator backgroundColor={Resources.get().getColors().White} color={Resources.get().getColors().Beige}/>
         )}
         ListFooterComponent={() => {
           if (isLoading) {
@@ -159,7 +159,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
           if (!hasMore) {
             return (
               <View>
-                <Text>{Resources.Strings.get().Dialogs.ListDialog.NoMoreDataMessage}</Text>
+                <Text>{Resources.get().getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
               </View>
             );
           }
@@ -174,8 +174,8 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       />
 
       <FAB
-        color={Resources.Colors.Red}
-        icon={<FontAwesomeIcon icon={faClose} color={Resources.Colors.White} size={25} />}
+        color={Resources.get().getColors().Red}
+        icon={<FontAwesomeIcon icon={faClose} color={Resources.get().getColors().White} size={25} />}
         style={{ marginBottom: 5 }}
         onPress={onDismiss} />
     </Dialog>

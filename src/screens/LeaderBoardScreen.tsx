@@ -17,7 +17,7 @@ import { faAt, faCrown, faEllipsisV, faPerson } from '@fortawesome/free-solid-sv
 import Avatar from '../components/Avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Separator from '../components/Separator';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -79,7 +79,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Avatar
-            colors={Resources.Colors.AvatarColors}
+            colors={Resources.get().getColors().AvatarColors}
             size={100}
             fontSize={52}
             username={state.userName}
@@ -109,13 +109,13 @@ export default function LeaderboardScreen({ navigation }: Props) {
             <MenuItem onPress={() => {
               navigation.push(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
-            }}>{Resources.Strings.get().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
+            }}>{Resources.get().getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
           </Menu>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ marginRight: 6, fontWeight: 'bold' }}>
               {state.userPoints}
             </Text>
-            <FontAwesomeIcon icon={faCrown} color={Resources.Colors.Green} />
+            <FontAwesomeIcon icon={faCrown} color={Resources.get().getColors().Green} />
           </View>
         </View>
       </View>
@@ -183,12 +183,12 @@ export default function LeaderboardScreen({ navigation }: Props) {
           alignItems: state.data.length == 0 ? 'center' : undefined,
         }}
         ItemSeparatorComponent={() => (
-          <Separator backgroundColor={Resources.Colors.White} color={Resources.Colors.Beige} />
+          <Separator backgroundColor={Resources.get().getColors().White} color={Resources.get().getColors().Beige} />
         )}
         ListEmptyComponent={() => (
           <Spinner
             isVisible={true}
-            color={Resources.Colors.OceanBlue}
+            color={Resources.get().getColors().OceanBlue}
             type="ChasingDots"
             size={50}
           />
@@ -198,14 +198,14 @@ export default function LeaderboardScreen({ navigation }: Props) {
           <View
             style={{
               flexDirection: 'row',
-              backgroundColor: Resources.Colors.White,
+              backgroundColor: Resources.get().getColors().White,
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
             <View
               style={{
                 flexDirection: 'row',
-                backgroundColor: Resources.Colors.White,
+                backgroundColor: Resources.get().getColors().White,
                 marginVertical: 10,
                 alignItems: 'center',
               }}>
@@ -213,7 +213,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
                 {index < 9 ? index + 1 : '○'}
               </Text>
               <Avatar
-                colors={Resources.Colors.AvatarColors}
+                colors={Resources.get().getColors().AvatarColors}
                 image={item.avatar.scaledImageSrc}
                 size={30}
                 fontSize={12}
@@ -243,13 +243,13 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   header: {
-    backgroundColor: Resources.Colors.OceanBlue,
+    backgroundColor: Resources.get().getColors().OceanBlue,
     alignItems: 'center',
     padding: 20,
     paddingTop: StatusBar.currentHeight,
   },
   headerText: {
-    color: Resources.Colors.White,
+    color: Resources.get().getColors().White,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -276,13 +276,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     fontSize: 15,
     fontWeight: '300',
-    color: Resources.Colors.DarkBeige,
+    color: Resources.get().getColors().DarkBeige,
   },
   avatar: {
     height: 30,
     width: 30,
     borderRadius: 30 / 2,
-    shadowColor: Resources.Colors.Black,
+    shadowColor: Resources.get().getColors().Black,
     shadowOffset: {
       width: 0,
       height: 5,

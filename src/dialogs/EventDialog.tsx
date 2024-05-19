@@ -4,7 +4,7 @@ import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { Text, TextInput, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { Resources } from "../../res/Resources";
+import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import FAB from "../components/FAB";
 import { faFacebookF, faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
@@ -35,41 +35,41 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
             mode={mode}
             moreActions={[
                 {
-                    label: Resources.Strings.get().Dialogs.EventDialog.DeleteAction,
+                    label: Resources.get().getStrings().Dialogs.EventDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
-                    color: Resources.Colors.Red,
+                    color: Resources.get().getColors().Red,
                     onPress: () => { }
                 },
                 {
-                    label: Resources.Strings.get().Dialogs.EventDialog.EditAction,
+                    label: Resources.get().getStrings().Dialogs.EventDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
-                    color: Resources.Colors.White,
+                    color: Resources.get().getColors().White,
                     onPress: () => { }
                 }
             ]}
             actions={[
                 {
-                    label: Resources.Strings.get().Dialogs.EventDialog.JoinAction,
+                    label: Resources.get().getStrings().Dialogs.EventDialog.JoinAction,
                     icon: <FontAwesomeIcon icon={faAdd} />,
-                    color: Resources.Colors.Yellow,
+                    color: Resources.get().getColors().Yellow,
                     onPress: () => { },
                 },
                 {
-                    label: Resources.Strings.get().Dialogs.EventDialog.ShareAction,
+                    label: Resources.get().getStrings().Dialogs.EventDialog.ShareAction,
                     icon: <FontAwesomeIcon icon={faShare} />,
-                    color: Resources.Colors.Blue,
+                    color: Resources.get().getColors().Blue,
                     onPress: () => { },
                 },
                 {
-                    label: Resources.Strings.get().Dialogs.EventDialog.LeaveAction,
+                    label: Resources.get().getStrings().Dialogs.EventDialog.LeaveAction,
                     icon: <FontAwesomeIcon icon={faClose} />,
-                    color: Resources.Colors.Lime,
+                    color: Resources.get().getColors().Lime,
                     onPress: () => { },
                 },
                 {
-                    label: Resources.Strings.get().Dialogs.EventDialog.OpenChatAction,
+                    label: Resources.get().getStrings().Dialogs.EventDialog.OpenChatAction,
                     icon: <FontAwesomeIcon icon={faMessage} />,
-                    color: Resources.Colors.OceanBlue,
+                    color: Resources.get().getColors().OceanBlue,
                     onPress: () => { },
                 }
             ]}
@@ -77,9 +77,9 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
             sectionsOrder={[Sections.BasicInfo, Sections.MeetPlace, Sections.Wastelands, Sections.Members, Sections.Sharing]}
             sections={{
                 [Sections.BasicInfo]: {
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.Colors.Yellow, name: "Podstawowe informacje", renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: "Podstawowe informacje", renderPage: () => (
                         <View style={{ flex: 1, padding: 10 }}>
-                            <View style={{ borderRadius: 10, backgroundColor: Resources.Colors.Black, width: "30%", aspectRatio: 1 }} />
+                            <View style={{ borderRadius: 10, backgroundColor: Resources.get().getColors().Black, width: "30%", aspectRatio: 1 }} />
                             <Text style={{ fontSize: 16, fontWeight: "bold" }}>NAZWA</Text>
 
                             <View>
@@ -98,13 +98,13 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
                     )
                 },
                 [Sections.MeetPlace]: {
-                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.Colors.Lime, name: Resources.Strings.get().Dialogs.EventDialog.MeetPlaceLabel, renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: () => (
                         <View style={{ flex: 1, padding: 15 }}>
                             <LocationInput
                                 readonly
                                 style={{ flex: 1 }}
                                 userLocation={userLocation}
-                                apiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
+                                apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                 location={{
                                     coords: {
                                         latitude: 51.246452,
@@ -116,51 +116,51 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
                     )
                 },
                 [Sections.Wastelands]: {
-                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.Colors.DarkBeige, name: Resources.Strings.get().Dialogs.EventDialog.WastelandsLabel, renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: () => (
                         <View style={{ flex: 1 }}>
                             <Text>LISTA ŚMIETNISK</Text>
                         </View>
                     )
                 },
                 [Sections.Members]: {
-                    icon: <FontAwesomeIcon icon={faPerson} />, color: Resources.Colors.Purple, name: Resources.Strings.get().Dialogs.EventDialog.MembersLabel, renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faPerson} />, color: Resources.get().getColors().Purple, name: Resources.get().getStrings().Dialogs.EventDialog.MembersLabel, renderPage: () => (
                         <View style={{ flex: 1 }}>
                             <Text>LISTA UCZESTNIKÓW + ADMIN</Text>
                         </View>
                     )
                 },
                 [Sections.Sharing]: {
-                    icon: <FontAwesomeIcon icon={faShare} />, color: Resources.Colors.OceanBlue, name: Resources.Strings.get().Dialogs.EventDialog.ShareAction, renderPage: (props) => {
+                    icon: <FontAwesomeIcon icon={faShare} />, color: Resources.get().getColors().OceanBlue, name: Resources.get().getStrings().Dialogs.EventDialog.ShareAction, renderPage: (props) => {
                         if (props.currentIndex == Sections.Sharing) {
                             props.startConfetti()
                         }
 
                         return (
                             <View style={{ flex: 1 }}>
-                                <Text>{Resources.Strings.get().Dialogs.EventDialog.ThatsAllMessage}</Text>
-                                <Text>{Resources.Strings.get().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
+                                <Text>{Resources.get().getStrings().Dialogs.EventDialog.ThatsAllMessage}</Text>
+                                <Text>{Resources.get().getStrings().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
                                 <FAB
                                     size={45}
-                                    color={Resources.Colors.Blue}
+                                    color={Resources.get().getColors().Blue}
                                     onPress={() => { }}
                                     icon={
-                                        <FontAwesomeIcon icon={faFacebookF} color={Resources.Colors.White} size={16} />
+                                        <FontAwesomeIcon icon={faFacebookF} color={Resources.get().getColors().White} size={16} />
                                     } />
                                 <FAB
                                     size={45}
-                                    color={Resources.Colors.Blue}
+                                    color={Resources.get().getColors().Blue}
                                     onPress={() => { }}
                                     icon={
-                                        <FontAwesomeIcon icon={faInstagram} color={Resources.Colors.White} size={16} />
+                                        <FontAwesomeIcon icon={faInstagram} color={Resources.get().getColors().White} size={16} />
                                     } />
                                 <FAB
                                     size={45}
-                                    color={Resources.Colors.Blue}
+                                    color={Resources.get().getColors().Blue}
                                     onPress={() => { }}
                                     icon={
-                                        <FontAwesomeIcon icon={faTwitter} color={Resources.Colors.White} size={16} />
+                                        <FontAwesomeIcon icon={faTwitter} color={Resources.get().getColors().White} size={16} />
                                     } />
-                                <Text>{Resources.Strings.get().Dialogs.EventDialog.OpenChatAction}</Text>
+                                <Text>{Resources.get().getStrings().Dialogs.EventDialog.OpenChatAction}</Text>
                                 <QRCode value="AAA123" />
                             </View>
                         )

@@ -3,7 +3,7 @@ import { faChevronDown, faChevronUp, faEarth, faLocationArrow } from "@fortaweso
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { StyleSheet, Text, View, ViewStyle, Animated, Easing, TouchableOpacity } from "react-native";
 import { GoogleStaticMapNext } from "react-native-google-static-map-next";
-import { Resources } from "../../res/Resources";
+import Resources from "../../res/Resources";
 import FAB from "./FAB";
 import openMapsAndNavigate from "../utils/openMapsAndNavigate";
 import React from "react";
@@ -52,7 +52,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
         }
 
         searchPlacesTimeoutId.current = setTimeout(() => {
-            searchPlaces(apiKey, phrase, Resources.Locale.LanguageCode, userLocation).then(setPlaces)
+            searchPlaces(apiKey, phrase, Resources.get().getSettings().language, userLocation).then(setPlaces)
         }, 200)
     }, [phrase])
 
@@ -88,7 +88,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
     }, [location.coords])
 
     return (
-        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.Colors.White, width: 300, height: 200 }} onLayout={e => {
+        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.get().getColors().White, width: 300, height: 200 }} onLayout={e => {
             const newHeight = e.nativeEvent.layout.height
 
             if (newHeight != containerHeight) {
@@ -110,8 +110,8 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                             />
 
                             <FAB
-                                color={Resources.Colors.White}
-                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={Resources.Colors.Black} />}
+                                color={Resources.get().getColors().White}
+                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={Resources.get().getColors().Black} />}
                                 style={{
                                     position: "absolute",
                                     right: 10,
@@ -126,8 +126,8 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                 ref={mapViewRef}
                                 onRegionChangeComplete={newRegion => {
                                     previousCoords.current = newRegion
-                                    reverseGeoCode(Resources.Env.GOOGLE_MAPS_API_KEY, newRegion).then(formattedAddress => {
-                                        onLocationChanged?.(newRegion, formattedAddress ?? Resources.Strings.get().Components.LocationInput.UnknownPlaceMessage)
+                                    reverseGeoCode(Resources.get().getEnv().GOOGLE_MAPS_API_KEY, newRegion).then(formattedAddress => {
+                                        onLocationChanged?.(newRegion, formattedAddress ?? Resources.get().getStrings().Components.LocationInput.UnknownPlaceMessage)
                                     })
                                 }}
                                 showsScale={false}
@@ -157,7 +157,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                     setPhrase("")
                     setIsDropdownVisible(true)
                 }}
-                leftIcon={<FontAwesomeIcon icon={faEarth} color={Resources.Colors.Black} size={16} />}
+                leftIcon={<FontAwesomeIcon icon={faEarth} color={Resources.get().getColors().Black} size={16} />}
                 onPhraseChanged={setPhrase}
                 phrase={isDropdownVisible ? phrase : location.asText}
                 readonly={readonly}
@@ -168,13 +168,13 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                 }}
                 rightIcon={(
                     <TouchableOpacity onPress={() => isDropdownVisible ? setIsDropdownVisible(false) : setIsDropdownVisible(true)}>
-                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={Resources.Colors.Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={Resources.Colors.Black} size={16} />}
+                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={Resources.get().getColors().Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={Resources.get().getColors().Black} size={16} />}
                     </TouchableOpacity>
                 )}
-                placeholder={Resources.Strings.get().Components.LocationInput.EnterPlaceMessage} />
+                placeholder={Resources.get().getStrings().Components.LocationInput.EnterPlaceMessage} />
 
             <Animated.FlatList
-                style={{ width: "100%", backgroundColor: Resources.Colors.White, maxHeight: heightAnim, height: "100%" }}
+                style={{ width: "100%", backgroundColor: Resources.get().getColors().White, maxHeight: heightAnim, height: "100%" }}
                 data={places}
                 ItemSeparatorComponent={Separator}
                 keyExtractor={place => place.id}

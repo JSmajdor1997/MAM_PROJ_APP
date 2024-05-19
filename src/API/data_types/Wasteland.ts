@@ -1,12 +1,10 @@
 import { LatLng } from "react-native-maps"
 import User from "./User"
+import SimplePlace from "./SimplePlace"
 
 export default interface Wasteland {
     id: number
-    place: {
-        coords: LatLng
-        asText: string
-    }
+    place: SimplePlace
     photos: unknown[]
     description: string
     creationDate: Date

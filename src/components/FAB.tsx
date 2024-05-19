@@ -2,7 +2,7 @@ import React, { ReactElement } from "react";
 import { ViewStyle } from "react-native";
 import { View, Text } from "react-native";
 import Ripple from 'react-native-material-ripple';
-import { Resources } from "../../res/Resources";
+import Resources from "../../res/Resources";
 
 export interface Props {
     style?: ViewStyle
@@ -28,7 +28,7 @@ export default function FAB({ icon, color, onPress, label, size, style }: Props)
                     justifyContent: 'center',
                     alignItems: 'center',
 
-                    shadowColor: Resources.Colors.Black,
+                    shadowColor: Resources.get().getColors().Black,
                     shadowOffset: {
                         width: 0,
                         height: 1,
@@ -43,13 +43,13 @@ export default function FAB({ icon, color, onPress, label, size, style }: Props)
             {label && label != '' ? (
                 <View
                     style={{
-                        backgroundColor: Resources.Colors.White,
+                        backgroundColor: Resources.get().getColors().White,
                         paddingHorizontal: 5,
                         paddingVertical: 3,
                         borderRadius: 5,
                         marginTop: 8,
 
-                        shadowColor: Resources.Colors.Black,
+                        shadowColor: Resources.get().getColors().Black,
                         shadowOffset: {
                             width: 0,
                             height: 5,

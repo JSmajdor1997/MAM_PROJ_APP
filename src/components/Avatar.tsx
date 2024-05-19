@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
   size: number;
@@ -42,7 +42,7 @@ function getHashColor(colors: string[], str: string) {
   return colors[Math.abs(hash % colors.length)];
 }
 
-export default function Avatar({ colors, onPress, size, fontSize, image }: Props) {
+export default function Avatar({ colors, onPress, size, fontSize, image, style, username }: Props) {
   return (
     <TouchableOpacity
       disabled={!onPress}
@@ -61,7 +61,7 @@ export default function Avatar({ colors, onPress, size, fontSize, image }: Props
       {image == null || image == '' ? (
         <Text
           style={{
-            color: Resources.Colors.White,
+            color: Resources.get().getColors().White,
             fontSize: fontSize,
             fontWeight: 'bold',
           }}>
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Resources.Colors.Black,
+    shadowColor: Resources.get().getColors().Black,
     shadowOffset: {
       width: 0,
       height: 5,

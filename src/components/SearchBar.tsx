@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
     style?: ViewStyle
@@ -43,7 +43,7 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
                 style={{
                     width: '100%',
                     height: 35,
-                    backgroundColor: Resources.Colors.Beige,
+                    backgroundColor: Resources.get().getColors().Beige,
                     borderRadius: 10,
                     padding: 10,
                     flexDirection: 'row',
@@ -62,7 +62,7 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
                     onPress={onPress}
                     readOnly={readonly}
                     style={{
-                        color: Resources.Colors.White,
+                        color: Resources.get().getColors().White,
                         fontSize: 16,
                         letterSpacing: 1,
                         fontWeight: "600",
@@ -75,7 +75,7 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
                 {phrase.length == 0 ? rightIcon : (<TouchableOpacity
                     onPress={onClear}
                     style={{ paddingLeft: 4, paddingTop: 4, paddingBottom: 4 }}>
-                    <FontAwesomeIcon icon={faClose} color={Resources.Colors.Black} size={16} />
+                    <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Black} size={16} />
                 </TouchableOpacity>)}
             </View>
         </View>

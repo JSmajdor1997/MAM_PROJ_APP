@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Wasteland from '../API/data_types/Wasteland';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
   item: Wasteland;
@@ -25,7 +25,7 @@ function WastelandItem({ item, onPress }: Props) {
       }}>
       <View
         style={{
-          borderColor: Resources.Colors.Red,
+          borderColor: Resources.get().getColors().Red,
           borderWidth: 1,
           borderRadius: 50,
           aspectRatio: 1,
@@ -66,7 +66,7 @@ function WastelandItem({ item, onPress }: Props) {
               alignSelf: 'flex-end',
               fontSize: 12,
             }}>
-            {item.creationDate.toLocaleDateString(Resources.Locale.LanguageCode, { year: "numeric", month: "short", day: "numeric" })}
+            {item.creationDate.toLocaleDateString(Resources.get().getSettings().language, { year: "numeric", month: "short", day: "numeric" })}
           </Text>
         </View>
       </View>

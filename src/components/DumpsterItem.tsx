@@ -13,7 +13,7 @@ import WisbIcon, { IconType } from './WisbIcon';
 import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import Dumpster from '../API/data_types/Dumpster';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
   item: Dumpster;
@@ -27,14 +27,14 @@ function DumpsterItem({ item, onPress }: Props) {
       activeOpacity={0.6}
       style={{
         flex: 1,
-        backgroundColor: Resources.Colors.Primary,
+        backgroundColor: Resources.get().getColors().Primary,
         marginVertical: 10,
         minHeight: 120,
         marginHorizontal: 16,
         borderRadius: 10,
         justifyContent: 'space-between',
 
-        shadowColor: Resources.Colors.Black,
+        shadowColor: Resources.get().getColors().Black,
         shadowOffset: {
           width: 0,
           height: 1,
@@ -66,7 +66,7 @@ function DumpsterItem({ item, onPress }: Props) {
             <Text
               numberOfLines={1}
               style={{
-                color: Resources.Colors.Black,
+                color: Resources.get().getColors().Black,
                 marginLeft: 8,
                 fontWeight: 'bold',
                 fontSize: 16,
@@ -78,7 +78,7 @@ function DumpsterItem({ item, onPress }: Props) {
 
         <Text
           style={{
-            color: Resources.Colors.Black,
+            color: Resources.get().getColors().Black,
             marginLeft: 52,
             marginRight: 40,
             marginTop: 5,
@@ -108,7 +108,7 @@ function DumpsterItem({ item, onPress }: Props) {
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-            <FontAwesomeIcon color={Resources.Colors.White} icon={faMessage} />
+            <FontAwesomeIcon color={Resources.get().getColors().White} icon={faMessage} />
           </TouchableOpacity>
         </View>
       </View>

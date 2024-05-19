@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { View, Text, StatusBar, Animated, Image, StyleSheet } from 'react-native';
 import BlurryView from '../components/BlurryView';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
@@ -41,12 +41,12 @@ export default function SplashScreen({ navigation }: Props) {
         height: '100%',
         width: '100%',
       }}>
-      <StatusBar backgroundColor={Resources.Colors.Transparent} translucent />
+      <StatusBar backgroundColor={Resources.get().getColors().Transparent} translucent />
       <Animated.View
         style={{
           height: '100%',
           width: '100%',
-          backgroundColor: Resources.Colors.Primary,
+          backgroundColor: Resources.get().getColors().Primary,
           justifyContent: 'center',
           alignItems: 'center',
         }}>

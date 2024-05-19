@@ -14,7 +14,7 @@ import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-ic
 import WisbIcon, { IconType } from './WisbIcon';
 import { Query, Type } from '../API/helpers';
 import SearchBar from './SearchBar';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
     onPress: () => void
@@ -55,9 +55,9 @@ export default function MapQueryInput({ style, onPress, query, onQueryChanged, i
                 ...style
             }}>
             <SearchBar
-                leftIcon={<FontAwesomeIcon icon={faSearch} color={Resources.Colors.Black} size={16} />}
-                rightIcon={<FontAwesomeIcon icon={faChevronDown} color={Resources.Colors.Black} size={16} />}
-                placeholder={Resources.Strings.get().Components.MapQueryInput.Placeholder}
+                leftIcon={<FontAwesomeIcon icon={faSearch} color={Resources.get().getColors().Black} size={16} />}
+                rightIcon={<FontAwesomeIcon icon={faChevronDown} color={Resources.get().getColors().Black} size={16} />}
+                placeholder={Resources.get().getStrings().Components.MapQueryInput.Placeholder}
                 onPress={onPress}
                 phrase={query.phrase}
                 onPhraseChanged={newPhrase => onQueryChanged({ ...query, phrase: newPhrase })}

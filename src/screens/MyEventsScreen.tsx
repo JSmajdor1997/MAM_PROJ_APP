@@ -9,7 +9,7 @@ import EventItem from '../components/EventItem';
 import WisbScreens from './WisbScreens';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 
@@ -28,13 +28,13 @@ export default function EventsScreen({ }: Props) {
     <View
       style={{
         flex: 1,
-        backgroundColor: Resources.Colors.White,
+        backgroundColor: Resources.get().getColors().White,
         paddingTop: StatusBar.currentHeight
           ? StatusBar.currentHeight - 8
           : 20,
       }}>
       <StatusBar
-        backgroundColor={Resources.Colors.Transparent}
+        backgroundColor={Resources.get().getColors().Transparent}
         translucent
         barStyle="dark-content"
       />
@@ -50,7 +50,7 @@ export default function EventsScreen({ }: Props) {
           justifyContent: [].length == 0 ? 'center' : undefined,
         }}
         ListEmptyComponent={
-          <FontAwesomeIcon color={Resources.Colors.BackdropWhite} icon={faCalendar} size={70} />
+          <FontAwesomeIcon color={Resources.get().getColors().BackdropWhite} icon={faCalendar} size={70} />
         }
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}

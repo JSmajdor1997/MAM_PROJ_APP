@@ -1,6 +1,6 @@
 import React from "react";
 import { ViewStyle, Animated, TouchableOpacity } from "react-native";
-import { Resources } from "../../../res/Resources";
+import Resources from "../../../res/Resources";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -15,7 +15,7 @@ export default function BubbleItem({ style, onPress, component, bubbleAnim }: { 
           }),
           ...style,
   
-          backgroundColor: Resources.Colors.White,
+          backgroundColor: Resources.get().getColors().White,
           width: 40,
           aspectRatio: 1,
           borderRadius: 50,
@@ -24,7 +24,7 @@ export default function BubbleItem({ style, onPress, component, bubbleAnim }: { 
           alignItems: 'center',
           alignSelf: 'center',
   
-          shadowColor: Resources.Colors.Black,
+          shadowColor: Resources.get().getColors().Black,
           shadowOffset: {
             width: 0,
             height: 10,

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
@@ -52,7 +52,7 @@ export default function LoginScreen({ navigation }: Props) {
     <View
       style={{
         flex: 1,
-        backgroundColor: Resources.Colors.Primary,
+        backgroundColor: Resources.get().getColors().Primary,
         justifyContent: 'center',
       }}>
       <LeavesImage
@@ -80,8 +80,8 @@ export default function LoginScreen({ navigation }: Props) {
             bottom: 5,
             justifyContent: 'flex-end',
           }}>
-          <Text style={{ color: Resources.Colors.White, fontSize: 40, fontFamily: 'leafy' }}>
-            {mode == Mode.Login ? Resources.Strings.get().Screens.LoginScreen.LoginHeader : Resources.Strings.get().Screens.LoginScreen.SignUpHeader}
+          <Text style={{ color: Resources.get().getColors().White, fontSize: 40, fontFamily: 'leafy' }}>
+            {mode == Mode.Login ? Resources.get().getStrings().Screens.LoginScreen.LoginHeader : Resources.get().getStrings().Screens.LoginScreen.SignUpHeader}
           </Text>
         </View>
 
@@ -90,15 +90,15 @@ export default function LoginScreen({ navigation }: Props) {
             width: 350,
             borderTopRightRadius: 80,
             borderBottomRightRadius: 80,
-            backgroundColor: Resources.Colors.Beige,
+            backgroundColor: Resources.get().getColors().Beige,
             shadowOffset: { width: 5, height: 0 },
             shadowRadius: 10,
             shadowOpacity: 0.4,
-            shadowColor: Resources.Colors.Black,
+            shadowColor: Resources.get().getColors().Black,
             elevation: 2,
           }}>
           <TextInput
-            placeholder={Resources.Strings.get().Screens.LoginScreen.EmailLabel}
+            placeholder={Resources.get().getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -107,7 +107,7 @@ export default function LoginScreen({ navigation }: Props) {
             }}
           />
           <TextInput
-            placeholder={Resources.Strings.get().Screens.LoginScreen.PasswordLabel}
+            placeholder={Resources.get().getStrings().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
@@ -119,7 +119,7 @@ export default function LoginScreen({ navigation }: Props) {
           {mode == Mode.SignUp ? (
             <Fragment>
               <TextInput
-                placeholder={Resources.Strings.get().Screens.LoginScreen.UserNameLabel}
+                placeholder={Resources.get().getStrings().Screens.LoginScreen.UserNameLabel}
                 style={styles.input}
                 secureTextEntry
                 autoCapitalize="none"
@@ -129,7 +129,7 @@ export default function LoginScreen({ navigation }: Props) {
               />
 
               <TextInput
-                placeholder={Resources.Strings.get().Screens.LoginScreen.PhotoLabel}
+                placeholder={Resources.get().getStrings().Screens.LoginScreen.PhotoLabel}
                 style={styles.input}
                 secureTextEntry
                 autoCapitalize="none"
@@ -145,9 +145,9 @@ export default function LoginScreen({ navigation }: Props) {
               if (mode == Mode.Login) {
                 getAPI().login(email, password).then(result => {
                   if (result.error == LoginError.InvalidPassword) {
-                    toast(Resources.Strings.get().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
+                    toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
                   } else if (result.error == LoginError.UserDoesNotExist) {
-                    toast(Resources.Strings.get().Screens.LoginScreen.LoginErrorUserDoesntExistMessage);
+                    toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorUserDoesntExistMessage);
                   } else {
                     navigation.push(WisbScreens.MapScreen, {} as any)
                   }
@@ -156,12 +156,12 @@ export default function LoginScreen({ navigation }: Props) {
                 getAPI().signUp({ email, password, userName }).then(result => {
                   if (result.error != null) {
                     if (result.error == SignUpError.InvalidDataProvided) {
-                      toast(Resources.Strings.get().Screens.LoginScreen.SignUpErrorInvalidDataProvidedMessage);
+                      toast(Resources.get().getStrings().Screens.LoginScreen.SignUpErrorInvalidDataProvidedMessage);
                     } else if (result.error == SignUpError.UserAlreadyRegistered) {
-                      toast(Resources.Strings.get().Screens.LoginScreen.SignUpErrorUserAlreadyRegisteredMessage);
+                      toast(Resources.get().getStrings().Screens.LoginScreen.SignUpErrorUserAlreadyRegisteredMessage);
                     }
                   } else {
-                    toast(Resources.Strings.get().Screens.LoginScreen.SignUpSuccessMessage);
+                    toast(Resources.get().getStrings().Screens.LoginScreen.SignUpSuccessMessage);
                     setMode(Mode.Login)
                   }
                 })
@@ -169,7 +169,7 @@ export default function LoginScreen({ navigation }: Props) {
             }}
             style={{
               borderRadius: 50,
-              backgroundColor: Resources.Colors.White,
+              backgroundColor: Resources.get().getColors().White,
               aspectRatio: 1,
               height: 54,
               position: 'absolute',
@@ -179,7 +179,7 @@ export default function LoginScreen({ navigation }: Props) {
               top: 0,
               elevation: 20,
             }}>
-            <FontAwesomeIcon icon={faArrowRight} color={Resources.Colors.Primary} />
+            <FontAwesomeIcon icon={faArrowRight} color={Resources.get().getColors().Primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -197,18 +197,18 @@ export default function LoginScreen({ navigation }: Props) {
           position: 'absolute',
         }}>
         <View style={{ flexDirection: "row" }}>
-          <Text style={{ color: Resources.Colors.Beige }}>{mode == Mode.SignUp ? Resources.Strings.get().Screens.LoginScreen.AlreadyHaveAccountQuestion : Resources.Strings.get().Screens.LoginScreen.DontYouHaveAccountQuestion}</Text>
+          <Text style={{ color: Resources.get().getColors().Beige }}>{mode == Mode.SignUp ? Resources.get().getStrings().Screens.LoginScreen.AlreadyHaveAccountQuestion : Resources.get().getStrings().Screens.LoginScreen.DontYouHaveAccountQuestion}</Text>
           <TouchableOpacity
             onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
-            <Text style={styles.login}>{mode == Mode.SignUp ? Resources.Strings.get().Screens.LoginScreen.LoginExclamation : Resources.Strings.get().Screens.LoginScreen.SignUpExclamation}</Text>
+            <Text style={styles.login}>{mode == Mode.SignUp ? Resources.get().getStrings().Screens.LoginScreen.LoginExclamation : Resources.get().getStrings().Screens.LoginScreen.SignUpExclamation}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={{ color: Resources.Colors.Beige }}>{Resources.Strings.get().Screens.LoginScreen.Or}</Text>
+        <Text style={{ color: Resources.get().getColors().Beige }}>{Resources.get().getStrings().Screens.LoginScreen.Or}</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-          <FontAwesomeIcon icon={faFacebookF} style={{ marginRight: 10 }} color={Resources.Colors.Blue} />
-          <FontAwesomeIcon icon={faGoogle} style={{ marginLeft: 10 }} color={Resources.Colors.Blue} />
+          <FontAwesomeIcon icon={faFacebookF} style={{ marginRight: 10 }} color={Resources.get().getColors().Blue} />
+          <FontAwesomeIcon icon={faGoogle} style={{ marginLeft: 10 }} color={Resources.get().getColors().Blue} />
         </View>
       </View>
     </View>
@@ -218,13 +218,13 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Resources.Colors.Beige,
+    backgroundColor: Resources.get().getColors().Beige,
   },
   header: {
     alignSelf: 'center',
     marginBottom: 1,
     fontSize: 45,
-    color: Resources.Colors.OceanBlue,
+    color: Resources.get().getColors().OceanBlue,
     fontFamily: 'leafy',
   },
   input: {
@@ -236,11 +236,11 @@ const styles = StyleSheet.create({
     marginTop: 100,
     borderTopRightRadius: 80,
     borderBottomRightRadius: 80,
-    backgroundColor: Resources.Colors.Beige,
+    backgroundColor: Resources.get().getColors().Beige,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: Resources.Colors.Black,
+    shadowColor: Resources.get().getColors().Black,
     elevation: 2,
   },
   submitWrapper: {
@@ -250,20 +250,20 @@ const styles = StyleSheet.create({
     top: 460,
     left: 320,
     // alignSelf: 'center',
-    backgroundColor: Resources.Colors.OceanBlue,
+    backgroundColor: Resources.get().getColors().OceanBlue,
     borderRadius: 50,
     height: 60,
     width: 60,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: Resources.Colors.Black,
+    shadowColor: Resources.get().getColors().Black,
     elevation: 2,
   },
   loginWrapper: {},
   login: {
     marginLeft: 8,
-    color: Resources.Colors.White,
+    color: Resources.get().getColors().White,
   },
   bambooImage: {
     height: 275,

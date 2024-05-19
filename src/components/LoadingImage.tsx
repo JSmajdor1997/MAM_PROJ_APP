@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import FastImage, { ImageStyle } from 'react-native-fast-image';
 import Spinner from 'react-native-spinkit';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
   isLoading: boolean;
@@ -11,7 +11,7 @@ interface Props {
 
 export default function LoadingImage({ isLoading, image, style }: Props) {
   return isLoading ? (
-    <Spinner type="Circle" color={Resources.Colors.Primary} size={20} />
+    <Spinner type="Circle" color={Resources.get().getColors().Primary} size={20} />
   ) : (
     <FastImage
       style={style}

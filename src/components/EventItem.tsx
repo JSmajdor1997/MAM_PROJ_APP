@@ -13,7 +13,7 @@ import WisbIcon, { IconType } from './WisbIcon';
 import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import Event from '../API/data_types/Event';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 
 interface Props {
   item: Event;
@@ -27,14 +27,14 @@ function EventItem({ item, onPress }: Props) {
       onPress={() => onPress(item)}
       style={{
         flex: 1,
-        backgroundColor: Resources.Colors.Primary,
+        backgroundColor: Resources.get().getColors().Primary,
         marginVertical: 10,
         minHeight: 120,
         marginHorizontal: 16,
         borderRadius: 10,
         justifyContent: 'space-between',
 
-        shadowColor: Resources.Colors.Black,
+        shadowColor: Resources.get().getColors().Black,
         shadowOffset: {
           width: 0,
           height: 1,
@@ -58,7 +58,7 @@ function EventItem({ item, onPress }: Props) {
                 height: 39,
                 width: 39,
                 borderRadius: 50,
-                backgroundColor: item.iconUrl ? Resources.Colors.Black : Resources.Colors.White,
+                backgroundColor: item.iconUrl ? Resources.get().getColors().Black : Resources.get().getColors().White,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
@@ -81,7 +81,7 @@ function EventItem({ item, onPress }: Props) {
             <Text
               numberOfLines={1}
               style={{
-                color: Resources.Colors.Black,
+                color: Resources.get().getColors().Black,
                 marginLeft: 8,
                 fontWeight: 'bold',
                 fontSize: 16,
@@ -93,7 +93,7 @@ function EventItem({ item, onPress }: Props) {
 
         <Text
           style={{
-            color: Resources.Colors.Black,
+            color: Resources.get().getColors().Black,
             marginLeft: 52,
             marginRight: 40,
             marginTop: 5,
@@ -123,7 +123,7 @@ function EventItem({ item, onPress }: Props) {
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-            <FontAwesomeIcon color={Resources.Colors.White} icon={faMessage} />
+            <FontAwesomeIcon color={Resources.get().getColors().White} icon={faMessage} />
           </TouchableOpacity>
         </View>
       </View>

@@ -33,7 +33,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowUp, faChevronDown, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import MapQueryInput from '../components/MapQueryInput';
 import isLatLngInRegion from '../utils/isLatLngInRegion';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import { useLocation } from '../hooks/LocationContext';
 const map_style = require('../../res/map_style.json');
@@ -120,7 +120,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
           ...rsp.data
         }))
       } else {
-        Toast.showWithGravityAndOffset(rsp.description ?? Resources.Strings.get().Screens.MapScreen.ErrorToastMessage, Toast.SHORT, Toast.CENTER, 0, 10)
+        Toast.showWithGravityAndOffset(rsp.description ?? Resources.get().getStrings().Screens.MapScreen.ErrorToastMessage, Toast.SHORT, Toast.CENTER, 0, 10)
       }
     })
   }
@@ -174,7 +174,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
             null :
             <Marker
               id={UserMarkerId}
-              title={Resources.Strings.get().Screens.MapScreen.UserPositionMarkerFlyoutContent}
+              title={Resources.get().getStrings().Screens.MapScreen.UserPositionMarkerFlyoutContent}
               coordinate={userPosition}>
               <WisbIcon size={25}
                 icon={IconType.MapPin} />
@@ -189,7 +189,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
               }}
               style={{ alignItems: "center" }}
               coordinate={searchedPlace.location}>
-              <Text style={{ marginBottom: 5, backgroundColor: Resources.Colors.Primary, color: Resources.Colors.White, padding: 5, borderRadius: 5, overflow: "hidden", borderColor: Resources.Colors.White, borderWidth: 2, fontWeight: "500", letterSpacing: 1, maxWidth: 200 }}>{searchedPlace.formattedAddress}</Text>
+              <Text style={{ marginBottom: 5, backgroundColor: Resources.get().getColors().Primary, color: Resources.get().getColors().White, padding: 5, borderRadius: 5, overflow: "hidden", borderColor: Resources.get().getColors().White, borderWidth: 2, fontWeight: "500", letterSpacing: 1, maxWidth: 200 }}>{searchedPlace.formattedAddress}</Text>
               <FontAwesomeIcon icon={faMapPin} size={30} />
             </Marker>
           )}
@@ -236,7 +236,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
             }}
             style={{
               position: "absolute",
-              backgroundColor: Resources.Colors.White,
+              backgroundColor: Resources.get().getColors().White,
               borderRadius: 100,
               justifyContent: "center",
               alignItems: "center",
@@ -245,19 +245,19 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
               transform: [
                 { translateX: TrackingIconRadius }
               ],
-              shadowColor: Resources.Colors.Black,
+              shadowColor: Resources.get().getColors().Black,
               shadowOpacity: 0.2,
               shadowOffset: { width: 0, height: 0 },
               shadowRadius: 10
             }}>
-            <FontAwesomeIcon icon={faArrowUp} color={Resources.Colors.Primary} style={{ transform: [{ rotate: "90deg" }] }} />
+            <FontAwesomeIcon icon={faArrowUp} color={Resources.get().getColors().Primary} style={{ transform: [{ rotate: "90deg" }] }} />
           </TouchableOpacity>
         </View>
       </View>
 
       <View
         style={{
-          shadowColor: Resources.Colors.Black,
+          shadowColor: Resources.get().getColors().Black,
           shadowOffset: {
             width: 0,
             height: 10,
@@ -266,7 +266,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
           shadowRadius: 13.16,
 
           elevation: 20,
-          backgroundColor: Resources.Colors.White,
+          backgroundColor: Resources.get().getColors().White,
           borderRadius: 10,
           marginHorizontal: 10,
           flexDirection: 'row',
@@ -302,7 +302,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
       </View>
 
       <ListDialog
-        googleMapsApiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
+        googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
         onPlaceSelected={selectedPlace => {
           setIsSearchDialogVisible(false)
           setSearchedPlace(selectedPlace)

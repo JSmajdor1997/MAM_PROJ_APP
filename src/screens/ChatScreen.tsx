@@ -13,7 +13,7 @@ import { Menu, MenuItem } from 'react-native-material-menu';
 import emojiUtils from 'emoji-utils';
 import LoadingImage from "../components/LoadingImage"
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { Resources } from '../../res/Resources';
+import Resources from '../../res/Resources';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
@@ -84,7 +84,7 @@ export default function ChatScreen({ }: Props) {
         style={{
           position: 'absolute',
           bottom: 0,
-          backgroundColor: Resources.Colors.White,
+          backgroundColor: Resources.get().getColors().White,
           alignItems: 'center',
           width: '96%',
           marginBottom: 8,
@@ -95,7 +95,7 @@ export default function ChatScreen({ }: Props) {
           borderRadius: 20,
           flexDirection: 'row',
 
-          shadowColor: Resources.Colors.Black,
+          shadowColor: Resources.get().getColors().Black,
           shadowOffset: {
             width: 0,
             height: 0,
@@ -112,13 +112,13 @@ export default function ChatScreen({ }: Props) {
             alignContent: 'center',
             padding: 4,
           }}>
-          <FontAwesomeIcon icon={faCamera} color={Resources.Colors.Primary} size={18} />
+          <FontAwesomeIcon icon={faCamera} color={Resources.get().getColors().Primary} size={18} />
         </TouchableOpacity>
 
         <View
           style={{
             flex: 1,
-            backgroundColor: Resources.Colors.Black,
+            backgroundColor: Resources.get().getColors().Black,
             borderRadius: 20,
             paddingStart: 10,
             marginStart: 4,
@@ -135,7 +135,7 @@ export default function ChatScreen({ }: Props) {
             alignContent: 'center',
             padding: 4,
           }}>
-          <FontAwesomeIcon icon={faMessage} color={Resources.Colors.Primary} size={20} />
+          <FontAwesomeIcon icon={faMessage} color={Resources.get().getColors().Primary} size={20} />
         </TouchableOpacity>
       </View>
     );
@@ -171,11 +171,11 @@ export default function ChatScreen({ }: Props) {
           paddingBottom: 6,
           position: 'absolute',
           paddingTop: (StatusBar.currentHeight || 20) + 5,
-          backgroundColor: Resources.Colors.White,
+          backgroundColor: Resources.get().getColors().White,
           borderBottomLeftRadius: 15,
           borderBottomRightRadius: 15,
 
-          shadowColor: Resources.Colors.Black,
+          shadowColor: Resources.get().getColors().Black,
           shadowOffset: {
             width: 0,
             height: 7,
@@ -195,7 +195,7 @@ export default function ChatScreen({ }: Props) {
             onPress={() => { }}
             style={{ marginLeft: 8 }}>
             <FontAwesomeIcon
-              color={Resources.Colors.Primary}
+              color={Resources.get().getColors().Primary}
               icon={faArrowLeft}
             />
           </TouchableOpacity>
@@ -219,7 +219,7 @@ export default function ChatScreen({ }: Props) {
               marginLeft: 10,
               fontSize: 16.5,
               fontWeight: 'bold',
-              color: Resources.Colors.Primary,
+              color: Resources.get().getColors().Primary,
             }}>
             TYTUL WYDARZENIA
           </Text>
@@ -231,7 +231,7 @@ export default function ChatScreen({ }: Props) {
           anchor={
             <TouchableOpacity
               style={{ alignSelf: 'flex-end', marginRight: 2 }}>
-              <FontAwesomeIcon color={Resources.Colors.Primary} icon={faGripVertical} />
+              <FontAwesomeIcon color={Resources.get().getColors().Primary} icon={faGripVertical} />
             </TouchableOpacity>
           }
           ref={menuRef}>
@@ -254,7 +254,7 @@ export default function ChatScreen({ }: Props) {
         paddingBottom: 8,
       }}>
       <StatusBar
-        backgroundColor={Resources.Colors.Transparent}
+        backgroundColor={Resources.get().getColors().Transparent}
         barStyle="dark-content"
         translucent
       />

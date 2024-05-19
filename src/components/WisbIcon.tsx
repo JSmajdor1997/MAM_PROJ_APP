@@ -1,6 +1,6 @@
 import { View, ViewStyle } from "react-native";
 import FastImage from 'react-native-fast-image';
-import { Resources } from "../../res/Resources";
+import Resources from "../../res/Resources";
 import {
     Grayscale,
     Sepia,
@@ -67,8 +67,8 @@ function Modificator({ modificator }: { modificator: ModificatorType }) {
     return (
         <View style={{ position: "absolute", top: -22, width: 20, height: 20, justifyContent: "center", alignItems: "center", backgroundColor: "white", borderTopStartRadius: 100, borderTopEndRadius: 100 }}>
             {modificator == ModificatorType.Add ?
-                <FontAwesomeIcon icon={faAdd} color={Resources.Colors.Primary} /> :
-                <FontAwesomeIcon icon={faClose} color={Resources.Colors.Primary} />}
+                <FontAwesomeIcon icon={faAdd} color={Resources.get().getColors().Primary} /> :
+                <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Primary} />}
         </View>
     )
 }

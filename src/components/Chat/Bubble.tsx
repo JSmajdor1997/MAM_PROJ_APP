@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { MessageText, MessageImage, Time, utils } from 'react-native-gifted-chat';
-import { Resources } from '../../../res/Resources';
+import Resources from '../../../res/Resources';
 
 const { isSameUser, isSameDay } = utils;
 
@@ -50,8 +50,6 @@ interface Props {
     right: ViewStyle;
   };
 }
-
-interface State { }
 
 export default function Bubble(props: Props) {
   const onLongPress = () => {
@@ -92,7 +90,7 @@ export default function Bubble(props: Props) {
         return props.renderMessageText(messageTextProps);
       }
       return (
-        <View style={{ backgroundColor: Resources.Colors.Beige, borderRadius: 4, paddingHorizontal: 4 }}>
+        <View style={{ backgroundColor: Resources.get().getColors().Beige, borderRadius: 4, paddingHorizontal: 4 }}>
           <MessageText
             {...messageTextProps}
             textStyle={{
@@ -285,8 +283,8 @@ const styles = StyleSheet.create({
   },
   /* eslint-disable react-native/no-color-literals */
   tick: {
-    backgroundColor: Resources.Colors.Transparent,
-    color: Resources.Colors.White,
+    backgroundColor: Resources.get().getColors().Transparent,
+    color: Resources.get().getColors().White,
   },
   /* eslint-enable react-native/no-color-literals */
   tickView: {

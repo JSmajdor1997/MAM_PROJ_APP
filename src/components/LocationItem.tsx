@@ -3,7 +3,7 @@ import { LatLng } from "react-native-maps"
 import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng"
 import formatDistance from "../utils/formatDistance"
 import WisbIcon, { IconType } from "./WisbIcon"
-import { Resources } from "../../res/Resources"
+import Resources from "../../res/Resources"
 
 export interface Props {
     onPress: () => void
@@ -24,7 +24,7 @@ export default function LocationItem({ onPress, userLocation, location }: Props)
                 <Text style={{ color: "blue", fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>{location.asText}</Text>
             </View>
 
-            <Text style={{ color: Resources.Colors.Black, textAlign: "center", fontSize: 10 }}>{Resources.Strings.get().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.Strings.get().Components.LocationItem.FromYouMessage}</Text>
+            <Text style={{ color: Resources.get().getColors().Black, textAlign: "center", fontSize: 10 }}>{Resources.get().getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.get().getStrings().Components.LocationItem.FromYouMessage}</Text>
         </TouchableOpacity>
     )
 }

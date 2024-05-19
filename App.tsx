@@ -3,7 +3,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Resources } from './res/Resources';
+import Resources from './res/Resources';
 import SplashScreen from './src/screens/SplashScreen';
 import MapScreen from './src/screens/MapScreen';
 import NavBar from './src/components/NavBar/NavBar';
@@ -186,7 +186,7 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Resources.Colors.Primary,
+    backgroundColor: Resources.get().getColors().Primary,
     flexDirection: "column",
     justifyContent: "space-between"
   },

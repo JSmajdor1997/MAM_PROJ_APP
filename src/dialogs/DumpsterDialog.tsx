@@ -3,7 +3,7 @@ import { IconType } from "../components/WisbIcon";
 import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { Text, TextInput, View } from "react-native";
-import { Resources } from "../../res/Resources";
+import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import { LatLng } from "react-native-maps";
 
@@ -31,21 +31,21 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible,
             sectionsOrder={[Sections.BasicInfo, Sections.Location]}
             moreActions={[
                 {
-                    label: Resources.Strings.get().Dialogs.DumpsterDialog.DeleteAction,
+                    label: Resources.get().getStrings().Dialogs.DumpsterDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
-                    color: Resources.Colors.Red,
+                    color: Resources.get().getColors().Red,
                     onPress: () => { }
                 },
                 {
-                    label: Resources.Strings.get().Dialogs.DumpsterDialog.EditAction,
+                    label: Resources.get().getStrings().Dialogs.DumpsterDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
-                    color: Resources.Colors.White,
+                    color: Resources.get().getColors().White,
                     onPress: () => { }
                 }
             ]}
             sections={{
                 [Sections.BasicInfo]: {
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.Colors.Yellow, name: Resources.Strings.get().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props) => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props) => (
                         <View style={{ flex: 1, padding: 10 }}>
                             <View>
                                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>stworzone przez</Text>
@@ -62,12 +62,12 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible,
                     )
                 },
                 [Sections.Location]: {
-                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.Colors.Green, name: Resources.Strings.get().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props) => (
+                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Green, name: Resources.get().getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props) => (
                         <View style={{ flex: 1, padding: 15 }}>
                             <LocationInput
                                 readonly
                                 style={{ flex: 1 }}
-                                apiKey={Resources.Env.GOOGLE_MAPS_API_KEY}
+                                apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
                                 location={{
                                     coords: {
