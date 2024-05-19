@@ -8,13 +8,15 @@ import {
     ViewStyle,
     Animated,
     Easing,
+    StyleSheet,
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
-import WisbIcon, { IconType } from './WisbIcon';
+import WisbIcon from './WisbIcon/WisbIcon';
 import { Query, Type } from '../API/helpers';
 import SearchBar from './SearchBar';
 import Resources from '../../res/Resources';
+import IconType from './WisbIcon/IconType';
 
 interface Props {
     onPress: () => void
@@ -102,3 +104,7 @@ export default function MapQueryInput({ style, onPress, query, onQueryChanged, i
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    
+})

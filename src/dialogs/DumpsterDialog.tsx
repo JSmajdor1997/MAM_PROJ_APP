@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { IconType } from "../components/WisbIcon";
 import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import { LatLng } from "react-native-maps";
+import IconType from "../components/WisbIcon/IconType";
 
 enum Sections {
     BasicInfo,
@@ -82,3 +82,7 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible,
             }} />
     )
 }
+
+const styles = StyleSheet.create({
+    
+})

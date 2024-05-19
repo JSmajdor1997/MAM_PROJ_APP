@@ -76,7 +76,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
         setIndex(index)
 
         setIsLoading(false);
-        flatListRef.current?.scrollToOffset({animated: true, offset: 0})
+        flatListRef.current?.scrollToOffset({ animated: true, offset: 0 })
       } else {
         Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
       }
@@ -113,11 +113,11 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       visible={visible}
       backdropStyle={{ backgroundColor: undefined }}
       position={Position.Bottom}
-      dialogStyle={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: Resources.get().getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column" }}
+      dialogStyle={styles.dialogStyle}
       dismissOnBackdropPress={false}>
       <FlatList
         ref={flatListRef}
-        onEndReached={()=>updateMapObjects(true, index+1)}
+        onEndReached={() => updateMapObjects(true, index + 1)}
         onEndReachedThreshold={0.5}
         initialNumToRender={PageSize}
         maxToRenderPerBatch={PageSize}
@@ -145,7 +145,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => (
-          <Separator backgroundColor={Resources.get().getColors().White} color={Resources.get().getColors().Beige}/>
+          <Separator backgroundColor={Resources.get().getColors().White} color={Resources.get().getColors().Beige} />
         )}
         ListFooterComponent={() => {
           if (isLoading) {
@@ -176,8 +176,17 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       <FAB
         color={Resources.get().getColors().Red}
         icon={<FontAwesomeIcon icon={faClose} color={Resources.get().getColors().White} size={25} />}
-        style={{ marginBottom: 5 }}
+        style={styles.dismissButton}
         onPress={onDismiss} />
     </Dialog>
   );
 }
+
+const styles = StyleSheet.create({
+  dialogStyle: {
+    borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: Resources.get().getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
+  },
+  dismissButton: {
+    marginBottom: 5
+  }
+})

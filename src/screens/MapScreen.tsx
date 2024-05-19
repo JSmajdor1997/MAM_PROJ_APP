@@ -7,6 +7,7 @@ import {
   ToastAndroid,
   TouchableOpacity,
   Dimensions,
+  StyleSheet,
 } from 'react-native';
 import MapView, { Marker, Region, LatLng } from 'react-native-maps';
 import SearchBar from '../components/MapQueryInput';
@@ -20,7 +21,7 @@ import Toast from 'react-native-simple-toast';
 import Wasteland from '../API/data_types/Wasteland';
 import Dumpster from '../API/data_types/Dumpster';
 import Event from '../API/data_types/Event';
-import WisbIcon, { IconType } from '../components/WisbIcon';
+import WisbIcon from '../components/WisbIcon/WisbIcon';
 import getRandomLatLngInPoland from '../API/implementations/mockup/getRandomLatLngInPoland';
 import metersToLatLngDelta from '../utils/metersToDelta';
 import scaleRegion from '../utils/scaleRegion';
@@ -36,6 +37,7 @@ import isLatLngInRegion from '../utils/isLatLngInRegion';
 import Resources from '../../res/Resources';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import { useLocation } from '../hooks/LocationContext';
+import IconType from '../components/WisbIcon/IconType';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -67,11 +69,11 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
   const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
 
   const [userPosition, setUserPosition] = React.useState(getRandomLatLngInPoland())
-  
+
   const cleanup = useLocation(setUserPosition)
 
-  React.useEffect(()=>{
-    return ()=> {
+  React.useEffect(() => {
+    return () => {
       cleanup()
     }
   })
@@ -127,9 +129,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
 
   return (
     <View
-      style={{
-        flex: 1,
-      }}>
+      style={styles.root}>
       <MapView
         ref={mapRef}
         onRegionChangeComplete={newRegion => {
@@ -167,7 +167,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
         showsCompass={false}
         provider="google"
         showsPointsOfInterest={false}
-        style={{ height: '100%', width: '100%' }}
+        style={styles.mapView}
         customMapStyle={map_style}>
         <Fragment>
           {userPosition == null ?
@@ -187,9 +187,9 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
                 setIsSearchDialogVisible(true)
                 setSearchedPlace(null)
               }}
-              style={{ alignItems: "center" }}
+              style={styles.searchedPlaceMarker}
               coordinate={searchedPlace.location}>
-              <Text style={{ marginBottom: 5, backgroundColor: Resources.get().getColors().Primary, color: Resources.get().getColors().White, padding: 5, borderRadius: 5, overflow: "hidden", borderColor: Resources.get().getColors().White, borderWidth: 2, fontWeight: "500", letterSpacing: 1, maxWidth: 200 }}>{searchedPlace.formattedAddress}</Text>
+              <Text style={styles.searchedPlaceMarkerLabel}>{searchedPlace.formattedAddress}</Text>
               <FontAwesomeIcon icon={faMapPin} size={30} />
             </Marker>
           )}
@@ -223,55 +223,23 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
         </Fragment>
       </MapView>
 
-      <View style={{ width: "100%", height: "100%", position: "absolute", justifyContent: "center", alignItems: "center", pointerEvents: "box-none" }}>
-        <View ref={trackingIconRef} style={{
-          position: "absolute",
-          justifyContent: "center", alignItems: "center", pointerEvents: "box-none", width: TrackingIconRadius * 2, height: TrackingIconRadius * 2, borderRadius: TrackingIconRadius
-        }}>
+      <View style={styles.trackingIconContainer}>
+        <View ref={trackingIconRef} style={styles.trackingIcon}>
           <TouchableOpacity
             onPress={() => {
               if (userPosition != null) {
                 mapRef.current?.animateToRegion({ ...userPosition, latitudeDelta: 0.1, longitudeDelta: 0.1 })
               }
             }}
-            style={{
-              position: "absolute",
-              backgroundColor: Resources.get().getColors().White,
-              borderRadius: 100,
-              justifyContent: "center",
-              alignItems: "center",
-              height: TrackingIconSize,
-              width: TrackingIconSize,
-              transform: [
-                { translateX: TrackingIconRadius }
-              ],
-              shadowColor: Resources.get().getColors().Black,
-              shadowOpacity: 0.2,
-              shadowOffset: { width: 0, height: 0 },
-              shadowRadius: 10
-            }}>
-            <FontAwesomeIcon icon={faArrowUp} color={Resources.get().getColors().Primary} style={{ transform: [{ rotate: "90deg" }] }} />
+            style={styles.trackingIconSubContainer}>
+            <FontAwesomeIcon icon={faArrowUp} color={Resources.get().getColors().Primary} style={styles.trackingIconChild} />
           </TouchableOpacity>
         </View>
       </View>
 
       <View
         style={{
-          shadowColor: Resources.get().getColors().Black,
-          shadowOffset: {
-            width: 0,
-            height: 10,
-          },
-          shadowOpacity: 0.51,
-          shadowRadius: 13.16,
-
-          elevation: 20,
-          backgroundColor: Resources.get().getColors().White,
-          borderRadius: 10,
-          marginHorizontal: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-          position: 'absolute',
+          ...styles.mapQueryInputContainer,
           marginTop: (StatusBar.currentHeight ?? 20) + 5,
         }}>
         <MapQueryInput
@@ -323,3 +291,81 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  mapQueryInputContainer: {
+    shadowColor: Resources.get().getColors().Black,
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.51,
+    shadowRadius: 13.16,
+
+    elevation: 20,
+    backgroundColor: Resources.get().getColors().White,
+    borderRadius: 10,
+    marginHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+  },
+  trackingIconSubContainer: {
+    position: "absolute",
+    backgroundColor: Resources.get().getColors().White,
+    borderRadius: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    height: TrackingIconSize,
+    width: TrackingIconSize,
+    shadowColor: Resources.get().getColors().Black,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 10,
+    transform: [
+      { translateX: TrackingIconRadius }
+    ]
+  },
+  trackingIconContainer: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    pointerEvents: "box-none"
+  },
+  trackingIcon: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    pointerEvents: "box-none",
+    width: TrackingIconRadius * 2,
+    height: TrackingIconRadius * 2,
+    borderRadius: TrackingIconRadius
+  },
+  trackingIconChild: {
+    transform: [{ rotate: "90deg" }]
+  },
+  searchedPlaceMarker: {
+    alignItems: "center"
+  },
+  searchedPlaceMarkerLabel: {
+    marginBottom: 5,
+    backgroundColor: Resources.get().getColors().Primary,
+    color: Resources.get().getColors().White,
+    padding: 5,
+    borderRadius: 5,
+    overflow: "hidden",
+    borderColor: Resources.get().getColors().White,
+    borderWidth: 2,
+    fontWeight: "500",
+    letterSpacing: 1,
+    maxWidth: 200
+  },
+  mapView: {
+    height: '100%', width: '100%'
+  }
+})

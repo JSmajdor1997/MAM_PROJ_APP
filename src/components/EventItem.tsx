@@ -5,11 +5,12 @@ import {
   Text,
   Alert,
   StatusBar,
+  StyleSheet,
 } from 'react-native';
 import { MenuItem, Menu } from 'react-native-material-menu';
 import FastImage from 'react-native-fast-image';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import WisbIcon, { IconType } from './WisbIcon';
+import WisbIcon, { IconType } from './WisbIcon/WisbIcon';
 import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import Event from '../API/data_types/Event';
@@ -25,25 +26,7 @@ function EventItem({ item, onPress }: Props) {
     <TouchableOpacity
       activeOpacity={0.6}
       onPress={() => onPress(item)}
-      style={{
-        flex: 1,
-        backgroundColor: Resources.get().getColors().Primary,
-        marginVertical: 10,
-        minHeight: 120,
-        marginHorizontal: 16,
-        borderRadius: 10,
-        justifyContent: 'space-between',
-
-        shadowColor: Resources.get().getColors().Black,
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-
-        elevation: 5,
-      }}>
+      style={styles.root}>
       <View>
         <View
           style={{
@@ -132,3 +115,25 @@ function EventItem({ item, onPress }: Props) {
 }
 
 export default React.memo(EventItem)
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: Resources.get().getColors().Primary,
+    marginVertical: 10,
+    minHeight: 120,
+    marginHorizontal: 16,
+    borderRadius: 10,
+    justifyContent: 'space-between',
+
+    shadowColor: Resources.get().getColors().Black,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+
+    elevation: 5,
+  }
+})

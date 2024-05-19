@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, ViewStyle, Image, LayoutChangeEvent, TouchableHighlight, TouchableOpacity } from "react-native";
+import { View, Text, ViewStyle, Image, LayoutChangeEvent, TouchableHighlight, TouchableOpacity, StyleSheet } from "react-native";
 import Resources from "../../res/Resources";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faClose, faPen } from "@fortawesome/free-solid-svg-icons";
@@ -144,3 +144,7 @@ function ImageAddingComponent({ margin, width, onPress }: ImageAddingComponentPr
         </TouchableOpacity>
     )
 }
+
+const styles = StyleSheet.create({
+    
+})

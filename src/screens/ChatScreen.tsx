@@ -272,3 +272,7 @@ export default function ChatScreen({ }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+    
+})

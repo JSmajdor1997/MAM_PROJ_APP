@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
 import Wasteland from '../API/data_types/Wasteland';
 import Resources from '../../res/Resources';
@@ -75,3 +76,7 @@ function WastelandItem({ item, onPress }: Props) {
 }
 
 export default React.memo(WastelandItem)
+
+const styles = StyleSheet.create({
+    
+})

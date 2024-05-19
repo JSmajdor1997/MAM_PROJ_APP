@@ -61,17 +61,15 @@ export default function Avatar({ colors, onPress, size, fontSize, image, style, 
       {image == null || image == '' ? (
         <Text
           style={{
-            color: Resources.get().getColors().White,
+            ...styles.initialsText,
             fontSize: fontSize,
-            fontWeight: 'bold',
           }}>
           {getInitials(username)}
         </Text>
       ) : (
         <FastImage
           style={{
-            width: '100%',
-            height: '100%',
+            ...styles.image,
             borderRadius: size / 2,
           }}
           source={{ uri: image! }}
@@ -95,4 +93,12 @@ const styles = StyleSheet.create({
 
     elevation: 10,
   },
+  initialsText: {
+    color: Resources.get().getColors().White,
+    fontWeight: 'bold',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  }
 });

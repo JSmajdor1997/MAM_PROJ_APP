@@ -34,24 +34,29 @@ export default function SplashScreen({ navigation }: Props) {
   return (
     <BlurryView
       isBlurred={isBlurred}
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-        width: '100%',
-      }}>
+      style={styles.root}>
       <StatusBar backgroundColor={Resources.get().getColors().Transparent} translucent />
-      <Animated.View
-        style={{
-          height: '100%',
-          width: '100%',
-          backgroundColor: Resources.get().getColors().Primary,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+      <View
+        style={styles.logoContainer}>
         <Logo withMotto />
-      </Animated.View>
+      </View>
     </BlurryView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+  },
+  logoContainer: {
+    height: '100%',
+    width: '100%',
+    backgroundColor: Resources.get().getColors().Primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
+})

@@ -16,7 +16,7 @@ import LeaderboardScreen from './src/screens/LeaderBoardScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import MyEventsScreen from './src/screens/MyEventsScreen';
 import NavigationParamsList from './src/screens/NavigationParamsList';
-import WisbIcon, { IconType, ModificatorType } from './src/components/WisbIcon';
+import WisbIcon from './src/components/WisbIcon/WisbIcon';
 import Wasteland from './src/API/data_types/Wasteland';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
@@ -33,6 +33,8 @@ import { isDumpster, isEvent, isWasteland } from './src/API/data_types/type_guar
 import { LogBox } from 'react-native';
 import { LocationProvider } from './src/hooks/LocationContext';
 import getRandomLatLngInPoland from './src/API/implementations/mockup/getRandomLatLngInPoland';
+import IconType from './src/components/WisbIcon/IconType';
+import ModificatorType from './src/components/WisbIcon/ModificatorType';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',

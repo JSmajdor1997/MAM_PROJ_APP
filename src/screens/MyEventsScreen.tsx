@@ -3,7 +3,8 @@ import {
   View,
   StatusBar,
   FlatList,
-  Text
+  Text,
+  StyleSheet
 } from 'react-native';
 import EventItem from '../components/EventItem';
 import WisbScreens from './WisbScreens';
@@ -27,8 +28,7 @@ export default function EventsScreen({ }: Props) {
   return (
     <View
       style={{
-        flex: 1,
-        backgroundColor: Resources.get().getColors().White,
+        ...styles.root,
         paddingTop: StatusBar.currentHeight
           ? StatusBar.currentHeight - 8
           : 20,
@@ -40,15 +40,8 @@ export default function EventsScreen({ }: Props) {
       />
 
       <FlatList
-        style={{
-          flex: 1,
-          marginBottom: 80,
-          marginTop: 14,
-        }}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: [].length == 0 ? 'center' : undefined,
-        }}
+        style={styles.flatList}
+        contentContainerStyle={styles.flatListContentContainer}
         ListEmptyComponent={
           <FontAwesomeIcon color={Resources.get().getColors().BackdropWhite} icon={faCalendar} size={70} />
         }
@@ -66,3 +59,20 @@ export default function EventsScreen({ }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: Resources.get().getColors().White,
+    },
+    flatList: {
+      flex: 1,
+      marginBottom: 80,
+      marginTop: 14,
+    }, 
+    flatListContentContainer: {
+      flex: 1,
+      marginBottom: 80,
+      marginTop: 14,
+    }
+})

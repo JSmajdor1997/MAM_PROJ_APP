@@ -5,12 +5,9 @@ import {
   Text,
   Alert,
   StatusBar,
+  StyleSheet,
 } from 'react-native';
-import { MenuItem, Menu } from 'react-native-material-menu';
-import FastImage from 'react-native-fast-image';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import WisbIcon, { IconType } from './WisbIcon';
-import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import Dumpster from '../API/data_types/Dumpster';
 import Resources from '../../res/Resources';
@@ -23,27 +20,9 @@ interface Props {
 function DumpsterItem({ item, onPress }: Props) {
   return (
     <TouchableOpacity
-      onPress={()=>onPress(item)}
+      onPress={() => onPress(item)}
       activeOpacity={0.6}
-      style={{
-        flex: 1,
-        backgroundColor: Resources.get().getColors().Primary,
-        marginVertical: 10,
-        minHeight: 120,
-        marginHorizontal: 16,
-        borderRadius: 10,
-        justifyContent: 'space-between',
-
-        shadowColor: Resources.get().getColors().Black,
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-
-        elevation: 5,
-      }}>
+      style={styles.root}>
       <View>
         <View
           style={{
@@ -117,3 +96,25 @@ function DumpsterItem({ item, onPress }: Props) {
 }
 
 export default React.memo(DumpsterItem)
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: Resources.get().getColors().Primary,
+    marginVertical: 10,
+    minHeight: 120,
+    marginHorizontal: 16,
+    borderRadius: 10,
+    justifyContent: 'space-between',
+
+    shadowColor: Resources.get().getColors().Black,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+
+    elevation: 5,
+  }
+})

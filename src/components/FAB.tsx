@@ -1,5 +1,5 @@
 import React, { ReactElement } from "react";
-import { ViewStyle } from "react-native";
+import { StyleSheet, ViewStyle } from "react-native";
 import { View, Text } from "react-native";
 import Ripple from 'react-native-material-ripple';
 import Resources from "../../res/Resources";
@@ -15,53 +15,68 @@ export interface Props {
 
 export default function FAB({ icon, color, onPress, label, size, style }: Props): ReactElement {
     return (
-        <View style={{ justifyContent: 'center', alignItems: 'center', ...style }}>
+        <View style={{ ...styles.root, ...style }}>
             <Ripple
                 rippleCentered={true}
                 rippleSize={45}
                 onPress={onPress}
                 style={{
-                    aspectRatio: 1,
                     width: size || 54,
                     backgroundColor: color,
-                    borderRadius: 50,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-
-                    shadowColor: Resources.get().getColors().Black,
-                    shadowOffset: {
-                        width: 0,
-                        height: 1,
-                    },
-                    shadowOpacity: 0.5,
-                    shadowRadius: 4,
-
-                    elevation: 10,
+                    ...styles.ripple
                 }}>
                 {icon}
             </Ripple>
             {label && label != '' ? (
                 <View
                     style={{
-                        backgroundColor: Resources.get().getColors().White,
-                        paddingHorizontal: 5,
-                        paddingVertical: 3,
-                        borderRadius: 5,
-                        marginTop: 8,
-
-                        shadowColor: Resources.get().getColors().Black,
-                        shadowOffset: {
-                            width: 0,
-                            height: 5,
-                        },
-                        shadowOpacity: 1,
-                        shadowRadius: 16,
-
-                        elevation: 20,
+                        ...styles.labelContainer
                     }}>
-                    <Text style={{ textAlign: 'center' }}>{label}</Text>
+                    <Text style={styles.label}>{label}</Text>
                 </View>
             ) : null}
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    root: {
+        justifyContent: 'center', alignItems: 'center'
+    },
+    ripple: {
+        aspectRatio: 1,
+        borderRadius: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+        shadowColor: Resources.get().getColors().Black,
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+
+        elevation: 10,
+    },
+    labelContainer: {
+        backgroundColor: Resources.get().getColors().White,
+        paddingHorizontal: 5,
+        paddingVertical: 3,
+        borderRadius: 5,
+        marginTop: 8,
+
+        shadowColor: Resources.get().getColors().Black,
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 1,
+        shadowRadius: 16,
+
+        elevation: 20,
+    },
+    label: {
+        textAlign: 'center'
+    }
+})

@@ -88,34 +88,8 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   slackAvatar: {
-    // The bottom should roughly line up with the first line of message text.
     height: 40,
     width: 40,
     borderRadius: 3,
   },
 });
-
-Message.defaultProps = {
-  renderAvatar: undefined,
-  renderBubble: null,
-  renderDay: null,
-  currentMessage: {},
-  nextMessage: {},
-  previousMessage: {},
-  user: {},
-  containerStyle: {},
-};
-
-Message.propTypes = {
-  renderAvatar: PropTypes.func,
-  renderBubble: PropTypes.func,
-  renderDay: PropTypes.func,
-  currentMessage: PropTypes.object,
-  nextMessage: PropTypes.object,
-  previousMessage: PropTypes.object,
-  user: PropTypes.object,
-  containerStyle: PropTypes.shape({
-    left: ViewPropTypes.style,
-    right: ViewPropTypes.style,
-  }),
-};

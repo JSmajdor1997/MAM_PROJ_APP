@@ -1,8 +1,8 @@
-import { TouchableOpacity, View, Text } from "react-native"
+import { TouchableOpacity, View, Text, StyleSheet } from "react-native"
 import { LatLng } from "react-native-maps"
 import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng"
 import formatDistance from "../utils/formatDistance"
-import WisbIcon, { IconType } from "./WisbIcon"
+import WisbIcon, { IconType } from "./WisbIcon/WisbIcon"
 import Resources from "../../res/Resources"
 
 export interface Props {
@@ -17,14 +17,29 @@ export interface Props {
 export default function LocationItem({ onPress, userLocation, location }: Props) {
     return (
         <TouchableOpacity
-            style={{ padding: 8, alignItems: "flex-end", justifyContent: "space-between" }}
+            style={styles.root}
             onPress={onPress}>
-            <View style={{ flexDirection: "row", padding: 8, alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <View style={styles.nameContainer}>
                 <WisbIcon icon={IconType.MapPin} size={15} />
-                <Text style={{ color: "blue", fontWeight: "bold", letterSpacing: 1, textAlign: "center" }}>{location.asText}</Text>
+                <Text style={styles.name}>{location.asText}</Text>
             </View>
 
-            <Text style={{ color: Resources.get().getColors().Black, textAlign: "center", fontSize: 10 }}>{Resources.get().getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.get().getStrings().Components.LocationItem.FromYouMessage}</Text>
+            <Text style={styles.distanceInfo}>{Resources.get().getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.get().getStrings().Components.LocationItem.FromYouMessage}</Text>
         </TouchableOpacity>
     )
 }
+
+const styles = StyleSheet.create({
+    root: {
+        padding: 8, alignItems: "flex-end", justifyContent: "space-between"
+    },
+    nameContainer: {
+        flexDirection: "row", padding: 8, alignItems: "center", justifyContent: "space-between", width: "100%"
+    },
+    name: {
+        color: "blue", fontWeight: "bold", letterSpacing: 1, textAlign: "center"
+    },
+    distanceInfo: {
+        color: Resources.get().getColors().Black, textAlign: "center", fontSize: 10
+    }
+})

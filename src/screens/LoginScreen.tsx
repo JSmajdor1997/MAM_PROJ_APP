@@ -50,53 +50,21 @@ export default function LoginScreen({ navigation }: Props) {
 
   return (
     <View
-      style={{
-        flex: 1,
-        backgroundColor: Resources.get().getColors().Primary,
-        justifyContent: 'center',
-      }}>
+      style={styles.root}>
       <LeavesImage
-        style={{
-          height: 190,
-          width: 161,
-          position: 'absolute',
-          top: -50,
-          right: -20,
-          transform: [{ rotate: '180deg' }],
-        }} />
+        style={styles.leavesImage} />
       <BambooImage
-        style={{
-          height: 250,
-          width: 120,
-          position: 'absolute',
-          bottom: -30,
-          left: -45,
-          transform: [{ rotate: '20deg' }],
-        }} />
+        style={styles.bambooImage} />
       <View>
         <View
-          style={{
-            alignItems: 'center',
-            bottom: 5,
-            justifyContent: 'flex-end',
-          }}>
-          <Text style={{ color: Resources.get().getColors().White, fontSize: 40, fontFamily: 'leafy' }}>
+          style={styles.headerContainer}>
+          <Text style={styles.header}>
             {mode == Mode.Login ? Resources.get().getStrings().Screens.LoginScreen.LoginHeader : Resources.get().getStrings().Screens.LoginScreen.SignUpHeader}
           </Text>
         </View>
 
         <View
-          style={{
-            width: 350,
-            borderTopRightRadius: 80,
-            borderBottomRightRadius: 80,
-            backgroundColor: Resources.get().getColors().Beige,
-            shadowOffset: { width: 5, height: 0 },
-            shadowRadius: 10,
-            shadowOpacity: 0.4,
-            shadowColor: Resources.get().getColors().Black,
-            elevation: 2,
-          }}>
+          style={styles.inputsContainer}>
           <TextInput
             placeholder={Resources.get().getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
@@ -216,16 +184,49 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: Resources.get().getColors().Primary,
+    justifyContent: 'center',
+  },
+  header: {
+    color: Resources.get().getColors().White, fontSize: 40, fontFamily: Resources.get().getFonts().Primary
+  },
+  leavesImage: {
+    height: 190,
+    width: 161,
+    position: 'absolute',
+    top: -50,
+    right: -20,
+    transform: [{ rotate: '180deg' }],
+  },
+  bambooImage: {
+    height: 250,
+    width: 120,
+    position: 'absolute',
+    bottom: -30,
+    left: -45,
+    transform: [{ rotate: '20deg' }],
+  },
+  inputsContainer: {
+    width: 350,
+    borderTopRightRadius: 80,
+    borderBottomRightRadius: 80,
+    backgroundColor: Resources.get().getColors().Beige,
+    shadowOffset: { width: 5, height: 0 },
+    shadowRadius: 10,
+    shadowOpacity: 0.4,
+    shadowColor: Resources.get().getColors().Black,
+    elevation: 2,
+  },
   container: {
     flex: 1,
     backgroundColor: Resources.get().getColors().Beige,
   },
-  header: {
-    alignSelf: 'center',
-    marginBottom: 1,
-    fontSize: 45,
-    color: Resources.get().getColors().OceanBlue,
-    fontFamily: 'leafy',
+  headerContainer: {
+    alignItems: 'center',
+    bottom: 5,
+    justifyContent: 'flex-end',
   },
   input: {
     padding: 15,
@@ -264,21 +265,5 @@ const styles = StyleSheet.create({
   login: {
     marginLeft: 8,
     color: Resources.get().getColors().White,
-  },
-  bambooImage: {
-    height: 275,
-    width: 132,
-    position: 'absolute',
-    bottom: -30,
-    left: 0,
-    transform: [{ rotate: '20deg' }],
-  },
-  stickImage: {
-    height: 190,
-    width: 161,
-    position: 'absolute',
-    top: 50,
-    right: -20,
-    transform: [{ rotate: '180deg' }],
   }
 });

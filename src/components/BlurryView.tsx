@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, ViewStyle } from 'react-native';
+import { Image, StyleSheet, ViewStyle } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 
 interface Props {
@@ -36,9 +36,7 @@ export default function BlurryView({ isBlurred, onBlurred, style, children }: Pr
       <Image
         resizeMode="cover"
         style={{
-          height: '100%',
-          width: '100%',
-          position: 'absolute',
+          ...styles.image,
           opacity: blurredSrc ? 1 : 0,
         }}
         blurRadius={2.5}
@@ -47,3 +45,12 @@ export default function BlurryView({ isBlurred, onBlurred, style, children }: Pr
     </ViewShot>
   )
 }
+
+
+const styles = StyleSheet.create({
+  image: {
+    height: '100%',
+    width: '100%',
+    position: 'absolute',
+  }
+})

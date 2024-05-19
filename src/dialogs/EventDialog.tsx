@@ -1,14 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { IconType } from "../components/WisbIcon";
 import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage } from "@fortawesome/free-solid-svg-icons";
-import { Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import FAB from "../components/FAB";
 import { faFacebookF, faInstagram, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { LatLng } from "react-native-maps";
+import IconType from "../components/WisbIcon/IconType";
 
 enum Sections {
     BasicInfo,
@@ -169,3 +169,7 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
             }} />
     )
 }
+
+const styles = StyleSheet.create({
+    
+})

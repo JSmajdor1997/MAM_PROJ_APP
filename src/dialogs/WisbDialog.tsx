@@ -7,9 +7,10 @@ import {
     Text,
     ScrollView,
     View,
-    TouchableOpacity
+    TouchableOpacity,
+    StyleSheet
 } from 'react-native';
-import WisbIcon, { IconType, ModificatorType } from "../components/WisbIcon"
+import WisbIcon, { IconType, ModificatorType } from "../components/WisbIcon/WisbIcon"
 import Swiper from 'react-native-swiper';
 import Resources from '../../res/Resources';
 import ProgressInput from '../components/ProgressInput';
@@ -220,3 +221,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
         </Modal>
     )
 }
+
+const styles = StyleSheet.create({
+    
+})

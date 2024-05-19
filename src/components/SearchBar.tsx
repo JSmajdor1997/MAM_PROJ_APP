@@ -5,6 +5,7 @@ import {
     TouchableOpacity,
     ViewStyle,
     LayoutChangeEvent,
+    StyleSheet,
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -34,21 +35,12 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
         <View
             onLayout={onLayout}
             style={{
-                padding: 6,
-                alignItems: 'center',
-                justifyContent: 'center',
+                ...styles.root,
                 ...style
             }}>
             <View
                 style={{
-                    width: '100%',
-                    height: 35,
-                    backgroundColor: Resources.get().getColors().Beige,
-                    borderRadius: 10,
-                    padding: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    ...styles.inputContainer,
                     ...inputContainerStyle
                 }}>
                 {leftIcon}
@@ -62,22 +54,46 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
                     onPress={onPress}
                     readOnly={readonly}
                     style={{
-                        color: Resources.get().getColors().White,
-                        fontSize: 16,
-                        letterSpacing: 1,
-                        fontWeight: "600",
-                        flex: 1,
-                        paddingRight: 12,
-                        paddingLeft: 6,
+                        ...styles.input,
                         ...inputStyle
                     }} />
 
                 {phrase.length == 0 ? rightIcon : (<TouchableOpacity
                     onPress={onClear}
-                    style={{ paddingLeft: 4, paddingTop: 4, paddingBottom: 4 }}>
+                    style={styles.clearButton}>
                     <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Black} size={16} />
                 </TouchableOpacity>)}
             </View>
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    root: {
+        padding: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    inputContainer: {
+        width: '100%',
+        height: 35,
+        backgroundColor: Resources.get().getColors().Beige,
+        borderRadius: 10,
+        padding: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    input: {
+        color: Resources.get().getColors().White,
+        fontSize: 16,
+        letterSpacing: 1,
+        fontWeight: "600",
+        flex: 1,
+        paddingRight: 12,
+        paddingLeft: 6,
+    },
+    clearButton: {
+        paddingLeft: 4, paddingTop: 4, paddingBottom: 4
+    }
+})
