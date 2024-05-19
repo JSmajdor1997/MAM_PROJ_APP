@@ -1,7 +1,7 @@
 enum ColorMode {
-    Dark,
-    Light,
-    Auto
+    Dark = "Dark",
+    Light = "Light",
+    Auto = "Auto"
 }
 
 export default ColorMode

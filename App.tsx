@@ -31,8 +31,6 @@ import Dumpster from './src/API/data_types/Dumpster';
 import Event from './src/API/data_types/Event';
 import { isDumpster, isEvent, isWasteland } from './src/API/data_types/type_guards';
 import { LogBox } from 'react-native';
-import { LocationProvider } from './src/hooks/LocationContext';
-import getRandomLatLngInPoland from './src/API/implementations/mockup/getRandomLatLngInPoland';
 import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
 
@@ -41,10 +39,28 @@ LogBox.ignoreLogs([
   'Sending `geolocationDidChange` with no listeners registered.'
 ]);
 
-enum NavBarIndices {
-  MyEvents = 0,
-  Map = 1,
-  Leadership = 2
+const ScreensNavbarMap = {
+  [WisbScreens.ChatScreen]: {
+    navBarIndex: null
+  },
+  [WisbScreens.LeaderBoardScreen]: {
+    navBarIndex: 2
+  },
+  [WisbScreens.LoginScreen]: {
+    navBarIndex: null
+  },
+  [WisbScreens.MapScreen]: {
+    navBarIndex: 1
+  },
+  [WisbScreens.MyEventsScreen]: {
+    navBarIndex: 0
+  },
+  [WisbScreens.SettingsScreen]: {
+    navBarIndex: null
+  },
+  [WisbScreens.SplashScreen]: {
+    navBarIndex: null
+  },
 }
 
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
@@ -52,16 +68,20 @@ const navigationRef = createNavigationContainerRef<NavigationParamsList>()
 const Stack = createNativeStackNavigator<NavigationParamsList>();
 
 export default function App() {
-  const [navBarIndex, setNavBarIndex] = React.useState(NavBarIndices.Map)
-  const [isNavigationBarVisible, setIsNavigationBarVisible] = React.useState(true)
+  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.MapScreen)
 
   const [dialogMode, setDialogMode] = React.useState<Mode>(Mode.Viewing)
   const [selectedItem, setSelectedItem] = React.useState<Wasteland | Dumpster | Event | null>(null)
 
-  const [userLocation, setUserLocation] = React.useState(getRandomLatLngInPoland())
+  const [userLocation, setUserLocation] = React.useState(Resources.get().getLastLocation())
+
+  React.useEffect(()=>{
+    return Resources.get().registerUserLocationListener(newLocation=>{
+      setUserLocation(newLocation)
+    })
+  })
 
   return (
-    <LocationProvider onLocationChanged={setUserLocation}>
       <ClickOutsideProvider>
         <PortalProvider>
           <View style={styles.root}>
@@ -72,24 +92,10 @@ export default function App() {
                 return
               }
 
-              switch (currentScreen) {
-                case WisbScreens.MapScreen:
-                case WisbScreens.LeaderBoardScreen:
-                case WisbScreens.MyEventsScreen:
-                  setIsNavigationBarVisible(true)
-                  break
-
-                case WisbScreens.ChatScreen:
-                case WisbScreens.LoginScreen:
-                case WisbScreens.SettingsScreen:
-                case WisbScreens.SplashScreen:
-                case WisbScreens.ChatScreen:
-                  setIsNavigationBarVisible(false)
-                  break;
-              }
+              setCurrentScreen(currentScreen as WisbScreens)
             }}>
               <Stack.Navigator
-                initialRouteName={WisbScreens.MapScreen}
+                initialRouteName={currentScreen}
                 screenOptions={{ headerShown: false, animation: "fade", animationDuration: 100 }}>
                 <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
                 <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
@@ -105,14 +111,13 @@ export default function App() {
 
             <NavBar
               enabled
-              selectedIndex={navBarIndex}
-              visible={isNavigationBarVisible}
+              selectedIndex={ScreensNavbarMap[currentScreen].navBarIndex ?? 1}
+              visible={ScreensNavbarMap[currentScreen].navBarIndex != null}
               items={[
                 {
                   render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
                   onPress: () => {
                     navigationRef.navigate(WisbScreens.MyEventsScreen, {})
-                    setNavBarIndex(NavBarIndices.MyEvents)
                   },
                   bubbles: [
                     {
@@ -125,7 +130,6 @@ export default function App() {
                   render: () => <WisbIcon icon={IconType.Earth} size={30} />,
                   onPress: () => {
                     navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected: setSelectedItem })
-                    setNavBarIndex(NavBarIndices.Map)
                   },
                   bubbles: [
                     {
@@ -163,8 +167,7 @@ export default function App() {
                 {
                   render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
                   onPress: () => {
-                    navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected: setSelectedItem })
-                    setNavBarIndex(NavBarIndices.Leadership)
+                    navigationRef.navigate(WisbScreens.LeaderBoardScreen, { onItemSelected: setSelectedItem })
                   },
                 },
               ]} />
@@ -181,7 +184,6 @@ export default function App() {
           </View>
         </PortalProvider>
       </ClickOutsideProvider>
-    </LocationProvider>
   );
 }
 

@@ -22,7 +22,6 @@ import Wasteland from '../API/data_types/Wasteland';
 import Dumpster from '../API/data_types/Dumpster';
 import Event from '../API/data_types/Event';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
-import getRandomLatLngInPoland from '../API/implementations/mockup/getRandomLatLngInPoland';
 import metersToLatLngDelta from '../utils/metersToDelta';
 import scaleRegion from '../utils/scaleRegion';
 import APIResponse from '../API/APIResponse';
@@ -36,7 +35,6 @@ import MapQueryInput from '../components/MapQueryInput';
 import isLatLngInRegion from '../utils/isLatLngInRegion';
 import Resources from '../../res/Resources';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
-import { useLocation } from '../hooks/LocationContext';
 import IconType from '../components/WisbIcon/IconType';
 const map_style = require('../../res/map_style.json');
 
@@ -52,7 +50,7 @@ interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens
 }
 
 const InitialRegion = {
-  ...getRandomLatLngInPoland(),
+  ...Resources.get().getLastLocation(),
   latitudeDelta: 1,
   longitudeDelta: 1,
 }
@@ -68,14 +66,10 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
 
   const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
 
-  const [userPosition, setUserPosition] = React.useState(getRandomLatLngInPoland())
-
-  const cleanup = useLocation(setUserPosition)
+  const [userPosition, setUserPosition] = React.useState<LatLng>(InitialRegion)
 
   React.useEffect(() => {
-    return () => {
-      cleanup()
-    }
+    return Resources.get().registerUserLocationListener(setUserPosition)
   })
 
   const getTrackingIconPosition = (region: Region) => {

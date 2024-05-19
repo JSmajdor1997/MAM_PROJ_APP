@@ -1,6 +1,6 @@
 enum MapType {
-    Default,
-    Satellite
+    Default = "Default",
+    Satellite = "Satellite"
 }
 
 export default MapType

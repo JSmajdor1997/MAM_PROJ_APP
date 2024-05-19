@@ -1,8 +1,9 @@
 import WisbScreens from "../src/screens/WisbScreens"
-import { SupportedLanguages } from "./SupportedLanguages"
 
 export default interface Translation {
-    language: SupportedLanguages
+    code: string
+    nativeName: string
+    flagEmoji: string
     Screens: {
         [WisbScreens.ChatScreen]: {
 

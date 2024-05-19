@@ -1,9 +1,10 @@
 import WisbScreens from "../../src/screens/WisbScreens"
-import { SupportedLanguages } from "../SupportedLanguages"
 import Translation from "../Translation"
 
 const BelarusianTranslation: Translation = {
-    language: SupportedLanguages.Belarusian,
+    code: "be",
+    nativeName: "Беларусь",
+    flagEmoji: "🇧🇾",
     Screens: {
         [WisbScreens.ChatScreen]: {
 

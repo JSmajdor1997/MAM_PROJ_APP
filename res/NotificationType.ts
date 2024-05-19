@@ -1,7 +1,7 @@
 enum NotificationType {
-    MessagesFromCreators,
-    NewWastelandNearby,
-    NewEventNearby,
+    MessagesFromCreators = "MessagesFromCreators",
+    NewWastelandNearby = "NewWastelandNearby",
+    NewEventNearby = "NewEventNearby"
 }
 
 export default NotificationType

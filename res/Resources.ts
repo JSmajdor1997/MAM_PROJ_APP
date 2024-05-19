@@ -1,4 +1,3 @@
-import { SupportedLanguages, SupportedLanguagesList } from "./SupportedLanguages";
 import Translation from "./Translation";
 import BelarusianTranslation from "./translations/BelarusianTranslation";
 import EnglishTranslation from "./translations/EnglishTranslation";
@@ -9,18 +8,32 @@ import MapType from "./MapType";
 import NotificationType from "./NotificationType";
 import Settings from "./Settings";
 import { MMKV } from 'react-native-mmkv'
+import getRandomLatLngInPoland from "../src/API/implementations/mockup/getRandomLatLngInPoland";
+import { LatLng } from "react-native-maps";
+import Geolocation, { GeolocationResponse, GeolocationError } from "@react-native-community/geolocation";
 
 const MMKVSettingsKey = "settings"
 
+type UserPositionListener = (userPosition: LatLng) => void
+type UserPositionCleanUp = () => void
+
 export default class Resources {
+    private static readonly FallBackLanguage = EnglishTranslation
+    private static readonly SupportedLanguages = [
+        PolishTranslation,
+        EnglishTranslation,
+        BelarusianTranslation
+    ]
+    private static readonly FallBackLocation = getRandomLatLngInPoland()
+
     private static getDefaultSettings(): Settings {
         return {
             mapType: MapType.Default,
-            language: RNLocalize.findBestLanguageTag(SupportedLanguagesList)?.languageTag ?? SupportedLanguages.English,
+            languageCode: RNLocalize.findBestLanguageTag(Resources.SupportedLanguages.map(it => it.code))?.languageTag ?? Resources.FallBackLanguage.code,
             showAdds: true,
             enabledNotifications: [NotificationType.MessagesFromCreators, NotificationType.NewEventNearby, NotificationType.NewWastelandNearby],
             colorMode: ColorMode.Light,
-            defaultLocations: null,
+            defaultLocation: null,
             showDumpstersOnMap: true
         }
     }
@@ -40,12 +53,28 @@ export default class Resources {
     constructor() {
         const stringifiedSettings = this.storage.getString(MMKVSettingsKey)
 
-        if(stringifiedSettings == null) {
+        if (stringifiedSettings == null) {
             this.settingsCache = Resources.getDefaultSettings()
             this.storage.set(MMKVSettingsKey, JSON.stringify(this.settingsCache))
         } else {
             this.settingsCache = JSON.parse(stringifiedSettings)
         }
+
+        //last position i listeners
+        Geolocation.watchPosition(
+            (position) => {
+                this.lastUserLocation = position.coords
+                this.userLocationListeners.forEach(listener => listener(position.coords))
+            },
+            (error) => {
+                console.log(error)
+            },
+            { enableHighAccuracy: true, distanceFilter: 0, interval: 10000, fastestInterval: 5000 }
+        );
+    }
+
+    getSupportedLanguages() {
+        return Resources.SupportedLanguages
     }
 
     getSettings(): Settings {
@@ -106,18 +135,47 @@ export default class Resources {
     }
 
     getStrings() {
+        const defaultLanguage = EnglishTranslation
+
         const supportedLanguages = {
-            [SupportedLanguages.English]: EnglishTranslation,
-            [SupportedLanguages.Polish]: PolishTranslation,
-            [SupportedLanguages.Belarusian]: BelarusianTranslation
+            [EnglishTranslation.code]: defaultLanguage,
+            [PolishTranslation.code]: PolishTranslation,
+            [BelarusianTranslation.code]: BelarusianTranslation
         }
 
-        return supportedLanguages[SupportedLanguages.Polish]
+        return supportedLanguages[this.settingsCache.languageCode]
     }
 
     getZIndices() {
         return {
             NavBarContainer: 1
+        }
+    }
+
+    private lastUserLocation: LatLng | null = null
+    getLastLocation(): LatLng {
+        if (this.lastUserLocation == null) {
+            return Resources.FallBackLocation
+        }
+
+        return this.lastUserLocation
+    }
+
+    private userLocationListeners: UserPositionListener[] = []
+    registerUserLocationListener(listener: UserPositionListener): UserPositionCleanUp {
+        if (this.userLocationListeners.includes(listener)) {
+            throw new Error("Listener already registered!")
+        }
+
+        this.userLocationListeners.push(listener)
+        return () => {
+            const index = this.userLocationListeners.indexOf(listener)
+
+            if (!this.userLocationListeners.includes(listener)) {
+                throw new Error("Listener already unregistered!")
+            }
+
+            this.userLocationListeners.splice(index, 1)
         }
     }
 }

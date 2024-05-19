@@ -1,9 +1,10 @@
 import WisbScreens from "../../src/screens/WisbScreens"
-import { SupportedLanguages } from "../SupportedLanguages"
 import Translation from "../Translation"
 
 const PolishTranslation: Translation = {
-    language: SupportedLanguages.English,
+    code: "pl",
+    nativeName: "Polski",
+    flagEmoji: "🇵🇱",
     Screens: {
         [WisbScreens.ChatScreen]: {
 

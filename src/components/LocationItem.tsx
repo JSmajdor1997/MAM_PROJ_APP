@@ -2,8 +2,9 @@ import { TouchableOpacity, View, Text, StyleSheet } from "react-native"
 import { LatLng } from "react-native-maps"
 import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng"
 import formatDistance from "../utils/formatDistance"
-import WisbIcon, { IconType } from "./WisbIcon/WisbIcon"
 import Resources from "../../res/Resources"
+import IconType from "./WisbIcon/IconType"
+import WisbIcon from "./WisbIcon/WisbIcon"
 
 export interface Props {
     onPress: () => void

@@ -7,13 +7,14 @@ import Resources from "../../res/Resources";
 import FAB from "./FAB";
 import openMapsAndNavigate from "../utils/openMapsAndNavigate";
 import React from "react";
-import WisbIcon, { IconType } from "./WisbIcon/WisbIcon";
 import SearchBar from "./SearchBar";
 import { useClickOutside } from "react-native-click-outside";
 import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
 import Separator from "./Separator";
 import reverseGeoCode from "../utils/GooglePlacesAPI/reverseGeoCode";
 import LocationItem from "./LocationItem";
+import IconType from "./WisbIcon/IconType";
+import WisbIcon from "./WisbIcon/WisbIcon";
 
 export interface Props {
     style?: ViewStyle
@@ -25,9 +26,10 @@ export interface Props {
         asText: string
     }
     apiKey: string
+    showNavigateButton?: boolean
 }
 
-export default function LocationInput({ style, readonly, onLocationChanged, userLocation, location, apiKey }: Props) {
+export default function LocationInput({ style, readonly, onLocationChanged, userLocation, location, apiKey, showNavigateButton }: Props) {
     const mapViewRef = React.useRef<MapView>(null)
     const [containerHeight, setContainerHeight] = React.useState(0)
     const [searchBarHeight, setSearchBarHeight] = React.useState(0)
@@ -50,7 +52,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
         }
 
         searchPlacesTimeoutId.current = setTimeout(() => {
-            searchPlaces(apiKey, phrase, Resources.get().getSettings().language, userLocation).then(setPlaces)
+            searchPlaces(apiKey, phrase, Resources.get().getSettings().languageCode, userLocation).then(setPlaces)
         }, 200)
     }, [phrase])
 
@@ -107,7 +109,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                 apiKey={apiKey}
                             />
 
-                            <FAB
+                            {showNavigateButton == undefined || showNavigateButton ? <FAB
                                 color={Resources.get().getColors().White}
                                 icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={Resources.get().getColors().Black} />}
                                 style={{
@@ -116,7 +118,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                     top: 10
                                 }}
                                 size={40}
-                                onPress={() => openMapsAndNavigate(location.coords)} />
+                                onPress={() => openMapsAndNavigate(location.coords)} /> : null}
                         </React.Fragment>
                     ) : (
                         <View style={{ width: '100%', height: "100%", justifyContent: "center", alignItems: "center", overflow: "hidden" }}>
