@@ -23,7 +23,7 @@ export default function SettingsScreen({ }: Props) {
               <FontAwesomeIcon icon={faMap} color={Resources.Colors.Primary} />
             </View>
             <Text style={[styles.itemLabel, { color: Resources.Colors.Black }]}>
-              Mapa{' '}
+              {Resources.Strings.get().Screens.SettingsScreen.MapTypeLabel}
               {/* {Resources.settings.mapType == 'standard'
                   ? 'zwykła'
                   : 'satelitarna'} */}
@@ -46,10 +46,10 @@ export default function SettingsScreen({ }: Props) {
             switchWidthMultiplier={2.2}
             switchBorderRadius={40}
           />
-          <Text>Domyślna lokalizcja (z GPS / wpisz - wybierz)</Text>
+          <Text>{Resources.Strings.get().Screens.SettingsScreen.DefaultLocationOrGpsLabel}</Text>
         </View>
 
-        {/* SHOWING BINS ON MAP */}
+        {/* SHOWING DUMPSTERS ON MAP */}
         <View style={styles.topSettingsItem}>
           <View style={{ flexDirection: 'row' }}>
             <View style={styles.icon}>
@@ -60,9 +60,7 @@ export default function SettingsScreen({ }: Props) {
               />
             </View>
             <Text style={[styles.itemLabel, { color: Resources.Colors.Black }]}>
-              {/* {Resources.settings.showBinsOnMap
-                  ? 'Pokazuj kosze na mapie'
-                  : 'Nie pokazuj koszy na mapie'} */}
+              {Resources.Strings.get().Screens.SettingsScreen.ShowDumpstersOnMapLabel}
             </Text>
           </View>
           <Switch
@@ -91,9 +89,7 @@ export default function SettingsScreen({ }: Props) {
               <FontAwesomeIcon icon={faSmile} color={Resources.Colors.Primary} />
             </View>
             <Text style={[styles.itemLabel, { color: Resources.Colors.Black }]}>
-              {/* {Resources.settings.showAds
-                  ? 'Wyświetlaj reklamy'
-                  : 'Nie chcę widzieć żadnych reklam'} */}
+             {Resources.Strings.get().Screens.SettingsScreen.AddsLabel}
             </Text>
           </View>
           <Switch
@@ -129,7 +125,7 @@ export default function SettingsScreen({ }: Props) {
             setOpen={() => { }}
             setValue={() => { }}
             setItems={() => { }}
-            placeholder='Język'
+            placeholder={Resources.Strings.get().Screens.SettingsScreen.LanguageLabel}
           />
         </View>
 
@@ -145,7 +141,7 @@ export default function SettingsScreen({ }: Props) {
             setOpen={() => { }}
             setValue={() => { }}
             setItems={() => { }}
-            placeholder='Motyw'
+            placeholder={Resources.Strings.get().Screens.SettingsScreen.ColorModeLabel}
           />
         </View>
 
@@ -161,7 +157,7 @@ export default function SettingsScreen({ }: Props) {
             setOpen={() => { }}
             setValue={() => { }}
             setItems={() => { }}
-            placeholder='Powiadomienia'
+            placeholder={Resources.Strings.get().Screens.SettingsScreen.NotificationsLabel}
           />
         </View>
       </View>

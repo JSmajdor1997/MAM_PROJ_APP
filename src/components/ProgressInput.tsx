@@ -1,5 +1,6 @@
 import React, { Fragment } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Animated, ViewStyle, Pressable, Easing } from "react-native";
+import { Resources } from "../../res/Resources";
 
 export interface Option {
     icon: React.ReactNode;

@@ -1,3 +1,27 @@
+import { SupportedLanguages } from "../localization/SupportedLanguages";
+import Translation from "../localization/Translation";
+import BelarusianTranslation from "../localization/translations/BelarusianTranslation";
+import EnglishTranslation from "../localization/translations/EnglishTranslation";
+import PolishTranslation from "../localization/translations/PolishTranslation";
+import * as RNLocalize from 'react-native-localize';
+
+export enum MapType {
+    Default,
+    Satellite
+}
+
+export enum ColorMode {
+    Dark,
+    Light,
+    Auto
+}
+
+export enum NotificationType {
+    MessagesFromCreators,
+    NewWastelandNearby,
+    NewEventNearby,
+}
+
 export const Resources = {
     Colors: {
         Primary: "#00bfa5",
@@ -32,15 +56,32 @@ export const Resources = {
         Primary: "leafy"
     } as const,
     Locale: {
-        LanguageCode: "pl-PL"
+        LanguageCode: "pl-PL",
+        findBestLanguageTag: () => RNLocalize.findBestLanguageTag(
+            Object.values(SupportedLanguages)
+        )
     } as const,
     Strings: {
-
+        [SupportedLanguages.English]: EnglishTranslation,
+        [SupportedLanguages.Polish]: PolishTranslation,
+        [SupportedLanguages.Belarusian]: BelarusianTranslation,
+        get(): Translation {
+            return BelarusianTranslation
+        }
     } as const,
     Env: {
         GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY as string
     } as const,
     zIndices: {
         NavBarContainer: 1
+    },
+    Settings: {
+        mapType: MapType.Default,
+        language: SupportedLanguages.Polish,
+        showAdds: false,
+        enabledNotifications: [NotificationType.MessagesFromCreators, NotificationType.NewEventNearby, NotificationType.NewWastelandNearby],
+        colorMode: ColorMode.Light,
+        defaultLocations: null,
+        showDumpstersOnMap: true
     }
 }

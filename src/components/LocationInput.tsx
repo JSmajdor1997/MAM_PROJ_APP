@@ -127,7 +127,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                 onRegionChangeComplete={newRegion => {
                                     previousCoords.current = newRegion
                                     reverseGeoCode(Resources.Env.GOOGLE_MAPS_API_KEY, newRegion).then(formattedAddress => {
-                                        onLocationChanged?.(newRegion, formattedAddress ?? "Nieznane miejsce")
+                                        onLocationChanged?.(newRegion, formattedAddress ?? Resources.Strings.get().Components.LocationInput.UnknownPlaceMessage)
                                     })
                                 }}
                                 showsScale={false}
@@ -171,7 +171,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                         {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={Resources.Colors.Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={Resources.Colors.Black} size={16} />}
                     </TouchableOpacity>
                 )}
-                placeholder="Wpisz miejsce" />
+                placeholder={Resources.Strings.get().Components.LocationInput.EnterPlaceMessage} />
 
             <Animated.FlatList
                 style={{ width: "100%", backgroundColor: Resources.Colors.White, maxHeight: heightAnim, height: "100%" }}

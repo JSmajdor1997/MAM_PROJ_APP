@@ -31,13 +31,13 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible,
             sectionsOrder={[Sections.BasicInfo, Sections.Location]}
             moreActions={[
                 {
-                    label: "Usuń",
+                    label: Resources.Strings.get().Dialogs.DumpsterDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
                     color: Resources.Colors.Red,
                     onPress: () => { }
                 },
                 {
-                    label: "Edytuj",
+                    label: Resources.Strings.get().Dialogs.DumpsterDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
                     color: Resources.Colors.White,
                     onPress: () => { }
@@ -45,7 +45,7 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible,
             ]}
             sections={{
                 [Sections.BasicInfo]: {
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.Colors.Yellow, name: "Podstawowe informacje", renderPage: (props) => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.Colors.Yellow, name: Resources.Strings.get().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props) => (
                         <View style={{ flex: 1, padding: 10 }}>
                             <View>
                                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>stworzone przez</Text>
@@ -62,7 +62,7 @@ export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible,
                     )
                 },
                 [Sections.Location]: {
-                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.Colors.Green, name: "Lokalizacja", renderPage: (props) => (
+                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.Colors.Green, name: Resources.Strings.get().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props) => (
                         <View style={{ flex: 1, padding: 15 }}>
                             <LocationInput
                                 readonly

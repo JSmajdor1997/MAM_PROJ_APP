@@ -120,7 +120,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
           ...rsp.data
         }))
       } else {
-        Toast.showWithGravityAndOffset(rsp.description ?? "Error", Toast.SHORT, Toast.CENTER, 0, 10)
+        Toast.showWithGravityAndOffset(rsp.description ?? Resources.Strings.get().Screens.MapScreen.ErrorToastMessage, Toast.SHORT, Toast.CENTER, 0, 10)
       }
     })
   }
@@ -174,7 +174,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
             null :
             <Marker
               id={UserMarkerId}
-              title="Tu jesteś!"
+              title={Resources.Strings.get().Screens.MapScreen.UserPositionMarkerFlyoutContent}
               coordinate={userPosition}>
               <WisbIcon size={25}
                 icon={IconType.MapPin} />

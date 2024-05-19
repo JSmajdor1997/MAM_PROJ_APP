@@ -109,7 +109,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
             <MenuItem onPress={() => {
               navigation.push(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
-            }}>Przejdź do ustawień</MenuItem>
+            }}>{Resources.Strings.get().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
           </Menu>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ marginRight: 6, fontWeight: 'bold' }}>

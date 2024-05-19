@@ -10,7 +10,7 @@ export default function Logo({ withMotto }: Props) {
     return (
         <View style={styles.root}>
             <Text style={styles.text}>Wisb</Text>
-            {withMotto ? <Text style={styles.motto}>Let's clean up the planet</Text> : null}
+            {withMotto ? <Text style={styles.motto}>Let's clean up the planet!</Text> : null}
         </View>
     )
 }

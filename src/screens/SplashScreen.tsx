@@ -22,7 +22,7 @@ export default function SplashScreen({ navigation }: Props) {
       setTimeout(() => {
         getAPI().isUserLoggedIn().then(result => {
           if (result) {
-            navigation.push(WisbScreens.MapScreen, {})
+            navigation.push(WisbScreens.MapScreen, {} as any)
           } else {
             navigation.push(WisbScreens.LoginScreen, {})
           }

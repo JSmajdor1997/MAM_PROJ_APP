@@ -89,32 +89,6 @@ function EventItem({ item, onPress }: Props) {
               {item.name}
             </Text>
           </View>
-
-          <Menu
-            style={{ marginTop: StatusBar.currentHeight }}
-            anchor={
-              <TouchableOpacity
-                style={{ marginRight: -6 }}>
-                <FontAwesomeIcon color={Resources.Colors.White} icon={faMobileRetro} />
-              </TouchableOpacity>
-            }>
-            <MenuItem
-              onPress={() => {
-
-              }}>
-              Uczestnicy
-            </MenuItem>
-            <MenuItem
-              onPress={() => {
-              }}>
-              Udostępnij
-            </MenuItem>
-            <MenuItem
-              onPress={() => {
-              }}>
-              Edytuj
-            </MenuItem>
-          </Menu>
         </View>
 
         <Text

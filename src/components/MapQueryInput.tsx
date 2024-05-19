@@ -57,7 +57,7 @@ export default function MapQueryInput({ style, onPress, query, onQueryChanged, i
             <SearchBar
                 leftIcon={<FontAwesomeIcon icon={faSearch} color={Resources.Colors.Black} size={16} />}
                 rightIcon={<FontAwesomeIcon icon={faChevronDown} color={Resources.Colors.Black} size={16} />}
-                placeholder='Szukaj wydarzeń i wysypisk...'
+                placeholder={Resources.Strings.get().Components.MapQueryInput.Placeholder}
                 onPress={onPress}
                 phrase={query.phrase}
                 onPhraseChanged={newPhrase => onQueryChanged({ ...query, phrase: newPhrase })}

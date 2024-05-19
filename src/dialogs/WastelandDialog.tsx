@@ -33,13 +33,13 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
             onDismiss={onDismiss}
             moreActions={[
                 {
-                    label: "Usuń",
+                    label: Resources.Strings.get().Dialogs.WastelandDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
                     color: Resources.Colors.Red,
                     onPress: () => { }
                 },
                 {
-                    label: "Edytuj",
+                    label: Resources.Strings.get().Dialogs.WastelandDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
                     color: Resources.Colors.White,
                     onPress: () => { }
@@ -47,19 +47,19 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
             ]}
             actions={[
                 {
-                    label: "Clean",
+                    label: Resources.Strings.get().Dialogs.WastelandDialog.CleanAction,
                     icon: <FontAwesomeIcon icon={faBroom} />,
                     color: Resources.Colors.Primary,
                     onPress: () => { },
                 },
                 {
-                    label: "Share",
+                    label: Resources.Strings.get().Dialogs.WastelandDialog.ShareAction,
                     icon: <FontAwesomeIcon icon={faShare} />,
                     color: Resources.Colors.Blue,
                     onPress: () => { },
                 },
                 {
-                    label: "create event",
+                    label: Resources.Strings.get().Dialogs.WastelandDialog.CreateEventAction,
                     icon: <FontAwesomeIcon icon={faCalendar} />,
                     color: Resources.Colors.Lime,
                     onPress: () => { },
@@ -68,7 +68,7 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
             sectionsOrder={[Sections.BasicInfo, Sections.BeforeCleaningPhotos, Sections.AfterCleaningPhotos]}
             sections={{
                 [Sections.BasicInfo]: {
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.Colors.Yellow, name: "Podstawowe informacje", renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.Colors.Yellow, name: Resources.Strings.get().Dialogs.WastelandDialog.BasicDataLabel, renderPage: () => (
                         <View style={{ flex: 1, margin: 5 }}>
                             <View style={{ flex: 1, padding: 10 }}>
                                 <LocationInput
@@ -93,9 +93,9 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                             <View style={{ flexDirection: "row", padding: 10, justifyContent: "space-between" }}>
                                 <FontAwesomeIcon icon={faCalendar} size={15} />
                                 <View style={{ flexDirection: "row" }}>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>zgłoszono</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>{Resources.Strings.get().Dialogs.WastelandDialog.ReportedLabel}</Text>
                                     <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>wczoraj</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5 }}>przez</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5 }}>{Resources.Strings.get().Dialogs.WastelandDialog.ByLabel}</Text>
                                     <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>Mariusz1997</Text>
                                 </View>
                             </View>
@@ -108,7 +108,7 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                     )
                 },
                 [Sections.BeforeCleaningPhotos]: {
-                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.Colors.Lime, name: "Zdjęcia sprzed sprzątania", renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.Colors.Lime, name: Resources.Strings.get().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: () => (
                         <View style={{ flex: 1, padding: 15 }}>
                             <Text>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
@@ -130,13 +130,13 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                     )
                 },
                 [Sections.AfterCleaningPhotos]: {
-                    icon: <FontAwesomeIcon icon={faBroom} />, color: Resources.Colors.DarkBeige, name: "Zdjęcia po sprzątnięciu", renderPage: ({ shake, startConfetti }) => (
+                    icon: <FontAwesomeIcon icon={faBroom} />, color: Resources.Colors.DarkBeige, name: Resources.Strings.get().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }) => (
                         <View style={{ flex: 1 }}>
                             <View style={{
                                 width: "100%",
                                 marginTop: 40
                             }}>
-                                <Text>Zdjęcia po sprzątnięciu przez Mariusz1997</Text>
+                                <Text>{Resources.Strings.get().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel}</Text>
                                 <ImagesGallery
                                     images={[
                                         "https://plus.unsplash.com/premium_photo-1661905921900-a8b49e65feeb?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",

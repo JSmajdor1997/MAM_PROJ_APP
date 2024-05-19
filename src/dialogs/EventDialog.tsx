@@ -35,13 +35,13 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
             mode={mode}
             moreActions={[
                 {
-                    label: "Usuń",
+                    label: Resources.Strings.get().Dialogs.EventDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
                     color: Resources.Colors.Red,
                     onPress: () => { }
                 },
                 {
-                    label: "Edytuj",
+                    label: Resources.Strings.get().Dialogs.EventDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
                     color: Resources.Colors.White,
                     onPress: () => { }
@@ -49,25 +49,25 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
             ]}
             actions={[
                 {
-                    label: "Join",
+                    label: Resources.Strings.get().Dialogs.EventDialog.JoinAction,
                     icon: <FontAwesomeIcon icon={faAdd} />,
                     color: Resources.Colors.Yellow,
                     onPress: () => { },
                 },
                 {
-                    label: "Share",
+                    label: Resources.Strings.get().Dialogs.EventDialog.ShareAction,
                     icon: <FontAwesomeIcon icon={faShare} />,
                     color: Resources.Colors.Blue,
                     onPress: () => { },
                 },
                 {
-                    label: "Leave",
+                    label: Resources.Strings.get().Dialogs.EventDialog.LeaveAction,
                     icon: <FontAwesomeIcon icon={faClose} />,
                     color: Resources.Colors.Lime,
                     onPress: () => { },
                 },
                 {
-                    label: "Open chat",
+                    label: Resources.Strings.get().Dialogs.EventDialog.OpenChatAction,
                     icon: <FontAwesomeIcon icon={faMessage} />,
                     color: Resources.Colors.OceanBlue,
                     onPress: () => { },
@@ -98,7 +98,7 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
                     )
                 },
                 [Sections.MeetPlace]: {
-                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.Colors.Lime, name: "Miejsce spotkania", renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.Colors.Lime, name: Resources.Strings.get().Dialogs.EventDialog.MeetPlaceLabel, renderPage: () => (
                         <View style={{ flex: 1, padding: 15 }}>
                             <LocationInput
                                 readonly
@@ -116,29 +116,29 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
                     )
                 },
                 [Sections.Wastelands]: {
-                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.Colors.DarkBeige, name: "Wysypiska", renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.Colors.DarkBeige, name: Resources.Strings.get().Dialogs.EventDialog.WastelandsLabel, renderPage: () => (
                         <View style={{ flex: 1 }}>
                             <Text>LISTA ŚMIETNISK</Text>
                         </View>
                     )
                 },
                 [Sections.Members]: {
-                    icon: <FontAwesomeIcon icon={faPerson} />, color: Resources.Colors.Purple, name: "Uczestnicy", renderPage: () => (
+                    icon: <FontAwesomeIcon icon={faPerson} />, color: Resources.Colors.Purple, name: Resources.Strings.get().Dialogs.EventDialog.MembersLabel, renderPage: () => (
                         <View style={{ flex: 1 }}>
                             <Text>LISTA UCZESTNIKÓW + ADMIN</Text>
                         </View>
                     )
                 },
                 [Sections.Sharing]: {
-                    icon: <FontAwesomeIcon icon={faShare} />, color: Resources.Colors.OceanBlue, name: "Udostępnij", renderPage: (props) => {
+                    icon: <FontAwesomeIcon icon={faShare} />, color: Resources.Colors.OceanBlue, name: Resources.Strings.get().Dialogs.EventDialog.ShareAction, renderPage: (props) => {
                         if (props.currentIndex == Sections.Sharing) {
                             props.startConfetti()
                         }
 
                         return (
                             <View style={{ flex: 1 }}>
-                                <Text>TO WSZYSTKO!</Text>
-                                <Text>zaproś więcej osób!</Text>
+                                <Text>{Resources.Strings.get().Dialogs.EventDialog.ThatsAllMessage}</Text>
+                                <Text>{Resources.Strings.get().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
                                 <FAB
                                     size={45}
                                     color={Resources.Colors.Blue}
@@ -160,7 +160,7 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
                                     icon={
                                         <FontAwesomeIcon icon={faTwitter} color={Resources.Colors.White} size={16} />
                                     } />
-                                <Text>Przejdź do chatu</Text>
+                                <Text>{Resources.Strings.get().Dialogs.EventDialog.OpenChatAction}</Text>
                                 <QRCode value="AAA123" />
                             </View>
                         )

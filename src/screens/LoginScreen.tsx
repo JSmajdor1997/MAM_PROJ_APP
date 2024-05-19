@@ -20,6 +20,7 @@ import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons';
 import BambooImage from "../../res/images/bamboo.svg"
 import LeavesImage from "../../res/images/leaves_on_stick.svg"
+import { LoginError, SignUpError } from '../API/API';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LoginScreen> { }
 
@@ -80,7 +81,7 @@ export default function LoginScreen({ navigation }: Props) {
             justifyContent: 'flex-end',
           }}>
           <Text style={{ color: Resources.Colors.White, fontSize: 40, fontFamily: 'leafy' }}>
-            {mode == Mode.Login ? "LOGOWANIE" : "REJESTRACJA"}
+            {mode == Mode.Login ? Resources.Strings.get().Screens.LoginScreen.LoginHeader : Resources.Strings.get().Screens.LoginScreen.SignUpHeader}
           </Text>
         </View>
 
@@ -97,7 +98,7 @@ export default function LoginScreen({ navigation }: Props) {
             elevation: 2,
           }}>
           <TextInput
-            placeholder="Email"
+            placeholder={Resources.Strings.get().Screens.LoginScreen.EmailLabel}
             style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -106,7 +107,7 @@ export default function LoginScreen({ navigation }: Props) {
             }}
           />
           <TextInput
-            placeholder="Hasło"
+            placeholder={Resources.Strings.get().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
@@ -118,7 +119,7 @@ export default function LoginScreen({ navigation }: Props) {
           {mode == Mode.SignUp ? (
             <Fragment>
               <TextInput
-                placeholder="Nazwa użytkownika"
+                placeholder={Resources.Strings.get().Screens.LoginScreen.UserNameLabel}
                 style={styles.input}
                 secureTextEntry
                 autoCapitalize="none"
@@ -128,7 +129,7 @@ export default function LoginScreen({ navigation }: Props) {
               />
 
               <TextInput
-                placeholder="Zdjęcie"
+                placeholder={Resources.Strings.get().Screens.LoginScreen.PhotoLabel}
                 style={styles.input}
                 secureTextEntry
                 autoCapitalize="none"
@@ -143,19 +144,24 @@ export default function LoginScreen({ navigation }: Props) {
             onPress={() => {
               if (mode == Mode.Login) {
                 getAPI().login(email, password).then(result => {
-                  if (result.error) {
-                    toast('Nie udało się zalogować :(');
+                  if (result.error == LoginError.InvalidPassword) {
+                    toast(Resources.Strings.get().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
+                  } else if (result.error == LoginError.UserDoesNotExist) {
+                    toast(Resources.Strings.get().Screens.LoginScreen.LoginErrorUserDoesntExistMessage);
                   } else {
-                    toast('Zalogowano pomyślnie');
                     navigation.push(WisbScreens.MapScreen, {} as any)
                   }
                 })
               } else {
                 getAPI().signUp({ email, password, userName }).then(result => {
-                  if (result.error) {
-                    toast('Nie udało się utworzyć konta :(');
+                  if (result.error != null) {
+                    if (result.error == SignUpError.InvalidDataProvided) {
+                      toast(Resources.Strings.get().Screens.LoginScreen.SignUpErrorInvalidDataProvidedMessage);
+                    } else if (result.error == SignUpError.UserAlreadyRegistered) {
+                      toast(Resources.Strings.get().Screens.LoginScreen.SignUpErrorUserAlreadyRegisteredMessage);
+                    }
                   } else {
-                    toast('Zarejestrowano pomyślnie, zaloguj się!');
+                    toast(Resources.Strings.get().Screens.LoginScreen.SignUpSuccessMessage);
                     setMode(Mode.Login)
                   }
                 })
@@ -191,14 +197,14 @@ export default function LoginScreen({ navigation }: Props) {
           position: 'absolute',
         }}>
         <View style={{ flexDirection: "row" }}>
-          <Text style={{ color: Resources.Colors.Beige }}>{mode == Mode.SignUp ? "Masz konto?" : "Nie masz konta?"}</Text>
+          <Text style={{ color: Resources.Colors.Beige }}>{mode == Mode.SignUp ? Resources.Strings.get().Screens.LoginScreen.AlreadyHaveAccountQuestion : Resources.Strings.get().Screens.LoginScreen.DontYouHaveAccountQuestion}</Text>
           <TouchableOpacity
             onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
-            <Text style={styles.login}>{mode == Mode.SignUp ? "Zaloguj się!" : "Utwórz konto!"}</Text>
+            <Text style={styles.login}>{mode == Mode.SignUp ? Resources.Strings.get().Screens.LoginScreen.LoginExclamation : Resources.Strings.get().Screens.LoginScreen.SignUpExclamation}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={{ color: Resources.Colors.Beige }}>LUB</Text>
+        <Text style={{ color: Resources.Colors.Beige }}>{Resources.Strings.get().Screens.LoginScreen.Or}</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
           <FontAwesomeIcon icon={faFacebookF} style={{ marginRight: 10 }} color={Resources.Colors.Blue} />

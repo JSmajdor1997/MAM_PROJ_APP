@@ -124,7 +124,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
         removeClippedSubviews
         ListHeaderComponent={
           <View>
-            {places.length == 0 ? <Text>Nie znaleziono miejsca</Text> : null}
+            {places.length == 0 ? <Text>{Resources.Strings.get().Dialogs.ListDialog.PlaceNotFoundMessage}</Text> : null}
             {places.map(place => (
               <LocationItem key={place.id} onPress={() => onPlaceSelected(place)} userLocation={userLocation} location={{
                 coords: place.location,
@@ -159,7 +159,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
           if (!hasMore) {
             return (
               <View>
-                <Text>No more data</Text>
+                <Text>{Resources.Strings.get().Dialogs.ListDialog.NoMoreDataMessage}</Text>
               </View>
             );
           }
