@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     top: 460,
     left: 320,
     // alignSelf: 'center',
-    backgroundColor: Resources.get().getColors().OceanBlue,
+    backgroundColor: Resources.get().getColors().Primary,
     borderRadius: 50,
     height: 60,
     width: 60,

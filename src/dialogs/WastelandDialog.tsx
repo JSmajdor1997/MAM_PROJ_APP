@@ -51,7 +51,7 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                     label: Resources.get().getStrings().Dialogs.WastelandDialog.CleanAction,
                     icon: <FontAwesomeIcon icon={faBroom} />,
                     color: Resources.get().getColors().Primary,
-                    onPress: () => { },
+                    onPress: (startConfetti) => { startConfetti()},
                 },
                 {
                     label: Resources.get().getStrings().Dialogs.WastelandDialog.ShareAction,
@@ -69,12 +69,12 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
             sectionsOrder={[Sections.BasicInfo, Sections.BeforeCleaningPhotos, Sections.AfterCleaningPhotos]}
             sections={{
                 [Sections.BasicInfo]: {
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: () => (
-                        <View style={{ flex: 1, margin: 5 }}>
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
+                        <View key={index} style={{ flex: 1, margin: 5 }}>
                             <View style={{ flex: 1, padding: 10 }}>
                                 <LocationInput
                                     readonly
-                                    style={{ flex: 1 }}
+                                    style={{ width: "100%", height: 200 }}
                                     apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                     userLocation={userLocation}
                                     location={{
@@ -102,16 +102,18 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                             </View>
 
                             <View>
-                                <TextInput style={{ width: "100%", height: 100, backgroundColor: Resources.get().getColors().White, borderRadius: 10, shadowColor: Resources.get().getColors().Black, borderStyle: "dashed", borderWidth: 2, paddingLeft: 8, paddingRight: 8 }} multiline value="lorem ipsum" />
-                                <Text>Opis</Text>
+                                <Text style={{fontWeight: "bold"}}>Opis</Text>
+                                <TextInput multiline style={{backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2}}>
+                                    Opis
+                                </TextInput>
                             </View>
                         </View>
                     )
                 },
                 [Sections.BeforeCleaningPhotos]: {
-                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: () => (
-                        <View style={{ flex: 1, padding: 15 }}>
-                            <Text>Zdjęcia z przed sprzątnięcia</Text>
+                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
+                        <View key={index} style={{ flex: 1, padding: 15 }}>
+                            <Text style={{fontWeight: "bold"}}>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
                                 images={[
                                     "https://plus.unsplash.com/premium_photo-1661905921900-a8b49e65feeb?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -131,13 +133,13 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                     )
                 },
                 [Sections.AfterCleaningPhotos]: {
-                    icon: <FontAwesomeIcon icon={faBroom} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }) => (
-                        <View style={{ flex: 1 }}>
+                    icon: <FontAwesomeIcon icon={faBroom} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }, index) => (
+                        <View key={index} style={{ flex: 1 }}>
                             <View style={{
                                 width: "100%",
                                 marginTop: 40
                             }}>
-                                <Text>{Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel}</Text>
+                                <Text style={{fontWeight: "bold"}}>{Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
                                 <ImagesGallery
                                     images={[
                                         "https://plus.unsplash.com/premium_photo-1661905921900-a8b49e65feeb?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
@@ -151,12 +153,6 @@ export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible
                                     style={{
                                         flex: 1
                                     }} />
-                            </View>
-
-                            <View style={{ width: "100%", paddingBottom: 5, paddingTop: 5, justifyContent: "space-around", flexDirection: "row" }}>
-                                <FAB color={Resources.get().getColors().Red} icon={<FontAwesomeIcon icon={faClose} color={Resources.get().getColors().White} />} size={50} onPress={onDismiss} />
-                                <FAB color={Resources.get().getColors().Blue} icon={<FontAwesomeIcon icon={faShare} color={Resources.get().getColors().White} />} size={40} onPress={() => { }} />
-                                <FAB color={Resources.get().getColors().Primary} icon={<WisbIcon icon={IconType.BroomMono} size={25} />} size={50} onPress={() => { startConfetti() }} />
                             </View>
                         </View>
                     )

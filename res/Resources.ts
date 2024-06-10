@@ -103,7 +103,6 @@ export default class Resources {
             Grey: "#00000055",
             Red: "#ad3a28",
             Blue: "#3886c2",
-            OceanBlue: "#00bfa5",
             Yellow: "#ded264",
             Lime: "#cde340",
             Purple: "#cde340",

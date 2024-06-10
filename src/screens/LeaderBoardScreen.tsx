@@ -188,7 +188,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
         ListEmptyComponent={() => (
           <Spinner
             isVisible={true}
-            color={Resources.get().getColors().OceanBlue}
+            color={Resources.get().getColors().Primary}
             type="ChasingDots"
             size={50}
           />
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   header: {
-    backgroundColor: Resources.get().getColors().OceanBlue,
+    backgroundColor: Resources.get().getColors().Primary,
     alignItems: 'center',
     padding: 20,
     paddingTop: StatusBar.currentHeight,

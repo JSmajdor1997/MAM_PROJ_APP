@@ -13,6 +13,7 @@ import NavigationParamsList from './NavigationParamsList';
 import Resources from '../../res/Resources';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCalendar } from '@fortawesome/free-solid-svg-icons';
+import SearchBar from '../components/SearchBar';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
@@ -38,6 +39,8 @@ export default function EventsScreen({ }: Props) {
         translucent
         barStyle="dark-content"
       />
+
+      <SearchBar phrase='' placeholder='Szukaj wydarzeń...'/>
 
       <FlatList
         style={styles.flatList}

@@ -1,8 +1,8 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { View, Text, ViewStyle, Image, LayoutChangeEvent, TouchableHighlight, TouchableOpacity, StyleSheet } from "react-native";
 import Resources from "../../res/Resources";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faClose, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faAd, faAdd, faClose, faPen } from "@fortawesome/free-solid-svg-icons";
 
 export interface Props {
     images: string[]
@@ -33,17 +33,21 @@ export default function ImagesGallery({ images, onAddRequest, onRemoveRequest, n
             style={{
                 flexDirection: "column",
                 justifyContent: "flex-start",
+                alignItems: images.length > 0 ? "flex-start" : "center",
                 ...style
             }}>
             {rowsIndices.map(rowIndex => (
-                <Row>
-                    {getImagesIndices(images.length + (onAddRequest == null ? 0 : 1), nrOfImagesPerRow, rowIndex).map(index => (
-                        index == images.length ?
-                            <ImageAddingComponent width={imageWidth} margin={interImagesSpace} onPress={onAddRequest} /> :
-                            <ImageComponent imageSrc={images[index]} width={imageWidth} margin={interImagesSpace} onRemoveRequest={onRemoveRequest == null ? undefined : () => onRemoveRequest(images[index])} />
+                <Row key={rowIndex.toString()}>
+                    {getImagesIndices(images.length, nrOfImagesPerRow, rowIndex).map((index) => (
+                        <Fragment>
+                            <ImageComponent key={index} imageSrc={images[index]} width={imageWidth} margin={interImagesSpace} onRemoveRequest={onRemoveRequest == null ? undefined : () => onRemoveRequest(images[index])} />
+                            {onAddRequest != null && index == images.length-1  ? <ImageAddingComponent width={imageWidth} margin={interImagesSpace} onPress={onAddRequest} /> : null}
+                        </Fragment>
                     ))}
                 </Row>
             ))}
+
+            {onAddRequest != null && images.length == 0 ? <ImageAddingComponent width={imageWidth} margin={interImagesSpace} onPress={onAddRequest} /> : null}
         </View>
     )
 }
@@ -140,11 +144,11 @@ function ImageAddingComponent({ margin, width, onPress }: ImageAddingComponentPr
                 borderWidth: 2,
                 borderColor: Resources.get().getColors().Blue,
             }}>
-            <FontAwesomeIcon icon={faPen} color={Resources.get().getColors().Blue} />
+            <FontAwesomeIcon icon={faAdd} color={Resources.get().getColors().Blue} />
         </TouchableOpacity>
     )
 }
 
 const styles = StyleSheet.create({
-    
+
 })

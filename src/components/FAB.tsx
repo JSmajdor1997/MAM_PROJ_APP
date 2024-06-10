@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
         elevation: 20,
     },
     label: {
-        textAlign: 'center'
+        textAlign: 'center',
+        letterSpacing: 1
     }
 })

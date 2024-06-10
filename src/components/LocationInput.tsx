@@ -27,9 +27,10 @@ export interface Props {
     }
     apiKey: string
     showNavigateButton?: boolean
+    iconColor?: string
 }
 
-export default function LocationInput({ style, readonly, onLocationChanged, userLocation, location, apiKey, showNavigateButton }: Props) {
+export default function LocationInput({ style, readonly, onLocationChanged, userLocation, location, apiKey, showNavigateButton, iconColor }: Props) {
     const mapViewRef = React.useRef<MapView>(null)
     const [containerHeight, setContainerHeight] = React.useState(0)
     const [searchBarHeight, setSearchBarHeight] = React.useState(0)
@@ -88,7 +89,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
     }, [location.coords])
 
     return (
-        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.get().getColors().White, width: 300, height: 200 }} onLayout={e => {
+        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.get().getColors().White }} onLayout={e => {
             const newHeight = e.nativeEvent.layout.height
 
             if (newHeight != containerHeight) {
@@ -111,7 +112,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
 
                             {showNavigateButton == undefined || showNavigateButton ? <FAB
                                 color={Resources.get().getColors().White}
-                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={Resources.get().getColors().Black} />}
+                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={iconColor ?? Resources.get().getColors().Black} />}
                                 style={{
                                     position: "absolute",
                                     right: 10,
@@ -157,7 +158,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                     setPhrase("")
                     setIsDropdownVisible(true)
                 }}
-                leftIcon={<FontAwesomeIcon icon={faEarth} color={Resources.get().getColors().Black} size={16} />}
+                leftIcon={<FontAwesomeIcon icon={faEarth} color={iconColor ?? Resources.get().getColors().Black} size={16} />}
                 onPhraseChanged={setPhrase}
                 phrase={isDropdownVisible ? phrase : location.asText}
                 readonly={readonly}
@@ -166,14 +167,14 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                         setIsDropdownVisible(true)
                     }
                 }}
-                rightIcon={(
+                rightIcon={readonly ? undefined : (
                     <TouchableOpacity onPress={() => isDropdownVisible ? setIsDropdownVisible(false) : setIsDropdownVisible(true)}>
-                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={Resources.get().getColors().Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={Resources.get().getColors().Black} size={16} />}
+                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={iconColor ?? Resources.get().getColors().Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={iconColor ?? Resources.get().getColors().Black} size={16} />}
                     </TouchableOpacity>
                 )}
                 placeholder={Resources.get().getStrings().Components.LocationInput.EnterPlaceMessage} />
 
-            <Animated.FlatList
+            {readonly ? null : <Animated.FlatList
                 style={{ width: "100%", backgroundColor: Resources.get().getColors().White, maxHeight: heightAnim, height: "100%" }}
                 data={places}
                 ItemSeparatorComponent={Separator}
@@ -190,7 +191,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                             asText: item.formattedAddress,
                             coords: location.coords
                         }} />
-                )} />
+                )} />}
         </View>
     )
 }

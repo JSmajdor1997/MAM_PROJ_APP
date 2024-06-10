@@ -9,20 +9,18 @@
     "start": "react-native start",
     "test": "jest"
   },
-  "overrides": {
-    "react-native-qrcode-scanner": {
-      "react-native-permissions": "^3.8.0"
-    }
-  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/free-regular-svg-icons": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@fortawesome/react-native-fontawesome": "^0.3.0",
     "@gorhom/portal": "^1.0.14",
     "@mapbox/geo-viewport": "^0.5.0",
     "@react-native-async-storage/async-storage": "^1.23.1",
+    "@react-native-community/cli": "^13.6.9",
+    "@react-native-community/datetimepicker": "^8.0.1",
     "@react-native-community/geolocation": "^3.2.1",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
@@ -39,6 +37,7 @@
     "react-native-confetti-cannon": "^1.5.2",
     "react-native-config": "^1.5.1",
     "react-native-dropdown-picker": "^5.4.6",
+    "react-native-eject": "^0.2.0",
     "react-native-element-dropdown": "^2.12.0",
     "react-native-fast-image": "^8.6.3",
     "react-native-gifted-chat": "^2.4.0",
@@ -50,7 +49,9 @@
     "react-native-material-menu": "^2.0.0",
     "react-native-material-ripple": "^0.9.1",
     "react-native-mmkv": "^2.12.2",
+    "react-native-modal-datetime-picker": "^17.1.0",
     "react-native-otp-entry": "^1.6.1",
+    "react-native-permissions": "^4.1.5",
     "react-native-qrcode-scanner": "^1.5.5",
     "react-native-qrcode-svg": "^6.3.1",
     "react-native-safe-area-context": "^4.10.1",

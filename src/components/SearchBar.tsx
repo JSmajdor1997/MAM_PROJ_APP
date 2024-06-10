@@ -24,7 +24,7 @@ interface Props {
     onPhraseChanged?: (newPhrase: string) => void
 
     placeholder: string
-    leftIcon: React.ReactElement
+    leftIcon?: React.ReactElement
     rightIcon?: React.ReactElement
 
     onLayout?: (event: LayoutChangeEvent) => void
@@ -58,7 +58,7 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
                         ...inputStyle
                     }} />
 
-                {phrase.length == 0 ? rightIcon : (<TouchableOpacity
+                {phrase.length == 0 || readonly ? rightIcon : (<TouchableOpacity
                     onPress={onClear}
                     style={styles.clearButton}>
                     <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Black} size={16} />

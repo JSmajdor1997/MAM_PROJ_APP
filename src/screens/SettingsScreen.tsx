@@ -53,7 +53,7 @@ export default function SettingsScreen({ navigation }: Props) {
           onSelected={item => Resources.get().setSettings({languageCode: item.value})}
           data={Resources.get().getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text>{language.flagEmoji}</Text>, value: language.code }))}
           icon={<FontAwesomeIcon icon={faLanguage} size={20} color={Resources.get().getColors().Green} />} />
-        <BooleanItem label='Reklamy' icon={<FontAwesomeIcon icon={faSmile} size={20} color={Resources.get().getColors().OceanBlue} />} value={Resources.get().getSettings().showAdds} onValueChanged={item => Resources.get().setSettings({showAdds: item})} />
+        <BooleanItem label='Reklamy' icon={<FontAwesomeIcon icon={faSmile} size={20} color={Resources.get().getColors().Primary} />} value={Resources.get().getSettings().showAdds} onValueChanged={item => Resources.get().setSettings({showAdds: item})} />
         <BooleanItem label='Pokazuj śmietniki na mapie' icon={<FontAwesomeIcon icon={faDumpster} size={20} color={Resources.get().getColors().Yellow} />} value={Resources.get().getSettings().showDumpstersOnMap} onValueChanged={item => Resources.get().setSettings({showDumpstersOnMap: item})} />
 
         <ItemTemplate

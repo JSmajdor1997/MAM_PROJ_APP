@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     StyleSheet
 } from 'react-native';
-import WisbIcon, { IconType, ModificatorType } from "../components/WisbIcon/WisbIcon"
+import WisbIcon from "../components/WisbIcon/WisbIcon"
 import Swiper from 'react-native-swiper';
 import Resources from '../../res/Resources';
 import ProgressInput from '../components/ProgressInput';
@@ -19,9 +19,11 @@ import useShaky from '../hooks/useShaky';
 import IdType from '../utils/IdType';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Menu, MenuItem } from 'react-native-material-menu';
 import WisbScreens from '../screens/WisbScreens';
+import IconType from '../components/WisbIcon/IconType';
+import ModificatorType from '../components/WisbIcon/ModificatorType';
 
 export interface RenderPageProps<IndexType> {
     currentIndex: IndexType
@@ -35,7 +37,7 @@ export interface Section<IndexType> {
     name: string
 
     enabled?: () => boolean
-    renderPage(props: RenderPageProps<IndexType>): React.ReactNode
+    renderPage(props: RenderPageProps<IndexType>, index: number): React.ReactNode
 }
 
 export enum Mode {
@@ -47,7 +49,7 @@ export interface Action {
     label: string
     icon: React.ReactNode
     color: string
-    onPress: () => void
+    onPress: (startConfetti: () => void) => void
 }
 
 export interface Props<IndexType extends IdType> {
@@ -137,30 +139,41 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                             }
                         ]}>
                         <Animated.View style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            paddingLeft: 15,
+                            paddingRight: 15,
+                            alignItems: "center",
                             width: "100%", backgroundColor: Resources.get().getColors().Primary, padding: 5, shadowColor: Resources.get().getColors().Black, shadowOffset: { height: 1, width: 1 }, shadowOpacity: shadowAnim.interpolate({
                                 inputRange: [0, 10],
                                 outputRange: [0, 1],
-                            }), shadowRadius: 5
+                            }), shadowRadius: 5,
                         }}>
+                            <TouchableOpacity onPress={onDismiss}>
+                                <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().White} size={20} />
+                            </TouchableOpacity>
+
                             <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : undefined} />
 
-                            {moreActions == null ? null :
-                                <Menu
-                                    visible={isMoreMenuVisible}
-                                    onRequestClose={() => setIsMoreMenuVisible(false)}
-                                    anchor={
-                                        <TouchableOpacity style={{ position: "absolute", right: 0, top: 0 }}>
-                                            <FontAwesomeIcon icon={faEllipsisV} />
-                                        </TouchableOpacity>
-                                    }>
-                                    {moreActions.map(action => (
-                                        <MenuItem onPress={() => { setIsMoreMenuVisible(false); action.onPress }} style={{ backgroundColor: action.label, flexDirection: "row", justifyContent: "space-between" }}>
-                                            {action.icon}
-                                            <Text style={{ flex: 1 }}>{action.label}</Text>
-                                        </MenuItem>
-                                    ))}
-                                </Menu>
-                            }
+                            <View>
+                                {moreActions == null ? null :
+                                    <Menu
+                                        visible={isMoreMenuVisible}
+                                        onRequestClose={() => setIsMoreMenuVisible(false)}
+                                        anchor={
+                                            <TouchableOpacity style={{ position: "absolute", right: 0, top: -9 }} onPress={() => setIsMoreMenuVisible(true)}>
+                                                <FontAwesomeIcon icon={faEllipsisV} size={20} color={Resources.get().getColors().White} />
+                                            </TouchableOpacity>
+                                        }>
+                                        {moreActions.map((action, index) => (
+                                            <MenuItem key={`${index}|${action.label}`} onPress={() => { setIsMoreMenuVisible(false); action.onPress }} style={{ backgroundColor: action.label, flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 5, paddingLeft: 10 }}>
+                                                {action.icon}
+                                                <Text style={{ flex: 1 }}>{action.label}</Text>
+                                            </MenuItem>
+                                        ))}
+                                    </Menu>
+                                }
+                            </View>
                         </Animated.View>
 
                         {
@@ -171,10 +184,10 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                                     showsPagination={false}
                                     scrollEnabled={false}
                                     loop={false}>
-                                    {sectionsOrder.map(it => sections[it].renderPage({ shake, startConfetti, currentIndex }))}
+                                    {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex }, index))}
                                 </Swiper>
                             ) : <ScrollView>
-                                {sectionsOrder.map(it => sections[it].renderPage({ shake, startConfetti, currentIndex }))}
+                                {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex }, index))}
                             </ScrollView>
                         }
 
@@ -209,9 +222,9 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                         {makeConfetti ? <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> : null}
 
                         {actions == null || mode == Mode.Adding ? null : (
-                            <View style={{ flexDirection: 'column', justifyContent: "space-around" }}>
-                                {actions.map(action => (
-                                    <FAB {...action} />
+                            <View style={{ flexDirection: 'row', justifyContent: "space-between", width: "100%", padding: 10, height: 100 }}>
+                                {actions.map((action, index) => (
+                                    <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress(startConfetti)} />
                                 ))}
                             </View>
                         )}
@@ -223,5 +236,5 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
 }
 
 const styles = StyleSheet.create({
-    
+
 })
