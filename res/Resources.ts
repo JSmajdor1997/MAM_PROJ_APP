@@ -145,6 +145,10 @@ export default class Resources {
         return supportedLanguages[this.settingsCache.languageCode]
     }
 
+    getLocale() {
+        return this.settingsCache.languageCode
+    }
+
     getZIndices() {
         return {
             NavBarContainer: 1
