@@ -5,6 +5,7 @@ import User from '../../data_types/User';
 import Wasteland from '../../data_types/Wasteland';
 import Message from '../../data_types/Message';
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
+import getSeededImage from './getSeededImage';
 
 function getYearDateRange(): [Date, Date] {
     const nextYearDate = new Date()
@@ -26,15 +27,14 @@ export default function getMockupEvents(users: User[], wastelands: Wasteland[]):
         const messages: Message[] = faker.helpers.multiple(() => ({
             sender: faker.helpers.arrayElement(users),
             content: faker.word.words(),
-            photosUrls: faker.helpers.multiple(() => faker.image.urlLoremFlickr({ category: "people" })),
             date: faker.date.recent()
-        }))
+        })).map(it => ({...it, photosUrls: faker.helpers.multiple(() => getSeededImage(dateRange[0].toDateString()))}))
 
         return {
             event: {
                 id: 0,
                 name: faker.word.words(),
-                iconUrl: faker.image.urlLoremFlickr({ category: "forest" }),
+                iconUrl:  getSeededImage(dateRange[0].toDateString()),
                 dateRange,
                 meetPlace: {
                     asText: faker.location.streetAddress(),

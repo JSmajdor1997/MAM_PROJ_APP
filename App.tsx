@@ -36,6 +36,9 @@ import { LogBox } from 'react-native';
 import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
 import QRCodeDialog from './src/components/QRCodeDialog';
+import { Type } from './src/API/helpers';
+
+LogBox.ignoreAllLogs();
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -67,16 +70,30 @@ const ScreensNavbarMap = {
   },
 }
 
+type DialogDataItem<T> = {
+  mode: Mode.Adding
+  item?: never
+} | {
+  mode: Mode.Viewing
+  item: T
+}
+
+type DialogData = {
+  [Type.Event]?: DialogDataItem<Event>
+  [Type.Dumpster]?: DialogDataItem<Dumpster>
+  [Type.Wasteland]?: DialogDataItem<Wasteland>
+}
+
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
 
 const Stack = createNativeStackNavigator<NavigationParamsList>();
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.MyEventsScreen)
+  const [dialogData, setDialogData] = React.useState<DialogData>({})
 
-  const [dialogMode, setDialogMode] = React.useState<Mode>(Mode.Viewing)
+  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.MapScreen)
+
   const [isQrCodeDialogVisible, setIsQrCodeDialogVisible] = React.useState(false)
-  const [selectedItem, setSelectedItem] = React.useState<Wasteland | Dumpster | Event | null>(null)
 
   const [userLocation, setUserLocation] = React.useState(Resources.get().getLastLocation())
 
@@ -85,6 +102,31 @@ export default function App() {
       setUserLocation(newLocation)
     })
   })
+
+  const onItemSelected = (item: Event | Wasteland | Dumpster) => {
+    if(isDumpster(item)) {
+        setDialogData({
+          [Type.Dumpster]: {
+            mode: Mode.Viewing,
+            item: item
+          }
+        })
+    } else if(isEvent(item)) {
+      setDialogData({
+        [Type.Event]: {
+          mode: Mode.Viewing,
+          item: item
+        }
+      })
+    } else if(isWasteland(item)) {
+      setDialogData({
+        [Type.Wasteland]: {
+          mode: Mode.Viewing,
+          item: item
+        }
+      })
+    }
+  }
 
   return (
     <ClickOutsideProvider>
@@ -101,14 +143,14 @@ export default function App() {
           }}>
             <Stack.Navigator
               initialRouteName={currentScreen}
-              screenOptions={{ headerShown: false, animation: "fade", animationDuration: 100 }}>
+              screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500 }}>
               <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
-              <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
               <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
-              <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
-                onItemSelected: setSelectedItem
-              }} />
               <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} />
+              <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
+                onItemSelected
+              }} />
+              <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
               <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
               <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} />
             </Stack.Navigator>
@@ -127,14 +169,14 @@ export default function App() {
                 bubbles: [
                   {
                     component: <FontAwesomeIcon icon={faQrcode} />,
-                    onPress: () => setState({ isQRDialogVisible: true }),
+                    onPress: () => setIsQrCodeDialogVisible(true),
                   },
                 ],
               },
               {
                 render: () => <WisbIcon icon={IconType.Earth} size={30} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected: setSelectedItem })
+                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected })
                 },
                 bubbles: [
                   {
@@ -142,9 +184,11 @@ export default function App() {
                       <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
                     ),
                     onPress: () => {
-                      // setIsEventAddingDialogVisible(true)
-                      // setIsWastelandAddingDialogVisible(false)
-                      // setIsDumpsterAddingDialogVisible(false)
+                      setDialogData({
+                        [Type.Event]: {
+                          mode: Mode.Adding,
+                        }
+                      })
                     },
                   },
                   {
@@ -152,9 +196,11 @@ export default function App() {
                       <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
                     ),
                     onPress: () => {
-                      // setIsEventAddingDialogVisible(false)
-                      // setIsWastelandAddingDialogVisible(false)
-                      // setIsDumpsterAddingDialogVisible(true)
+                      setDialogData({
+                        [Type.Dumpster]: {
+                          mode: Mode.Adding,
+                        }
+                      })
                     },
                   },
                   {
@@ -162,9 +208,11 @@ export default function App() {
                       <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
                     ),
                     onPress: () => {
-                      // setIsEventAddingDialogVisible(false)
-                      // setIsWastelandAddingDialogVisible(true)
-                      // setIsDumpsterAddingDialogVisible(false)
+                      setDialogData({
+                        [Type.Wasteland]: {
+                          mode: Mode.Adding,
+                        }
+                      })
                     },
                   },
                 ],
@@ -172,18 +220,42 @@ export default function App() {
               {
                 render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.LeaderBoardScreen, { onItemSelected: setSelectedItem })
+                  navigationRef.navigate(WisbScreens.LeaderBoardScreen, { onItemSelected })
                 },
               },
             ]} />
 
-          <EventDialog visible={selectedItem != null && isEvent(selectedItem)} mode={Mode.Viewing} userLocation={userLocation} onDismiss={() => setSelectedItem(null)} />
-          <WastelandDialog visible={selectedItem != null && isWasteland(selectedItem)} mode={Mode.Viewing} userLocation={userLocation} onDismiss={() => setSelectedItem(null)} />
-          <DumpsterDialog visible={selectedItem != null && isDumpster(selectedItem)} mode={Mode.Viewing} userLocation={userLocation} onDismiss={() => setSelectedItem(null)} />
+          <EventDialog 
+            visible={dialogData[Type.Event] != null} 
+            event={dialogData[Type.Event]?.item}
+            mode={dialogData[Type.Event]?.mode ?? Mode.Viewing} 
+            userLocation={userLocation} 
+            onDismiss={() => setDialogData({})} />
+          <WastelandDialog 
+            visible={dialogData[Type.Wasteland] != null} 
+            wasteland={dialogData[Type.Wasteland]?.item}
+            mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing} 
+            userLocation={userLocation}
+            onDismiss={() => setDialogData({})} />
+          <DumpsterDialog 
+            visible={dialogData[Type.Dumpster] != null} 
+            dumpster={dialogData[Type.Dumpster]?.item}
+            mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing} 
+            userLocation={userLocation} 
+            onDismiss={() => setDialogData({})} />
+
           <QRCodeDialog
-            visible={isQrCodeDialogVisible || true}
-            onDismiss={() => { }}
-            onQrCodeScanned={code => console.log(code)} />
+            visible={isQrCodeDialogVisible}
+            onDismiss={() => setIsQrCodeDialogVisible(false)}
+            onEvent={event => {
+              setIsQrCodeDialogVisible(false)
+              setDialogData({
+                [Type.Event]: {
+                  mode: Mode.Viewing,
+                  item: event
+                }
+              })
+            }} />
         </View>
       </PortalProvider>
     </ClickOutsideProvider>

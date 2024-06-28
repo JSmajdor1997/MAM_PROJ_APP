@@ -13,6 +13,7 @@ import getMockupWastelands from "./mockup_wastelands";
 import { faker } from '@faker-js/faker';
 import isLatLngInRegion from "../../../utils/isLatLngInRegion";
 
+
 export default class MockupAPI extends API {
     private users = getMockupUsers()
     private dumpsters = getMockupDumpsters(this.users)
@@ -163,6 +164,26 @@ export default class MockupAPI extends API {
 
     async resetPassword(): Promise<APIResponse<GeneralError, { newUser: User; }>> {
         throw new Error("Method not implemented.");
+    }
+
+    async getEventById(id: number): Promise<APIResponse<GeneralError, { item: Event; }>> {
+        if (this.loggedInUser == null) {
+            return {
+                error: GeneralError.UserNotAuthorized
+            }
+        }
+
+        const foundEvent = this.events.find(it => it.event.id == id)
+
+        if (foundEvent == null) {
+            return {
+                error: GeneralError.InvalidDataProvided
+            }
+        }
+
+        return {
+            data: { item: foundEvent.event }
+        }
     }
 
     async getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Event[]; }>> {

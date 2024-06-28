@@ -11,23 +11,30 @@ export default function useShaky({ offset, durationMs }: Props): { shake: () => 
 
     return {
         shake: () => {
-            Animated.loop(
-                Animated.sequence([
-                    Animated.timing(translationX, {
-                        toValue: offset,
-                        duration: durationMs,
-                        useNativeDriver: false
-                    }),
-                    Animated.timing(translationX, {
-                        toValue: -offset,
-                        duration: 2 * durationMs,
-                        useNativeDriver: false
-                    }),
-                ]),
-                {
-                    iterations: 3,
-                },
-            ).start();
+            Animated.sequence([
+                Animated.loop(
+                    Animated.sequence([
+                        Animated.timing(translationX, {
+                            toValue: offset,
+                            duration: durationMs,
+                            useNativeDriver: false
+                        }),
+                        Animated.timing(translationX, {
+                            toValue: -offset,
+                            duration: 2 * durationMs,
+                            useNativeDriver: false
+                        }),
+                    ]),
+                    {
+                        iterations: 3,
+                    },
+                ),
+                Animated.timing(translationX, {
+                    toValue: 0,
+                    duration: durationMs,
+                    useNativeDriver: false
+                })
+            ]).start();
         },
         translationX
     }

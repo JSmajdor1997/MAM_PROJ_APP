@@ -10,7 +10,6 @@ import {
   StyleSheet,
 } from 'react-native';
 import MapView, { Marker, Region, LatLng } from 'react-native-maps';
-import SearchBar from '../components/MapQueryInput';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
@@ -31,11 +30,11 @@ import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
 import { MapObjects, Query, Type } from '../API/helpers';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowUp, faChevronDown, faMapPin } from '@fortawesome/free-solid-svg-icons';
-import MapQueryInput from '../components/MapQueryInput';
 import isLatLngInRegion from '../utils/isLatLngInRegion';
 import Resources from '../../res/Resources';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import IconType from '../components/WisbIcon/IconType';
+import QueryInput from '../components/QueryInput/QueryInput';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -234,10 +233,16 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
       <View
         style={{
           ...styles.mapQueryInputContainer,
-          marginTop: (StatusBar.currentHeight ?? 20) + 5,
+          marginTop: (StatusBar.currentHeight ?? 35) + 5,
         }}>
-        <MapQueryInput
+        <QueryInput
+          placeholder={Resources.get().getStrings().Components.MapQueryInput.Placeholder}
+          onPress={() => setIsSearchDialogVisible(true)}
+          onPhraseChanged={phrase => setQuery({ ...query, phrase })}
+          isFocused={isSearchDialogVisible}
           onClear={() => {
+            setIsSearchDialogVisible(false)
+
             if (userPosition == null) {
               return
             }
@@ -256,10 +261,39 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
 
             mapRef.current?.animateToRegion(region, 100)
           }}
-          query={query}
-          isFocused={isSearchDialogVisible}
-          onQueryChanged={newQuery => setQuery(newQuery)}
-          onPress={() => setIsSearchDialogVisible(true)}
+          phrase={query.phrase}
+          items={[
+            {
+              isSelected: query.type.includes(Type.Dumpster),
+              component: <WisbIcon icon={IconType.Dumpster} size={20} greyOut={query.type != Type.Dumpster} />,
+              onClick: () => {
+                setQuery({
+                  ...query,
+                  type: Type.Dumpster
+                })
+              }
+            },
+            {
+              isSelected: query.type.includes(Type.Event),
+              component: <WisbIcon icon={IconType.Calendar} size={20} greyOut={query.type != Type.Event} />,
+              onClick: () => {
+                setQuery({
+                  ...query,
+                  type: Type.Event
+                })
+              }
+            },
+            {
+              isSelected: query.type.includes(Type.Wasteland),
+              component: <WisbIcon icon={IconType.WastelandIcon} size={20} greyOut={query.type != Type.Wasteland} />,
+              onClick: () => {
+                setQuery({
+                  ...query,
+                  type: Type.Wasteland
+                })
+              }
+            }
+          ]}
         />
       </View>
 

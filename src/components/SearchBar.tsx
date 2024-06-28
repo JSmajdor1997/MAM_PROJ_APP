@@ -19,7 +19,6 @@ interface Props {
 
     readonly?: boolean
     onPress?: () => void
-    onClear?: () => void
     phrase: string
     onPhraseChanged?: (newPhrase: string) => void
 
@@ -28,9 +27,25 @@ interface Props {
     rightIcon?: React.ReactElement
 
     onLayout?: (event: LayoutChangeEvent) => void
+
+    focused?: boolean
 }
 
-export default function SearchBar({ style, inputStyle, inputContainerStyle, onPress, phrase, onPhraseChanged, onClear, placeholder, readonly, leftIcon, rightIcon, onLayout }: Props) {
+export default function SearchBar({ focused, style, inputStyle, inputContainerStyle, onPress, phrase, onPhraseChanged, placeholder, readonly, leftIcon, rightIcon, onLayout }: Props) {
+    const inputRef = React.useRef<TextInput>(null)
+
+    React.useEffect(() => {
+        if (focused == undefined) {
+            return
+        }
+
+        if (focused) {
+            inputRef.current?.focus()
+        } else {
+            inputRef.current?.blur()
+        }
+    }, [focused])
+
     return (
         <View
             onLayout={onLayout}
@@ -45,24 +60,22 @@ export default function SearchBar({ style, inputStyle, inputContainerStyle, onPr
                 }}>
                 {leftIcon}
                 <TextInput
+                    ref={inputRef}
                     contextMenuHidden={true}
                     numberOfLines={1}
                     autoCapitalize="none"
                     value={phrase}
+                    placeholderTextColor={Resources.get().getColors().DarkBeige}
                     placeholder={placeholder}
                     onChangeText={text => onPhraseChanged?.(text)}
                     onPress={onPress}
                     readOnly={readonly}
                     style={{
                         ...styles.input,
-                        ...inputStyle
+                        ...inputStyle,
                     }} />
 
-                {phrase.length == 0 || readonly ? rightIcon : (<TouchableOpacity
-                    onPress={onClear}
-                    style={styles.clearButton}>
-                    <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Black} size={16} />
-                </TouchableOpacity>)}
+                {rightIcon}
             </View>
         </View>
     );

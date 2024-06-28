@@ -9,6 +9,7 @@ import ImagesGallery from "../components/ImagesGallery";
 import LocationInput from "../components/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
 import WisbIcon from "../components/WisbIcon/WisbIcon";
+import Wasteland from "../API/data_types/Wasteland";
 
 enum Sections {
     BasicInfo,
@@ -17,15 +18,15 @@ enum Sections {
 }
 
 export interface Props {
-    event?: Event
+    wasteland?: Wasteland
     mode: Mode
     onDismiss(): void
-    onAdd?: (event: Event) => void
+    onAdd?: (wasteland: Wasteland) => void
     visible: boolean
     userLocation: LatLng
 }
 
-export default function WastelandDialog({ mode, event, onDismiss, onAdd, visible, userLocation }: Props) {
+export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, visible, userLocation }: Props) {
     return (
         <WisbDialog
             visible={visible}

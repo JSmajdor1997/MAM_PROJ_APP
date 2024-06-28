@@ -43,9 +43,17 @@ export default function Dialog({
     dismissOnBackdropPress,
     animationDuration
 }: Props) {
+    const prevVisible = React.useRef(visible)
     const translateValue = useRef(new Animated.Value(0)).current;
 
     React.useEffect(() => {
+        if(prevVisible.current == visible) {
+            translateValue.setValue(getTranslation(visible, position))
+            return
+        }
+
+        prevVisible.current = visible
+
         if (visible) {
             Animated.timing(translateValue, {
                 toValue: getTranslation(true, position),

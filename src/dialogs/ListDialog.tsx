@@ -172,12 +172,6 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
           ...mapObjects[Type.Wasteland]
         ]}
       />
-
-      <FAB
-        color={Resources.get().getColors().Red}
-        icon={<FontAwesomeIcon icon={faClose} color={Resources.get().getColors().White} size={25} />}
-        style={styles.dismissButton}
-        onPress={onDismiss} />
     </Dialog>
   );
 }

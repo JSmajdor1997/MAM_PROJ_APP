@@ -8,6 +8,7 @@ import { LatLng } from "react-native-maps";
 import IconType from "../components/WisbIcon/IconType";
 import WisbIcon from "../components/WisbIcon/WisbIcon";
 import ImagesGallery from "../components/ImagesGallery";
+import Dumpster from "../API/data_types/Dumpster";
 
 enum Sections {
     BasicInfo,
@@ -16,15 +17,15 @@ enum Sections {
 }
 
 export interface Props {
-    event?: Event
+    dumpster?: Dumpster
     mode: Mode
     onDismiss(): void
-    onAdd?: (event: Event) => void
+    onAdd?: (dumpster: Dumpster) => void
     visible: boolean
     userLocation: LatLng
 }
 
-export default function DumpsterDialog({ mode, event, onDismiss, onAdd, visible, userLocation }: Props) {
+export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation }: Props) {
     return (
         <WisbDialog
             visible={visible}

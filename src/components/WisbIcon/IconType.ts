@@ -7,7 +7,8 @@ enum IconType {
     Calendar = require('../../../res/images/calendar.png'),
     WastelandIcon = require('../../../res/images/wasteland-icon.png'),
     Dumpster = require('../../../res/images/recycle-bin.png'),
-    MapPin = require('../../../res/images/map-pin.png')
+    MapPin = require('../../../res/images/map-pin.png'),
+    Crown = require('../../../res/images/crown.png'),
 }
 
 export default IconType

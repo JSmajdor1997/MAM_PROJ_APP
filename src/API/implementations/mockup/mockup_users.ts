@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import User from '../../data_types/User';
+import getSeededImage from './getSeededImage';
 
 export default function getMockupUsers(): User[] {
     return faker.helpers.multiple(() => ({
@@ -7,7 +8,6 @@ export default function getMockupUsers(): User[] {
         email: faker.internet.email(),
         userName: faker.internet.userName(),
         password: "123",
-        photoUrl: faker.datatype.boolean() ? faker.image.avatar() : undefined,
         nrOfClearedWastelands: faker.number.int({ min: 0 }),
         addedDumpsters: faker.number.int({ min: 0 }),
         deletedDumpsters: faker.number.int({ min: 0 })
@@ -15,6 +15,7 @@ export default function getMockupUsers(): User[] {
         count: 30,
     }).map((it, index) => ({
         ...it,
+        photoUrl: faker.datatype.boolean() ? getSeededImage(it.email) : undefined,
         id: index
     }))
 }

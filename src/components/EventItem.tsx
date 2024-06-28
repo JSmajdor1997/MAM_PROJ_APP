@@ -10,11 +10,12 @@ import {
 import { MenuItem, Menu } from 'react-native-material-menu';
 import FastImage from 'react-native-fast-image';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import WisbIcon, { IconType } from './WisbIcon/WisbIcon';
+import WisbIcon from './WisbIcon/WisbIcon';
 import { faCrown, faMobileRetro } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import Event from '../API/data_types/Event';
 import Resources from '../../res/Resources';
+import IconType from './WisbIcon/IconType';
 
 interface Props {
   item: Event;
@@ -118,10 +119,9 @@ export default React.memo(EventItem)
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
     backgroundColor: Resources.get().getColors().Primary,
-    marginVertical: 10,
-    minHeight: 120,
+    marginVertical: 5,
+    height: 100,
     marginHorizontal: 16,
     borderRadius: 10,
     justifyContent: 'space-between',
@@ -131,9 +131,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-
-    elevation: 5,
   }
 })

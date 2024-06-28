@@ -37,6 +37,7 @@ export enum ChangeSource {
 export type ChangeListener = (source: ChangeSource) => void
 
 export default abstract class API {
+    private static readonly WisbEventQrCodePrefix = "Wisb-Event"
     abstract isUserLoggedIn(): Promise<boolean>
 
     ////////////account lifecycle related functions
@@ -49,6 +50,7 @@ export default abstract class API {
 
     ////////////events related functions
     abstract getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Event[] }>>
+    abstract getEventById(id: number): Promise<APIResponse<GeneralError, { item: Event }>>
     abstract createEvent(newEvent: Omit<Event, "id">): Promise<APIResponse<GeneralError, { createdItem: Event }>>
     abstract deleteEvent(event: Event): Promise<APIResponse<GeneralError, {}>>
     abstract updateEvent(event: Event): Promise<APIResponse<GeneralError, { updatedItem: Event }>>
@@ -57,6 +59,15 @@ export default abstract class API {
     abstract getEventMessages(event: Event, dateRange: [Date, Date]): Promise<APIResponse<GeneralError, { messages: Message[] }>>
     abstract sendEventMessage(event: Event, message: Omit<Message, "id" | "date">): Promise<APIResponse<GeneralError, {}>>
     abstract getEventMembers(event: Event, range: [number, number]): Promise<APIResponse<GeneralError, {members: EventUser[], admins: EventUser[]}>>
+    getQRCode(event: Event): string {
+        return `${API.WisbEventQrCodePrefix}-${event.id}`
+    }
+
+    getEventByQrCode(qrCode: string): Promise<APIResponse<GeneralError, { item: Event }>> {
+        const parsedId = parseInt(qrCode.substring(API.WisbEventQrCodePrefix.length+1))
+
+        return this.getEventById(parsedId)
+    }
 
     ////////////wastelands related functions
     abstract getWastelands(query: WastelandsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Wasteland[] }>>

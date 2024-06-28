@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import Dumpster from "../../data_types/Dumpster";
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
 import User from '../../data_types/User';
+import getSeededImage from './getSeededImage';
 
 export default function getMockupDumpsters(users: User[]): Dumpster[] {
     return faker.helpers.multiple(() => ({
@@ -12,11 +13,11 @@ export default function getMockupDumpsters(users: User[]): Dumpster[] {
             asText: faker.location.streetAddress({ useFullAddress: true })
         },
         description: faker.word.words(),
-        photos: faker.helpers.multiple(() => faker.image.urlLoremFlickr({ category: "nature" }))
     }), {
         count: 30,
     }).map((it, index) => ({
         ...it,
+        photos: faker.helpers.multiple(() => getSeededImage(it.id.toString())),
         id: index
     }))
 }

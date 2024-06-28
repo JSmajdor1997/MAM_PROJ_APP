@@ -13,11 +13,29 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import WisbScreens from './WisbScreens';
-import { faAt, faCrown, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
+import { faAt, faCrown, faEllipsisH, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
 import Avatar from '../components/Avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Separator from '../components/Separator';
 import Resources from '../../res/Resources';
+import WisbIcon from '../components/WisbIcon/WisbIcon';
+import IconType from '../components/WisbIcon/IconType';
+
+function LeaderShipItem({ userName, score }: { userName: string, score: number }) {
+  return (
+    <View style={{flexDirection: "row", justifyContent: "space-between", width: "100%", padding: 20, alignItems: "center"}}>
+      <View style={{flexDirection: "row", alignItems: "center"}}>
+        <WisbIcon icon={IconType.Crown} size={30} style={{marginRight: 10}}/>
+
+        <Text style={{fontSize: 20, fontWeight: "500"}}>{userName}</Text>
+      </View>
+
+      <View style={{aspectRatio: 1, backgroundColor: "pink", borderRadius: 100, justifyContent: "center", alignItems: "center", padding: 10}}>
+        <Text>{score}</Text>
+      </View>
+    </View>
+  )
+}
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -186,12 +204,17 @@ export default function LeaderboardScreen({ navigation }: Props) {
           <Separator backgroundColor={Resources.get().getColors().White} color={Resources.get().getColors().Beige} />
         )}
         ListEmptyComponent={() => (
-          <Spinner
-            isVisible={true}
-            color={Resources.get().getColors().Primary}
-            type="ChasingDots"
-            size={50}
-          />
+          <View style={{ backgroundColor: "red", width: "100%", height: "100%", alignItems: "center", justifyContent: "space-between" }}>
+            <Spinner
+              isVisible={true}
+              color={Resources.get().getColors().Primary}
+              type="ChasingDots"
+              size={50}
+            />
+
+<LeaderShipItem
+              userName='Jakub Smajdor' score={100} />
+          </View>
         )}
         style={{ marginBottom: 75 }}
         renderItem={({ item, index, separators }) => (
