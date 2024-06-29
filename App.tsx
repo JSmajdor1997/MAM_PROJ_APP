@@ -10,6 +10,7 @@ import SplashScreen from './src/screens/SplashScreen';
 import MapScreen from './src/screens/MapScreen';
 import NavBar from './src/components/NavBar/NavBar';
 import LoginScreen from './src/screens/LoginScreen';
+import Toast from 'react-native-simple-toast';
 import ChatScreen from './src/screens/ChatScreen';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -37,6 +38,9 @@ import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
 import QRCodeDialog from './src/components/QRCodeDialog';
 import { Type } from './src/API/helpers';
+import getAPI from './src/API/getAPI';
+import User from './src/API/data_types/User';
+import Spinner from 'react-native-spinkit';
 
 LogBox.ignoreAllLogs();
 
@@ -45,6 +49,8 @@ LogBox.ignoreLogs([
   'FontAwesomeIcon: ',
   'Sending `geolocationDidChange` with no listeners registered.'
 ]);
+
+const api = getAPI()
 
 const ScreensNavbarMap = {
   [WisbScreens.ChatScreen]: {
@@ -97,28 +103,32 @@ export default function App() {
 
   const [userLocation, setUserLocation] = React.useState(Resources.get().getLastLocation())
 
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null)
+
   React.useEffect(() => {
+    api.getCurrentUser().then(result => result.data != null ? setCurrentUser(result.data) : Toast.showWithGravityAndOffset("Unknown error", Toast.SHORT, Toast.CENTER, 0, 10))
+
     return Resources.get().registerUserLocationListener(newLocation => {
       setUserLocation(newLocation)
     })
   })
 
   const onItemSelected = (item: Event | Wasteland | Dumpster) => {
-    if(isDumpster(item)) {
-        setDialogData({
-          [Type.Dumpster]: {
-            mode: Mode.Viewing,
-            item: item
-          }
-        })
-    } else if(isEvent(item)) {
+    if (isDumpster(item)) {
+      setDialogData({
+        [Type.Dumpster]: {
+          mode: Mode.Viewing,
+          item: item
+        }
+      })
+    } else if (isEvent(item)) {
       setDialogData({
         [Type.Event]: {
           mode: Mode.Viewing,
           item: item
         }
       })
-    } else if(isWasteland(item)) {
+    } else if (isWasteland(item)) {
       setDialogData({
         [Type.Wasteland]: {
           mode: Mode.Viewing,
@@ -127,6 +137,16 @@ export default function App() {
       })
     }
   }
+
+  if(currentUser == null) {
+    return (
+      <View style={{width: "100%", height: "100%", justifyContent: "center", alignItems: "center"}}>
+          <Spinner type="Circle"/>
+      </View>
+    )
+  }
+
+  const getCurrentUser = ()=>currentUser
 
   return (
     <ClickOutsideProvider>
@@ -146,9 +166,12 @@ export default function App() {
               screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500 }}>
               <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
               <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
-              <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} />
+              <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
+                getCurrentUser
+              }} />
               <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
-                onItemSelected
+                onItemSelected,
+                getCurrentUser
               }} />
               <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
               <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
@@ -164,7 +187,7 @@ export default function App() {
               {
                 render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MyEventsScreen, {})
+                  navigationRef.navigate(WisbScreens.MyEventsScreen, {getCurrentUser})
                 },
                 bubbles: [
                   {
@@ -176,7 +199,7 @@ export default function App() {
               {
                 render: () => <WisbIcon icon={IconType.Earth} size={30} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected })
+                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected, getCurrentUser })
                 },
                 bubbles: [
                   {
@@ -225,23 +248,27 @@ export default function App() {
               },
             ]} />
 
-          <EventDialog 
-            visible={dialogData[Type.Event] != null} 
+          <EventDialog
+            visible={dialogData[Type.Event] != null}
             event={dialogData[Type.Event]?.item}
-            mode={dialogData[Type.Event]?.mode ?? Mode.Viewing} 
-            userLocation={userLocation} 
-            onDismiss={() => setDialogData({})} />
-          <WastelandDialog 
-            visible={dialogData[Type.Wasteland] != null} 
+            mode={dialogData[Type.Event]?.mode ?? Mode.Viewing}
+            userLocation={userLocation}
+            onDismiss={() => setDialogData({})}
+            onOpenChat={event => {
+              navigationRef.navigate(WisbScreens.ChatScreen, { event })
+              setDialogData({})
+            }} />
+          <WastelandDialog
+            visible={dialogData[Type.Wasteland] != null}
             wasteland={dialogData[Type.Wasteland]?.item}
-            mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing} 
+            mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing}
             userLocation={userLocation}
             onDismiss={() => setDialogData({})} />
-          <DumpsterDialog 
-            visible={dialogData[Type.Dumpster] != null} 
+          <DumpsterDialog
+            visible={dialogData[Type.Dumpster] != null}
             dumpster={dialogData[Type.Dumpster]?.item}
-            mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing} 
-            userLocation={userLocation} 
+            mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing}
+            userLocation={userLocation}
             onDismiss={() => setDialogData({})} />
 
           <QRCodeDialog

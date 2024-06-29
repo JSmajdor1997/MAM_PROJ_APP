@@ -35,6 +35,7 @@ import Resources from '../../res/Resources';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import IconType from '../components/WisbIcon/IconType';
 import QueryInput from '../components/QueryInput/QueryInput';
+import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -50,15 +51,17 @@ interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens
 
 const InitialRegion = {
   ...Resources.get().getLastLocation(),
-  latitudeDelta: 1,
-  longitudeDelta: 1,
+  latitudeDelta: 0.1,
+  longitudeDelta: 0.1,
 }
 
-export default function MapScreen({ route: { params: { onItemSelected } } }: Props) {
+export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser } } }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
 
   const mapRef = React.useRef<MapView>(null)
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
+  const [isReverseGeocoding, setIsReverseGeocoding] = React.useState(true)
+  const [currentLocationAsText, setCurrentLocationAsText] = React.useState<string | null>(null)
 
   const [query, setQuery] = React.useState<Query>({ phrase: "", type: Type.Event })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
@@ -67,9 +70,18 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
 
   const [userPosition, setUserPosition] = React.useState<LatLng>(InitialRegion)
 
+  const setCurrentRegionName = (region: Region) => {
+    setIsReverseGeocoding(true)
+    reverseGeoCode(Resources.get().getEnv().GOOGLE_MAPS_API_KEY, region).then(formattedAddress => {
+      setCurrentLocationAsText(formattedAddress ?? "??")
+      setIsReverseGeocoding(false)
+    })
+  }
+
   React.useEffect(() => {
+    setCurrentRegionName(InitialRegion)
     return Resources.get().registerUserLocationListener(setUserPosition)
-  })
+  }, [])
 
   const getTrackingIconPosition = (region: Region) => {
     if (userPosition != null && !isLatLngInRegion(region, userPosition)) {
@@ -108,16 +120,17 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
   })
 
   const updateMapObjects = (region: Region) => {
-    getAPI().getObjects([Type.Dumpster, Type.Event, Type.Wasteland], { phrase: query.phrase, region }).then(rsp => {
-      if (rsp.error == null) {
-        setMapObjects(mapObjects => ({
-          ...mapObjects,
-          ...rsp.data
-        }))
-      } else {
-        Toast.showWithGravityAndOffset(rsp.description ?? Resources.get().getStrings().Screens.MapScreen.ErrorToastMessage, Toast.SHORT, Toast.CENTER, 0, 10)
-      }
-    })
+    const api = getAPI()
+
+      Promise.all([
+        api.getWastelands({region}),
+        api.getDumpsters({region}),
+        api.getEvents({region}, null, false)
+      ]).then(result => ({
+        [Type.Wasteland]: result[0].data!.items,
+        [Type.Dumpster]: result[1].data!.items,
+        [Type.Event]: result[2].data!.items
+      })).then(result =>  setMapObjects(mapObjects => ({...mapObjects, ...result})))
   }
 
   return (
@@ -125,10 +138,13 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
       style={styles.root}>
       <MapView
         ref={mapRef}
+        initialRegion={InitialRegion}
         onRegionChangeComplete={newRegion => {
           if (!doesRegionInclude(mapObjects.region, newRegion) && calcRegionAreaInMeters(newRegion) < 100000) {
             updateMapObjects(scaleRegion(newRegion, 1.5))
           }
+
+          setCurrentRegionName(newRegion)
 
           setDisplayedRegion(region => newRegion)
         }}
@@ -236,6 +252,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
           marginTop: (StatusBar.currentHeight ?? 35) + 5,
         }}>
         <QueryInput
+          loading={!isSearchDialogVisible && query.phrase.length == 0 && isReverseGeocoding}
           placeholder={Resources.get().getStrings().Components.MapQueryInput.Placeholder}
           onPress={() => setIsSearchDialogVisible(true)}
           onPhraseChanged={phrase => setQuery({ ...query, phrase })}
@@ -261,7 +278,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
 
             mapRef.current?.animateToRegion(region, 100)
           }}
-          phrase={query.phrase}
+          phrase={!isSearchDialogVisible && query.phrase.length == 0 && currentLocationAsText != null && !isReverseGeocoding ? currentLocationAsText : query.phrase}
           items={[
             {
               isSelected: query.type.includes(Type.Dumpster),
@@ -298,6 +315,7 @@ export default function MapScreen({ route: { params: { onItemSelected } } }: Pro
       </View>
 
       <ListDialog
+        currentUser={getCurrentUser()}
         googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
         onPlaceSelected={selectedPlace => {
           setIsSearchDialogVisible(false)

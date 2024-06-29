@@ -28,13 +28,15 @@ export default function getMockupEvents(users: User[], wastelands: Wasteland[]):
             sender: faker.helpers.arrayElement(users),
             content: faker.word.words(),
             date: faker.date.recent()
-        })).map(it => ({...it, photosUrls: faker.helpers.multiple(() => getSeededImage(dateRange[0].toDateString()))}))
+        })).map((it, index) => ({...it, photosUrls: Array.from({length: faker.number.int({min: 0, max: 4})}, (_, index)=>getSeededImage(`${it.sender.userName} ${index}`))}))
 
+        const name = faker.word.words()
+        
         return {
             event: {
                 id: 0,
-                name: faker.word.words(),
-                iconUrl:  getSeededImage(dateRange[0].toDateString()),
+                name,
+                iconUrl:  getSeededImage(name),
                 dateRange,
                 meetPlace: {
                     asText: faker.location.streetAddress(),

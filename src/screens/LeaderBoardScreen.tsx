@@ -6,6 +6,9 @@ import {
   FlatList,
   StatusBar,
   TouchableOpacity,
+  ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
 import Spinner from 'react-native-spinkit';
 import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
@@ -13,97 +16,93 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import WisbScreens from './WisbScreens';
-import { faAt, faCrown, faEllipsisH, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faAt, faCrown, faEllipsisH, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
 import Avatar from '../components/Avatar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Separator from '../components/Separator';
 import Resources from '../../res/Resources';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import IconType from '../components/WisbIcon/IconType';
-
-function LeaderShipItem({ userName, score }: { userName: string, score: number }) {
-  return (
-    <View style={{flexDirection: "row", justifyContent: "space-between", width: "100%", padding: 20, alignItems: "center"}}>
-      <View style={{flexDirection: "row", alignItems: "center"}}>
-        <WisbIcon icon={IconType.Crown} size={30} style={{marginRight: 10}}/>
-
-        <Text style={{fontSize: 20, fontWeight: "500"}}>{userName}</Text>
-      </View>
-
-      <View style={{aspectRatio: 1, backgroundColor: "pink", borderRadius: 100, justifyContent: "center", alignItems: "center", padding: 10}}>
-        <Text>{score}</Text>
-      </View>
-    </View>
-  )
-}
+import getAPI from '../API/getAPI';
+import User from '../API/data_types/User';
+import LeadershipRecord from '../API/data_types/LeadershipRecord';
+import LeaderShipItem from '../components/LeaderShipItem';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
-interface State {
-  data: Array<any>;
-  userID: string;
-  isLoading: boolean;
-  userPoints: number;
-  userName: string;
-  userInitials: string;
-  userArrayIndex: any;
-  userImage: string;
-  userEmail: string;
+const api = getAPI()
 
-  isV: boolean;
-}
+const RecordsPerPage = 20
 
 export default function LeaderboardScreen({ navigation }: Props) {
   const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
-  const [state, setState] = React.useState<State>({
-    data: [],
-    isLoading: true,
-    userPoints: 0,
-    userName: '',
-    userInitials: '',
-    userID: '',
-    userArrayIndex: '',
-    userImage: '',
-    userEmail: '',
-    isV: true,
-  })
 
-  const logout = () => {
-    fetch('https://moczala.com:2053/users/logout', {
-      method: 'GET',
-    });
-  }
+  const avatarSectionSize = React.useRef(new Animated.Value(200)).current;
+  const [hasMore, setHasMore] = React.useState(true)
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [index, setIndex] = React.useState(0)
 
-  const myPlace = () => {
-    for (let i: any; i < state.data.length; i++) {
-      if (state.data[i]._id == state.userID) {
-        setState({
-          ...state,
-          userArrayIndex: i,
-        });
-      }
-    }
+  const [user, setUser] = React.useState<User | null>(null)
+
+  const [leadership, setLeadership] = React.useState<LeadershipRecord[]>([])
+
+  React.useEffect(() => {
+    Promise.all([
+      api.getCurrentUser().then(result => setUser(result.data ?? null)),
+      api.getLeadership({ positionsRange: [index, index + RecordsPerPage] }).then(result => setLeadership(result.data?.users ?? []))
+    ]).then(() => setIsLoading(false))
+  }, [])
+
+  React.useEffect(() => {
+    setIsLoading(true)
+    api.getLeadership({ positionsRange: [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage] })
+      .then(result => {
+        const users = result.data?.users ?? []
+        setLeadership(users)
+        setHasMore(users.length > 0)
+      })
+    setIsLoading(false)
+  }, [index])
+
+  if (user == null) {
+    return null
   }
 
   return (
     <SafeAreaView style={{ flex: 1, justifyContent: 'flex-start' }}>
-      <View
+      <Animated.View
         style={{
           marginTop: StatusBar.currentHeight,
           flexDirection: 'row',
-          height: 120,
+          overflow: "hidden",
+          maxHeight: avatarSectionSize.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 150]
+          })
         }}>
         <View style={{ flex: 1 }} />
         <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          style={{ justifyContent: 'center', alignItems: 'center' }}>
           <Avatar
             colors={Resources.get().getColors().AvatarColors}
-            size={100}
+            size={70}
             fontSize={52}
-            username={state.userName}
-            image={state.userImage}
+            username={user.userName}
+            image={user.photoUrl}
             onPress={() => { }}
           />
+
+          <Text
+            style={{
+              fontSize: 20,
+              fontFamily: "Avenir",
+              letterSpacing: 1,
+              fontWeight: 'bold',
+              marginTop: 10,
+              textAlign: "center"
+            }}>
+            {user.userName}
+          </Text>
         </View>
         <View
           style={{
@@ -116,27 +115,24 @@ export default function LeaderboardScreen({ navigation }: Props) {
           <Menu
             visible={isMoreMenuVisible}
             anchor={<TouchableOpacity onPress={() => setIsMoreMenuVisible(true)}>
-              <FontAwesomeIcon icon={faEllipsisV} size={25} />
+              <FontAwesomeIcon icon={faEllipsisV} size={20} />
             </TouchableOpacity>}
             onRequestClose={() => setIsMoreMenuVisible(false)}
             style={{ marginTop: StatusBar.currentHeight }}>
             <MenuItem onPress={() => {
-              logout()
               setIsMoreMenuVisible(false)
+            }}>Zmień hasło</MenuItem>
+            <MenuItem onPress={() => {
+              setIsMoreMenuVisible(false)
+              api.logout().then(() => { navigation.navigate(WisbScreens.LoginScreen, {}) })
             }}>Wyloguj</MenuItem>
             <MenuItem onPress={() => {
               navigation.push(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
             }}>{Resources.get().getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
           </Menu>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ marginRight: 6, fontWeight: 'bold' }}>
-              {state.userPoints}
-            </Text>
-            <FontAwesomeIcon icon={faCrown} color={Resources.get().getColors().Green} />
-          </View>
         </View>
-      </View>
+      </Animated.View>
 
       <View
         style={{
@@ -144,22 +140,6 @@ export default function LeaderboardScreen({ navigation }: Props) {
           paddingVertical: 10,
           justifyContent: 'center',
         }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <FontAwesomeIcon icon={faPerson} size={18} />
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: 'bold',
-              marginLeft: 10,
-            }}>
-            {state.userName}
-          </Text>
-        </View>
-
         <View
           style={{
             flexDirection: 'row',
@@ -174,151 +154,59 @@ export default function LeaderboardScreen({ navigation }: Props) {
             <FontAwesomeIcon icon={faAt} size={18} />
             <Text
               style={{
-                fontSize: 16,
+                fontSize: 12,
                 fontWeight: 'bold',
                 marginLeft: 10,
               }}>
-              {state.userEmail}
+              {user.email}
             </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ marginRight: 6, fontWeight: 'bold' }}>
+              {api.calculateUserRank(user)}
+            </Text>
+            <WisbIcon icon={IconType.Crown} size={12} />
           </View>
         </View>
       </View>
 
-      <FlatList
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        data={state.data}
-        onScroll={e => {
-          if (e.nativeEvent.contentOffset.y > 10) {
-            setState({ ...state, isV: false });
-          } else {
-            setState({ ...state, isV: true });
-          }
-        }}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-          alignItems: state.data.length == 0 ? 'center' : undefined,
-        }}
-        ItemSeparatorComponent={() => (
-          <Separator backgroundColor={Resources.get().getColors().White} color={Resources.get().getColors().Beige} />
-        )}
-        ListEmptyComponent={() => (
-          <View style={{ backgroundColor: "red", width: "100%", height: "100%", alignItems: "center", justifyContent: "space-between" }}>
-            <Spinner
-              isVisible={true}
-              color={Resources.get().getColors().Primary}
-              type="ChasingDots"
-              size={50}
-            />
+      <View style={{ flex: 1, justifyContent: leadership.length == 0 ? "center" : undefined, alignItems: leadership.length == 0 ? "center" : undefined }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10, width: "100%" }}>
+          <TouchableOpacity onPress={() => setIndex(index => index - 1)} style={{ opacity: index > 0 ? 1 : 0.5, pointerEvents: index > 0 ? "auto" : "none" }}>
+            <FontAwesomeIcon icon={faArrowLeft} size={20} />
+          </TouchableOpacity>
 
-<LeaderShipItem
-              userName='Jakub Smajdor' score={100} />
+          <View style={{ flexDirection: "row" }}>
+            <Text>{index*RecordsPerPage+1} .. {index*RecordsPerPage+RecordsPerPage}</Text>
           </View>
-        )}
-        style={{ marginBottom: 75 }}
-        renderItem={({ item, index, separators }) => (
-          <View
-            style={{
-              flexDirection: 'row',
-              backgroundColor: Resources.get().getColors().White,
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                backgroundColor: Resources.get().getColors().White,
-                marginVertical: 10,
-                alignItems: 'center',
-              }}>
-              <Text style={[styles.placeText]}>
-                {index < 9 ? index + 1 : '○'}
-              </Text>
-              <Avatar
-                colors={Resources.get().getColors().AvatarColors}
-                image={item.avatar.scaledImageSrc}
-                size={30}
-                fontSize={12}
-                username={item.name}
-              />
-              <Text style={styles.nameText}>{item.name}</Text>
-            </View>
-            <Text
-              style={{
-                marginRight: 15,
-                fontSize: 17,
-                fontWeight: 'bold',
-              }}>
-              {item.points}
-            </Text>
+
+          <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={{ opacity: hasMore ? 1 : 0.5, pointerEvents: hasMore ? "auto" : "none" }}>
+            <FontAwesomeIcon icon={faArrowRight} size={20} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, {toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false}).start()}>
+          <View style={{alignItems: "center"}}>
+            {leadership.map((record, i) => <LeaderShipItem style={{marginTop: 10}} record={record} position={index * RecordsPerPage + i + 1}/>)}
+
+            {isLoading ? (
+              <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
+                <Spinner
+                  isVisible={true}
+                  color={Resources.get().getColors().Primary}
+                  type="ChasingDots"
+                  size={50}
+                />
+              </View>
+            ) : null}
           </View>
-        )}
-      />
+
+          <View style={{height: 50}}/>
+        </ScrollView>
+
+        {leadership.length == 0 ? <Text>Brak wpisów</Text> : null}
+      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingBottom: 80,
-  },
-  header: {
-    backgroundColor: Resources.get().getColors().Primary,
-    alignItems: 'center',
-    padding: 20,
-    paddingTop: StatusBar.currentHeight,
-  },
-  headerText: {
-    color: Resources.get().getColors().White,
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '50%',
-  },
-  viewWithName: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  elementOfList: {
-    marginHorizontal: 15,
-  },
-  nameText: {
-    marginHorizontal: 15,
-    fontSize: 17,
-  },
-  placeText: {
-    marginHorizontal: 15,
-    fontSize: 15,
-    fontWeight: '300',
-    color: Resources.get().getColors().DarkBeige,
-  },
-  avatar: {
-    height: 30,
-    width: 30,
-    borderRadius: 30 / 2,
-    shadowColor: Resources.get().getColors().Black,
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.34,
-    shadowRadius: 6.27,
-
-    elevation: 10,
-  },
-  dropdownMenu: {
-    flex: 1,
-  },
-  itemLabel: {
-    marginLeft: 8,
-  },
-});

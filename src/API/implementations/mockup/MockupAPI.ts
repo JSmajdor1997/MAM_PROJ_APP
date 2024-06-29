@@ -32,12 +32,20 @@ export default class MockupAPI extends API {
         deletedDumpsters: 0
     }
 
-    private calculateUserRank(user: User) {
-        return 10 * user.nrOfClearedWastelands + 2 * user.addedDumpsters + user.deletedDumpsters
-    }
-
     private callAllListeners(source: ChangeSource) {
         this.listeners.forEach(listener => listener(source))
+    }
+
+    async getCurrentUser(): Promise<APIResponse<GeneralError, User>> {
+        if (this.loggedInUser == null) {
+            return {
+                error: GeneralError.UserNotAuthorized
+            }
+        }
+
+        return {
+            data: this.loggedInUser
+        }
     }
 
     async isUserLoggedIn(): Promise<boolean> {
@@ -166,27 +174,7 @@ export default class MockupAPI extends API {
         throw new Error("Method not implemented.");
     }
 
-    async getEventById(id: number): Promise<APIResponse<GeneralError, { item: Event; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
-        const foundEvent = this.events.find(it => it.event.id == id)
-
-        if (foundEvent == null) {
-            return {
-                error: GeneralError.InvalidDataProvided
-            }
-        }
-
-        return {
-            data: { item: foundEvent.event }
-        }
-    }
-
-    async getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Event[]; }>> {
+    async getEvents<WithMembers extends boolean>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event&{members: EventUser[], admins: EventUser[]})[] }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -206,39 +194,46 @@ export default class MockupAPI extends API {
                 return false
             }
 
+            if (query.dateRange != null) {
+                if (query.dateRange[0] != null && event.dateRange[0] < query.dateRange[0]) {
+                    return false
+                }
+
+                if (query.dateRange[1] != null && event.dateRange[1] > query.dateRange[1]) {
+                    return false
+                }
+            }
+
             return true
-        }).sort((a, b) => a.event.dateRange[0] > b.event.dateRange[1] ? -1 : +1).map(it => it.event)
+        }).sort((a, b) => a.event.dateRange[0] > b.event.dateRange[1] ? -1 : +1).map(({event, members, admins})=>withMembers == true ? ({...event, members, admins}) : event)
 
         const from = range == null ? 0 : range[0]
         const to = range == null ? events.length : range[1]
 
         return {
             data: {
-                items: events.slice(from, to)
+                items: events.slice(from, to) as any
             }
         }
     }
 
-    async getEventMembers(event: Event, range: [number, number]): Promise<APIResponse<GeneralError, { members: EventUser[]; admins: EventUser[]; }>> {
+    async getEventById<WithMembers extends boolean>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event&{members: EventUser[], admins: EventUser[]}) }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        const item = this.events.find(it => it.event.id == event.id)
+        const foundEvent = this.events.find(it => it.event.id == id)
 
-        if (item == null) {
+        if (foundEvent == null) {
             return {
                 error: GeneralError.InvalidDataProvided
             }
         }
 
         return {
-            data: {
-                members: item.members.slice(range[0], range[1]),
-                admins: item.admins,
-            }
+            data: { item: {...foundEvent.event, members: foundEvent.members, admins: foundEvent.admins} } as any
         }
     }
 
@@ -475,17 +470,17 @@ export default class MockupAPI extends API {
             }
         }
 
-        const wastelands = this.wastelands.filter(wasteland => {
-            if ((query.phrase != null && query.phrase.length != 0) && !wasteland.description.includes(query.phrase)) {
+        const wastelands = this.wastelands.filter(({ place, description, reportedBy }) => {
+            if ((query.phrase != null && query.phrase.length != 0) && !place.asText.includes(query.phrase) && !description.includes(query.phrase)) {
                 return false
             }
 
-            if (query.region != null && !isLatLngInRegion(query.region, wasteland.place.coords)) {
+            if (query.region != null && !isLatLngInRegion(query.region, place.coords)) {
                 return false
             }
 
             return true
-        }).sort((a, b) => a.creationDate > b.creationDate ? -1 : +1)
+        })
 
         const from = range == null ? 0 : range[0]
         const to = range == null ? wastelands.length : range[1]
@@ -525,7 +520,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: unknown[]): Promise<APIResponse<ClearingWastelandError, {}>> {
+    async clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: string[]): Promise<APIResponse<ClearingWastelandError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: ClearingWastelandError.UserNotAuthorized
@@ -659,24 +654,25 @@ export default class MockupAPI extends API {
             }
         }
 
+        let userPosition = 0
         const userRecords = this.users
-            .map(user => ({
-                ...user,
-                position: this.calculateUserRank(user),
-                points: this.calculateUserRank(user)
-            }))
-            .sort((a, b) => a.points - b.points)
-            .map((user, index) => ({
-                id: user.id,
-                points: user.points,
-                userName: user.userName,
-                position: index + 1
-            }))
+            .map((user, index) => {
+                if(user.id == this.loggedInUser!.id) {
+                    userPosition = index + 1
+                }
+
+                return {
+                    ...user,
+                    position: this.calculateUserRank(user),
+                    points: this.calculateUserRank(user)
+                }
+            })
+            .sort((a, b) => b.points - a.points)
 
         return {
             data: {
-                users: userRecords.filter(it => query == null || (it.position >= query.positionsRange[0] && it.position <= query.positionsRange[1])),
-                ownPosition: userRecords.find(it => it.id == this.loggedInUser?.id)!.position
+                users: userRecords.slice(query.positionsRange[0], query.positionsRange[1]),
+                ownPosition: userPosition
             }
         }
     }

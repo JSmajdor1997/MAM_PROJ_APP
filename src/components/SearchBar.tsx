@@ -10,6 +10,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Resources from '../../res/Resources';
+import Spinner from 'react-native-spinkit';
 
 interface Props {
     style?: ViewStyle
@@ -29,9 +30,11 @@ interface Props {
     onLayout?: (event: LayoutChangeEvent) => void
 
     focused?: boolean
+
+    loading?: boolean
 }
 
-export default function SearchBar({ focused, style, inputStyle, inputContainerStyle, onPress, phrase, onPhraseChanged, placeholder, readonly, leftIcon, rightIcon, onLayout }: Props) {
+export default function SearchBar({ focused, style, inputStyle, inputContainerStyle, onPress, phrase, onPhraseChanged, placeholder, readonly, leftIcon, rightIcon, onLayout, loading }: Props) {
     const inputRef = React.useRef<TextInput>(null)
 
     React.useEffect(() => {
@@ -59,7 +62,12 @@ export default function SearchBar({ focused, style, inputStyle, inputContainerSt
                     ...inputContainerStyle
                 }}>
                 {leftIcon}
-                <TextInput
+                {loading ? (
+                    <TouchableOpacity onPress={onPress} style={{ justifyContent: "center", alignItems: "center", width: 30, aspectRatio: 1 }}>
+                        <Spinner type="Circle" size={15} color={Resources.get().getColors().DarkBeige} style={{ left: 6, top: 6, position: "absolute" }} />
+                        <Spinner type="Pulse" size={12} color={Resources.get().getColors().DarkBeige} style={{ left: 9, top: 10, position: "absolute" }} />
+                    </TouchableOpacity>
+                ) : <TextInput
                     ref={inputRef}
                     contextMenuHidden={true}
                     numberOfLines={1}
@@ -73,7 +81,7 @@ export default function SearchBar({ focused, style, inputStyle, inputContainerSt
                     style={{
                         ...styles.input,
                         ...inputStyle,
-                    }} />
+                    }} />}
 
                 {rightIcon}
             </View>
@@ -98,7 +106,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     input: {
-        color: Resources.get().getColors().White,
+        color: Resources.get().getColors().DarkBeige,
         fontSize: 16,
         letterSpacing: 1,
         fontWeight: "600",

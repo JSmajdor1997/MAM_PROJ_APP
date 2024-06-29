@@ -6,6 +6,6 @@ export default interface Dumpster {
     id: number
     place: SimplePlace
     description: string
-    photos: unknown[]
+    photos: string[]
     addedBy: User
 }

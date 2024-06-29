@@ -8,9 +8,9 @@ export default function getMockupUsers(): User[] {
         email: faker.internet.email(),
         userName: faker.internet.userName(),
         password: "123",
-        nrOfClearedWastelands: faker.number.int({ min: 0 }),
-        addedDumpsters: faker.number.int({ min: 0 }),
-        deletedDumpsters: faker.number.int({ min: 0 })
+        nrOfClearedWastelands: faker.number.int({ min: 0, max: 120 }),
+        addedDumpsters: faker.number.int({ min: 0, max: 120 }),
+        deletedDumpsters: faker.number.int({ min: 0, max: 120 })
     }), {
         count: 30,
     }).map((it, index) => ({

@@ -34,9 +34,10 @@ export interface Props {
     onAdd?: (event: Event) => void
     visible: boolean
     userLocation: LatLng
+    onOpenChat: (event: Event) => void
 }
 
-export default function EventDialog({ mode, event, onDismiss, onAdd, visible, userLocation }: Props) {
+export default function EventDialog({ mode, event, onDismiss, onAdd, visible, userLocation, onOpenChat }: Props) {
     const [isDatePickerVisible, setIsDatePickerVisible] = React.useState(false)
 
     return (
@@ -81,7 +82,7 @@ export default function EventDialog({ mode, event, onDismiss, onAdd, visible, us
                     label: Resources.get().getStrings().Dialogs.EventDialog.OpenChatAction,
                     icon: <FontAwesomeIcon icon={faMessage} />,
                     color: Resources.get().getColors().Primary,
-                    onPress: () => { },
+                    onPress: () => onOpenChat(event!),
                 }
             ]}
             onDismiss={onDismiss}

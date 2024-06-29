@@ -13,9 +13,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Resources from '../../../res/Resources';
-import { Type } from '../../API/helpers';
-import IconType from '../WisbIcon/IconType';
-import WisbIcon from '../WisbIcon/WisbIcon';
 import SearchBar from '../SearchBar';
 
 interface Props {
@@ -26,6 +23,7 @@ interface Props {
     onClear: () => void
     placeholder: string
     phrase: string
+    loading?: boolean
     items: {
         isSelected: boolean
         component: React.ReactNode
@@ -33,7 +31,7 @@ interface Props {
     }[]
 }
 
-export default function QueryInput({ style, onPress, phrase, onPhraseChanged, items, isFocused, onClear, placeholder }: Props) {
+export default function QueryInput({ style, onPress, phrase, onPhraseChanged, items, isFocused, onClear, placeholder, loading }: Props) {
     const heightAnim = React.useRef(new Animated.Value(0)).current;
 
     React.useEffect(() => {
@@ -63,6 +61,7 @@ export default function QueryInput({ style, onPress, phrase, onPhraseChanged, it
                 ...style
             }}>
             <SearchBar
+                loading={loading}
                 focused={isFocused}
                 leftIcon={<FontAwesomeIcon icon={faSearch} color={Resources.get().getColors().Black} size={16} />}
                 rightIcon={(

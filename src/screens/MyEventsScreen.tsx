@@ -17,14 +17,14 @@ import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import SearchBar from '../components/SearchBar';
 import QueryInput from '../components/QueryInput/QueryInput';
 import getAPI from '../API/getAPI';
-import Event from '../API/data_types/Event';
+import Event, { EventUser } from '../API/data_types/Event';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
 const api = getAPI()
 
-export default function EventsScreen({ }: Props) {
-  const [events, setEvents] = React.useState<Event[]>([])
+export default function EventsScreen({ route: { params: { getCurrentUser } } }: Props) {
+  const [events, setEvents] = React.useState<(Event&{members: EventUser[], admins: EventUser[]})[]>([])
 
   const [phrase, setPhrase] = React.useState("")
   const [isSearching, setIsSearching] = React.useState(false)
@@ -32,10 +32,10 @@ export default function EventsScreen({ }: Props) {
 
   React.useEffect(() => {
     api.getEvents({
-      // region: Region
       phrase,
-      onlyOwn: true
-    }, [0, 20]).then(result => {
+      onlyOwn: true,
+      dateRange: onlyCurrentEvents ? [new Date(), null] : [null, new Date()]
+    }, [0, 20], true).then(result => {
       if (result.data) {
         setEvents(result.data.items)
       }
@@ -107,6 +107,7 @@ export default function EventsScreen({ }: Props) {
         }
         renderItem={data => (
           <EventItem
+            isAdmin={data.item.admins.some(admin => admin.id == getCurrentUser().id)}
             onPress={() => { }}
             item={data.item}
           />

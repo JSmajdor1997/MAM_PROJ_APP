@@ -23,11 +23,13 @@ interface Props {
 function getInitials(username: string) {
   const splittedWords = username.split(' ');
 
-  if (splittedWords && splittedWords[0] && splittedWords[1]) {
+  if (splittedWords && splittedWords[0] != null && splittedWords[1] != null) {
     const firstLetter = splittedWords[0][0] || '';
     const secondLetter = splittedWords[1][0] || '';
 
     return firstLetter.toUpperCase() + secondLetter.toUpperCase();
+  } else if(splittedWords[0] != null) {
+    return splittedWords[0][0]
   }
 
   return '';
@@ -86,10 +88,10 @@ const styles = StyleSheet.create({
     shadowColor: Resources.get().getColors().Black,
     shadowOffset: {
       width: 0,
-      height: 5,
+      height: 3,
     },
     shadowOpacity: 0.34,
-    shadowRadius: 1,
+    shadowRadius: 3,
 
     elevation: 10,
   },

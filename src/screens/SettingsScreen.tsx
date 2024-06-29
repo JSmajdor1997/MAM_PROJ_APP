@@ -32,7 +32,7 @@ export default function SettingsScreen({ navigation }: Props) {
           <FontAwesomeIcon icon={faChevronLeft} color={Resources.get().getColors().Primary} />
         </TouchableOpacity>
 
-        <Text style={{ fontFamily: Resources.get().getFonts().Primary, color: Resources.get().getColors().Primary, fontSize: 25 }}>Ustawienia</Text>
+        <FontAwesomeIcon icon={faCog} color={Resources.get().getColors().Primary}/>
       </View>
 
       <View style={{ width: "100%", height: 0, borderColor: Resources.get().getColors().Primary, borderWidth: 2, borderStyle: "dashed" }} />
@@ -129,10 +129,10 @@ export default function SettingsScreen({ navigation }: Props) {
 
 function ItemTemplate({ children, icon, label }: { children: React.ReactNode, icon: React.ReactNode, label: string }) {
   return (
-    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 5 }}>
+    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10, backgroundColor: "white", margin: 10, borderRadius: 15, overflow: "hidden", minHeight: 50 }}>
       <View style={{ flexDirection: "row", alignItems: 'center' }}>
         {icon}
-        <Text style={{ marginLeft: 10, maxWidth: 100, fontWeight: "400", letterSpacing: 0.5, fontSize: 13 }}>{label}</Text>
+        <Text style={{ marginLeft: 10, maxWidth: 100, fontWeight: "800", fontFamily: "Avenir", letterSpacing: 0.5, fontSize: 13, color: Resources.get().getColors().DarkBeige }}>{label}</Text>
       </View>
 
       {children}

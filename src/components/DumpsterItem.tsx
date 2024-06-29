@@ -6,91 +6,63 @@ import {
   Alert,
   StatusBar,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faMessage } from '@fortawesome/free-regular-svg-icons';
+import { faCalendarAlt, faMessage } from '@fortawesome/free-regular-svg-icons';
 import Dumpster from '../API/data_types/Dumpster';
 import Resources from '../../res/Resources';
+import { GoogleStaticMapNext } from 'react-native-google-static-map-next';
+import { Neomorph } from 'react-native-neomorph-shadows-fixes';
+import { faMapPin } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
   item: Dumpster;
   onPress: (item: Dumpster) => void
+  googleMapsAPIKey: string
 }
 
-function DumpsterItem({ item, onPress }: Props) {
+function DumpsterItem({ item, onPress, googleMapsAPIKey }: Props) {
   return (
     <TouchableOpacity
       onPress={() => onPress(item)}
       activeOpacity={0.6}
       style={styles.root}>
-      <View>
-        <View
+      <Neomorph
+        style={{
+          shadowRadius: 10,
+          borderRadius: 15,
+          backgroundColor: Resources.get().getColors().Primary,
+          width: Dimensions.get("window").width * 0.9,
+          height: 150,
+          overflow: "hidden",
+          flexDirection: "row"
+        }}
+      >
+        <GoogleStaticMapNext
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 6,
-            marginHorizontal: 6,
-          }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View
-              style={{
-                height: 39,
-                width: 39,
-                borderRadius: 50,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
+            height: "100%",
+            aspectRatio: 1
+          }}
+          mapType='hybrid'
+          zoom={18}
+          location={{
+            latitude: item.place.coords.latitude.toString(),
+            longitude: item.place.coords.longitude.toString()
+          }}
+          size={{ width: 400, height: 400 }}
+          apiKey={googleMapsAPIKey}
+        />
 
-            </View>
-            <Text
-              numberOfLines={1}
-              style={{
-                color: Resources.get().getColors().Black,
-                marginLeft: 8,
-                fontWeight: 'bold',
-                fontSize: 16,
-              }}>
-              {item.description}
-            </Text>
+        <View style={{ flex: 1, flexDirection: "column", padding: 5 }}>
+          <Text style={{ flex: 1, fontSize: 14, fontFamily: "Avenir", fontWeight: "900", letterSpacing: 1, textAlign: "right", marginTop: 10, marginRight: 10 }}>{item.description}</Text>
+
+          <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+            <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.place.asText}</Text>
+            <FontAwesomeIcon icon={faMapPin} size={10} color={Resources.get().getColors().Red} />
           </View>
         </View>
-
-        <Text
-          style={{
-            color: Resources.get().getColors().Black,
-            marginLeft: 52,
-            marginRight: 40,
-            marginTop: 5,
-          }}
-          numberOfLines={2}>
-          {item.description}
-        </Text>
-      </View>
-
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginHorizontal: 6,
-          marginBottom: 2,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <TouchableOpacity
-            style={{
-              alignSelf: 'flex-start',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-            <FontAwesomeIcon color={Resources.get().getColors().White} icon={faMessage} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      </Neomorph>
     </TouchableOpacity>
   );
 }
@@ -100,7 +72,6 @@ export default React.memo(DumpsterItem)
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Resources.get().getColors().Primary,
     marginVertical: 10,
     minHeight: 120,
     marginHorizontal: 16,

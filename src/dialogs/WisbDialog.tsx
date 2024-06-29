@@ -113,7 +113,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
             <Pressable
                 style={{ height: "100%", display: "flex" }}
                 onPress={onDismiss} >
-                <SafeAreaView style={{ backgroundColor: Resources.get().getColors().BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
+                <View style={{ backgroundColor: Resources.get().getColors().BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
                     <Animated.View
                         onStartShouldSetResponder={(event) => true}
                         onTouchEnd={(e) => {
@@ -127,7 +127,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                                 minWidth: 50,
                                 minHeight: 50,
                                 width: "100%",
-                                height: "95%",
+                                height: "90%",
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
@@ -229,7 +229,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                             </View>
                         )}
                     </Animated.View>
-                </SafeAreaView>
+                </View>
             </Pressable>
         </Modal>
     )

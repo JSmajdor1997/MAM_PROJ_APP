@@ -5,13 +5,13 @@ import SimplePlace from "./SimplePlace"
 export default interface Wasteland {
     id: number
     place: SimplePlace
-    photos: unknown[]
+    photos: string[]
     description: string
     creationDate: Date
     reportedBy: User
     afterCleaningData?: {
         cleanedBy: User[]
         date: Date
-        photos: unknown[]
+        photos: string[]
     }
 }

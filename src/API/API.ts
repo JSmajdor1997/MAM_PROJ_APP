@@ -12,6 +12,7 @@ export interface EventsQuery {
     region?: Region
     phrase?: string
     onlyOwn?: boolean
+    dateRange?: [Date | null, Date | null]
 }
 
 export interface WastelandsQuery {
@@ -41,6 +42,7 @@ export default abstract class API {
     abstract isUserLoggedIn(): Promise<boolean>
 
     ////////////account lifecycle related functions
+    abstract getCurrentUser(): Promise<APIResponse<GeneralError, User>>
     abstract login(email: string, password: string): Promise<APIResponse<LoginError, User>>
     abstract logout(): Promise<APIResponse<LogoutError, {}>>
     abstract signUp(data: Omit<User, "id" | "photoUrl" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters"> & { photoFile?: File }): Promise<APIResponse<SignUpError, {}>>
@@ -49,8 +51,10 @@ export default abstract class API {
     abstract resetPassword(): Promise<APIResponse<GeneralError, { newUser: User }>>
 
     ////////////events related functions
-    abstract getEvents(query: EventsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Event[] }>>
-    abstract getEventById(id: number): Promise<APIResponse<GeneralError, { item: Event }>>
+    abstract getEvents<WithMembers extends true | false>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event&{members: EventUser[], admins: EventUser[]})[] }>> ;
+
+    abstract getEventById<WithMembers extends true | false>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event&{members: EventUser[], admins: EventUser[]}) }>> ;
+
     abstract createEvent(newEvent: Omit<Event, "id">): Promise<APIResponse<GeneralError, { createdItem: Event }>>
     abstract deleteEvent(event: Event): Promise<APIResponse<GeneralError, {}>>
     abstract updateEvent(event: Event): Promise<APIResponse<GeneralError, { updatedItem: Event }>>
@@ -58,7 +62,6 @@ export default abstract class API {
     abstract leaveEvent(event: Event): Promise<APIResponse<GeneralError, { updatedItem: Event }>>
     abstract getEventMessages(event: Event, dateRange: [Date, Date]): Promise<APIResponse<GeneralError, { messages: Message[] }>>
     abstract sendEventMessage(event: Event, message: Omit<Message, "id" | "date">): Promise<APIResponse<GeneralError, {}>>
-    abstract getEventMembers(event: Event, range: [number, number]): Promise<APIResponse<GeneralError, {members: EventUser[], admins: EventUser[]}>>
     getQRCode(event: Event): string {
         return `${API.WisbEventQrCodePrefix}-${event.id}`
     }
@@ -66,13 +69,13 @@ export default abstract class API {
     getEventByQrCode(qrCode: string): Promise<APIResponse<GeneralError, { item: Event }>> {
         const parsedId = parseInt(qrCode.substring(API.WisbEventQrCodePrefix.length+1))
 
-        return this.getEventById(parsedId)
+        return this.getEventById(parsedId, false)
     }
 
     ////////////wastelands related functions
     abstract getWastelands(query: WastelandsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Wasteland[] }>>
     abstract createWasteland(newWasteland: Omit<Wasteland, "id">): Promise<APIResponse<GeneralError, { createdItem: Wasteland }>>
-    abstract clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: unknown[]): Promise<APIResponse<ClearingWastelandError, {}>>
+    abstract clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: string[]): Promise<APIResponse<ClearingWastelandError, {}>>
 
     ////////////dumpsters related functions
     abstract getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, {items: Dumpster[]}>>
@@ -87,40 +90,8 @@ export default abstract class API {
     abstract registerListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>>
     abstract removeListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>>
 
-    async getObjects(types: Type[], query: {region?: Region, indicesRange?: [number, number], phrase?: string, range?: [number, number]}): Promise<APIResponse<GeneralError, MapObjects>> {
-        const response: MapObjects = {
-            [Type.Event]: [],
-            [Type.Dumpster]: [],
-            [Type.Wasteland]: [],
-        };
-
-        const typeToFunctionMap = {
-            [Type.Event]: this.getEvents.bind(this, query, query.range),
-            [Type.Dumpster]: this.getDumpsters.bind(this, query, query.range),
-            [Type.Wasteland]: this.getWastelands.bind(this, query, query.range)
-        };
-    
-        const promises: Promise<unknown>[] = [];
-
-        for(const type of types) {
-            promises.push(typeToFunctionMap[type]().then(rsp => {
-                if (rsp.error != null) {
-                    throw rsp.error;
-                }
-
-                response[type] = rsp.data.items as any;
-            }));
-        }
-    
-        try {
-            await Promise.all(promises);
-            
-            return { data: response };
-        } catch (error) {
-            return { 
-                error: error == GeneralError.UserNotAuthorized ? GeneralError.UserNotAuthorized : GeneralError.InvalidDataProvided
-            };
-        }
+    calculateUserRank(user: {nrOfClearedWastelands: number, addedDumpsters: number, deletedDumpsters: number}) {
+        return 10 * user.nrOfClearedWastelands + 2 * user.addedDumpsters + user.deletedDumpsters
     }
 }
 

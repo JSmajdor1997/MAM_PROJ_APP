@@ -8,7 +8,7 @@ import {
   Platform,
   TextInput,
 } from 'react-native';
-import { GiftedChat, Message } from 'react-native-gifted-chat';
+import { Avatar, GiftedChat, IMessage, Message, MessageProps } from 'react-native-gifted-chat';
 import { Menu, MenuItem } from 'react-native-material-menu';
 import emojiUtils from 'emoji-utils';
 import LoadingImage from "../components/LoadingImage"
@@ -17,10 +17,9 @@ import Resources from '../../res/Resources';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
-import { faArrowLeft, faCamera, faGripVertical, faMessage } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCamera, faEllipsisV, faGripVertical, faMessage, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> {
-
 }
 
 interface State {
@@ -29,8 +28,10 @@ interface State {
   images: Array<string>;
 }
 
-export default function ChatScreen({ }: Props) {
+export default function ChatScreen({ navigation, route: { params: { event } }  }: Props) {
   const menuRef = React.useRef<Menu>(null)
+
+  const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
 
   const [state, setState] = React.useState<State>({
     isImagePickerVisible: false,
@@ -43,7 +44,7 @@ export default function ChatScreen({ }: Props) {
           _id: 4,
           name: 'Maciej Moczała',
           avatar:
-            'https://scontent.fktw1-1.fna.fbcdn.net/v/t1.0-1/p960x960/77065029_2952407231470050_465105715040616448_o.jpg?_nc_cat=100&_nc_ohc=eH3QR6wtqJ8AQk-lqZ1bw1CqJKDngg-kxH5GEONzAkG5c_ThKNY5BSb2g&_nc_ht=scontent.fktw1-1.fna&oh=722892778ca1154df33f5b968a8f45c0&oe=5E8A05A8',
+            'https://static.wikia.nocookie.net/gartenofbanbanfanon/images/c/ce/Soyjak.png/revision/latest?cb=20230705190047',
         },
       },
       {
@@ -54,7 +55,7 @@ export default function ChatScreen({ }: Props) {
           _id: 5,
           name: 'Franciszek Plisz',
           avatar:
-            'https://scontent.fktw1-1.fna.fbcdn.net/v/t1.0-9/74707187_1457995377698693_2092391531263557632_n.jpg?_nc_cat=100&_nc_oc=AQkVu_xZvh8hZp8Kv4C6tdpCJGp1dBZEbP6wH5jIO4gn5y2rzDHp4_2KHiihtfXeGGo&_nc_ht=scontent.fktw1-1.fna&oh=f0a124aa74869ffd2e1668b2519b983c&oe=5E62F065',
+            'https://upload.wikimedia.org/wiktionary/en/f/f1/Soyjak.jpg',
         },
       },
       {
@@ -65,7 +66,7 @@ export default function ChatScreen({ }: Props) {
           _id: 2,
           name: 'Jakub Smajdor',
           avatar:
-            'https://scontent.fktw1-1.fna.fbcdn.net/v/t1.0-9/71112325_2439037926331390_3597365118507155456_n.jpg?_nc_cat=101&_nc_oc=AQmAzgD-kg_1IyYc4F3G2LWq9QnvTcWMy6qoxXYRDLHL5ufVwwQ_yXLCxv4CwyFQRl0&_nc_ht=scontent.fktw1-1.fna&oh=5fd2c8a165ed50e76b837c3861fefd99&oe=5E4F6796',
+            'https://e7.pngegg.com/pngimages/494/44/png-clipart-man-face-illustration-chad-internet-meme-know-your-meme-4chan-bill-clinton-celebrities-face.png',
         },
       },
     ],
@@ -82,12 +83,11 @@ export default function ChatScreen({ }: Props) {
     return (
       <View
         style={{
-          position: 'absolute',
           bottom: 0,
           backgroundColor: Resources.get().getColors().White,
           alignItems: 'center',
           width: '96%',
-          marginBottom: 8,
+          marginBottom: 30,
           alignSelf: 'center',
           paddingVertical: 8,
           paddingHorizontal: 8,
@@ -118,7 +118,7 @@ export default function ChatScreen({ }: Props) {
         <View
           style={{
             flex: 1,
-            backgroundColor: Resources.get().getColors().Black,
+            backgroundColor: Resources.get().getColors().Beige,
             borderRadius: 20,
             paddingStart: 10,
             marginStart: 4,
@@ -126,6 +126,7 @@ export default function ChatScreen({ }: Props) {
           }}>
           <TextInput
             placeholder="Wpisz wiadomość..."
+            placeholderTextColor={Resources.get().getColors().DarkBeige}
             style={{ flex: 1, padding: 0 }}
           />
         </View>
@@ -135,13 +136,13 @@ export default function ChatScreen({ }: Props) {
             alignContent: 'center',
             padding: 4,
           }}>
-          <FontAwesomeIcon icon={faMessage} color={Resources.get().getColors().Primary} size={20} />
+          <FontAwesomeIcon icon={faPaperPlane} color={Resources.get().getColors().Primary} size={20} />
         </TouchableOpacity>
       </View>
     );
   }
 
-  const renderMessage = (props: any) => {
+  const renderMessage = (props: Readonly<MessageProps<IMessage>>) => {
     const {
       currentMessage: { text: currText },
     } = props;
@@ -157,7 +158,7 @@ export default function ChatScreen({ }: Props) {
       };
     }
 
-    return <Message {...props} messageTextStyle={messageTextStyle} />;
+    return <Message {...props} renderAvatar={avatar => <Avatar {...avatar}/>} messageTextStyle={messageTextStyle} />;
   }
 
   const renderTopBar = () => {
@@ -169,8 +170,8 @@ export default function ChatScreen({ }: Props) {
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingBottom: 6,
-          position: 'absolute',
-          paddingTop: (StatusBar.currentHeight || 20) + 5,
+          padding: 10,
+          paddingTop: 45,
           backgroundColor: Resources.get().getColors().White,
           borderBottomLeftRadius: 15,
           borderBottomRightRadius: 15,
@@ -192,7 +193,7 @@ export default function ChatScreen({ }: Props) {
             justifyContent: 'space-between',
           }}>
           <TouchableOpacity
-            onPress={() => { }}
+            onPress={() => navigation.goBack()}
             style={{ marginLeft: 8 }}>
             <FontAwesomeIcon
               color={Resources.get().getColors().Primary}
@@ -221,25 +222,29 @@ export default function ChatScreen({ }: Props) {
               fontWeight: 'bold',
               color: Resources.get().getColors().Primary,
             }}>
-            TYTUL WYDARZENIA
+            {event.name}
           </Text>
         </View>
         <Menu
+          visible={isMoreMenuVisible}
           style={{
             top: (StatusBar.currentHeight ? StatusBar.currentHeight : 20) + 10,
           }}
           anchor={
             <TouchableOpacity
-              style={{ alignSelf: 'flex-end', marginRight: 2 }}>
-              <FontAwesomeIcon color={Resources.get().getColors().Primary} icon={faGripVertical} />
+              style={{ alignSelf: 'flex-end', marginRight: 2 }}
+              onPress={()=>setIsMoreMenuVisible(true)}>
+              <FontAwesomeIcon color={Resources.get().getColors().Primary} icon={faEllipsisV} />
             </TouchableOpacity>
-          }
-          ref={menuRef}>
+          }>
           <MenuItem>
             Szukaj
           </MenuItem>
           <MenuItem>
             Wycisz
+          </MenuItem>
+          <MenuItem>
+            Pokaż multimedia
           </MenuItem>
         </Menu>
       </View>
@@ -248,16 +253,21 @@ export default function ChatScreen({ }: Props) {
 
   return (
     <View
+      onTouchStart={()=>{
+        if(isMoreMenuVisible){
+          setIsMoreMenuVisible(false)
+        }
+      }}
       style={{
         ...StyleSheet.absoluteFillObject,
-        paddingTop: StatusBar.currentHeight || 20,
         paddingBottom: 8,
       }}>
       <StatusBar
         backgroundColor={Resources.get().getColors().Transparent}
-        barStyle="dark-content"
+        barStyle="light-content"
         translucent
       />
+      {renderTopBar()}
       <GiftedChat
         messages={state.messages}
         onSend={messages => onSend(messages)}
@@ -267,7 +277,6 @@ export default function ChatScreen({ }: Props) {
           _id: 1,
         }}
       />
-      {renderTopBar()}
       {renderInputBar()}
     </View>
   );
