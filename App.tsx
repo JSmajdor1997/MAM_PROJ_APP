@@ -42,6 +42,7 @@ import { Type } from './src/API/helpers';
 import getAPI from './src/API/getAPI';
 import User from './src/API/data_types/User';
 import Spinner from 'react-native-spinkit';
+import { NewEventInvitationNotification, NewMessageNotification, NewObjectNotification, NotificationType, ObjectDeletionNotification, ObjectUpdatedNotification, WastelandClearedNotification, switchNotification } from './src/API/data_types/notifications';
 
 LogBox.ignoreAllLogs();
 
@@ -98,20 +99,61 @@ const Stack = createNativeStackNavigator<NavigationParamsList>();
 export default function App() {
   const [dialogData, setDialogData] = React.useState<DialogData>({})
 
-  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.MapScreen)
+  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.LoginScreen)
 
   const [isQrCodeDialogVisible, setIsQrCodeDialogVisible] = React.useState(false)
 
   const [userLocation, setUserLocation] = React.useState(Resources.get().getLastLocation())
 
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null)
+  const [currentUser, setCurrentUser] = React.useState<User | null>()
+
+  const onUserLoggedIn = (user: User) => {
+    Resources.get().registerUserLocationListener(newLocation => {
+      setUserLocation(newLocation)
+      api.updateListener(apiListenerId, { location: newLocation })
+    })
+
+    setCurrentUser(user)
+  }
+
+  let apiListenerId = -1
+
+  const onLogout = () => {
+    navigationRef.navigate(WisbScreens.LoginScreen, {
+      onUserLoggedIn
+    })
+  }
 
   React.useEffect(() => {
-    api.getCurrentUser().then(result => result.data != null ? setCurrentUser(result.data) : Toast.showWithGravityAndOffset("Unknown error", Toast.SHORT, Toast.CENTER, 0, 10))
-
-    return Resources.get().registerUserLocationListener(newLocation => {
-      setUserLocation(newLocation)
+    api.registerListener({ location: userLocation }, (e) => {
+      switchNotification(e, {
+        [NotificationType.NewObjectNotification]: (item: NewObjectNotification) => {
+          if (isEvent(item.newItem)) {
+            Toast.show(`New event in your area ${item.newItem.name}`, Toast.SHORT);
+          }
+        },
+        [NotificationType.NewMessageNotification]: (item: NewMessageNotification) => {
+          Toast.show(`You've got new message in event ${item.event.name}`, Toast.SHORT);
+        },
+        [NotificationType.NewEventInvitationNotification]: (item: NewEventInvitationNotification) => {
+          Toast.show("You've got new invitation to event!", Toast.SHORT);
+        },
+      })
+    }).then(result => {
+      if (result.data != null) {
+        apiListenerId = result.data.listenerId
+      }
     })
+
+    api.addOnLogoutListener(onLogout)
+
+    return () => {
+      api.removeOnLogoutListener(onLogout)
+
+      if (apiListenerId != -1) {
+        api.removeListener(apiListenerId)
+      }
+    }
   }, [])
 
   const onItemSelected = (item: Event | Wasteland | Dumpster) => {
@@ -139,15 +181,16 @@ export default function App() {
     }
   }
 
-  if (currentUser == null) {
-    return (
-      <View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}>
-        <Spinner type="Circle" />
-      </View>
-    )
-  }
+  React.useEffect(() => {
+    if (currentUser != null) {
+      navigationRef.navigate(WisbScreens.MapScreen, {
+        onItemSelected,
+        getCurrentUser
+      })
+    }
+  }, [currentUser])
 
-  const getCurrentUser = () => currentUser
+  const getCurrentUser = () => currentUser as User
 
   return (
     <ClickOutsideProvider>
@@ -166,7 +209,9 @@ export default function App() {
               initialRouteName={currentScreen}
               screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500, gestureEnabled: false }}>
               <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
-              <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
+              <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} initialParams={{
+                onUserLoggedIn
+              }} />
               <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
                 getCurrentUser
               }} />
@@ -249,32 +294,38 @@ export default function App() {
               },
             ]} />
 
-          <EventDialog
-            visible={dialogData[Type.Event] != null}
-            googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
-            event={dialogData[Type.Event]?.item}
-            mode={dialogData[Type.Event]?.mode ?? Mode.Viewing}
-            userLocation={userLocation}
-            currentUser={currentUser}
-            onDismiss={() => setDialogData({})}
-            onOpenChat={event => {
-              navigationRef.navigate(WisbScreens.ChatScreen, { event })
-              setDialogData({})
-            }} />
-          <WastelandDialog
-            visible={dialogData[Type.Wasteland] != null}
-            wasteland={dialogData[Type.Wasteland]?.item}
-            mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing}
-            userLocation={userLocation}
-            currentUser={currentUser}
-            onDismiss={() => setDialogData({})} />
-          <DumpsterDialog
-            currentUser={currentUser}
-            visible={dialogData[Type.Dumpster] != null}
-            dumpster={dialogData[Type.Dumpster]?.item}
-            mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing}
-            userLocation={userLocation}
-            onDismiss={() => setDialogData({})} />
+          {
+            currentUser == null ? null : (
+              <>
+                <EventDialog
+                  visible={dialogData[Type.Event] != null}
+                  googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+                  event={dialogData[Type.Event]?.item}
+                  mode={dialogData[Type.Event]?.mode ?? Mode.Viewing}
+                  userLocation={userLocation}
+                  currentUser={currentUser}
+                  onDismiss={() => setDialogData({})}
+                  onOpenChat={event => {
+                    navigationRef.navigate(WisbScreens.ChatScreen, { event })
+                    setDialogData({})
+                  }} />
+                <WastelandDialog
+                  visible={dialogData[Type.Wasteland] != null}
+                  wasteland={dialogData[Type.Wasteland]?.item}
+                  mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing}
+                  userLocation={userLocation}
+                  currentUser={currentUser}
+                  onDismiss={() => setDialogData({})} />
+                <DumpsterDialog
+                  currentUser={currentUser}
+                  visible={dialogData[Type.Dumpster] != null}
+                  dumpster={dialogData[Type.Dumpster]?.item}
+                  mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing}
+                  userLocation={userLocation}
+                  onDismiss={() => setDialogData({})} />
+              </>
+            )
+          }
 
           <QRCodeDialog
             visible={isQrCodeDialogVisible}

@@ -9,7 +9,9 @@ type NavigationParamsList = {
         event: Event
     },
     [WisbScreens.LeaderBoardScreen]: {},
-    [WisbScreens.LoginScreen]: {},
+    [WisbScreens.LoginScreen]: {
+        onUserLoggedIn: (user: User) => void
+    },
     [WisbScreens.MapScreen]: {
         onItemSelected: (item: Wasteland | Event | Dumpster) => void
         getCurrentUser(): User

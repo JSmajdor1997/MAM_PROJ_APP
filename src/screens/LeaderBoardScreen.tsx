@@ -9,8 +9,10 @@ import {
   ScrollView,
   Animated,
   Easing,
+  TextInput,
 } from 'react-native';
 import Spinner from 'react-native-spinkit';
+import Toast from 'react-native-simple-toast';
 import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
@@ -26,6 +28,9 @@ import IconType from '../components/WisbIcon/IconType';
 import getAPI from '../API/getAPI';
 import User from '../API/data_types/User';
 import UserItem from '../components/UserItem';
+import InvitationsDialog from '../dialogs/InvitationsDialog';
+import ObjectsList from '../components/ObjectsList';
+import { Type } from '../API/helpers';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -41,9 +46,13 @@ export default function LeaderboardScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = React.useState(true)
   const [index, setIndex] = React.useState(0)
 
+  const [isInvitationDialogVisible, setIsInvitationDialogVisible] = React.useState(false)
+
   const [user, setUser] = React.useState<User | null>(null)
 
   const [leadership, setLeadership] = React.useState<User[]>([])
+
+  const [updatedSelfData, setUpdatedSelfData] = React.useState<{ userName: string } | null>()
 
   React.useEffect(() => {
     Promise.all([
@@ -54,7 +63,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
   React.useEffect(() => {
     setIsLoading(true)
-    api.getUsers({ }, [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage])
+    api.getUsers({}, [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage])
       .then(result => {
         const users = result.data?.items ?? []
         setLeadership(users)
@@ -79,7 +88,11 @@ export default function LeaderboardScreen({ navigation }: Props) {
             outputRange: [0, 150]
           })
         }}>
-        <View style={{ flex: 1 }} />
+        <View style={{ flex: 1 }} >
+          <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => navigation.goBack()}>
+            <FontAwesomeIcon icon={faArrowLeft} size={20} />
+          </TouchableOpacity>
+        </View>
         <View
           style={{ justifyContent: 'center', alignItems: 'center' }}>
           <Avatar
@@ -91,7 +104,12 @@ export default function LeaderboardScreen({ navigation }: Props) {
             onPress={() => { }}
           />
 
-          <Text
+          <TextInput
+            onPress={() => setUpdatedSelfData({ userName: user.userName })}
+            readOnly={updatedSelfData == null}
+            onChange={e => {
+              setUpdatedSelfData({ userName: e.nativeEvent.text })
+            }}
             style={{
               fontSize: 20,
               fontFamily: "Avenir",
@@ -100,8 +118,8 @@ export default function LeaderboardScreen({ navigation }: Props) {
               marginTop: 10,
               textAlign: "center"
             }}>
-            {user.userName}
-          </Text>
+            {updatedSelfData?.userName ?? user.userName}
+          </TextInput>
         </View>
         <View
           style={{
@@ -123,12 +141,16 @@ export default function LeaderboardScreen({ navigation }: Props) {
             }}>Zmień hasło</MenuItem>
             <MenuItem onPress={() => {
               setIsMoreMenuVisible(false)
-              api.logout().then(() => { navigation.navigate(WisbScreens.LoginScreen, {}) })
+              api.logout()
             }}>Wyloguj</MenuItem>
             <MenuItem onPress={() => {
               navigation.push(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
             }}>{Resources.get().getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
+            <MenuItem onPress={() => {
+              setIsInvitationDialogVisible(true)
+              setIsMoreMenuVisible(false)
+            }}>Zaproszenia</MenuItem>
           </Menu>
         </View>
       </Animated.View>
@@ -177,7 +199,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
           </TouchableOpacity>
 
           <View style={{ flexDirection: "row" }}>
-            <Text>{index*RecordsPerPage+1} .. {index*RecordsPerPage+RecordsPerPage}</Text>
+            <Text>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
           </View>
 
           <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={{ opacity: hasMore ? 1 : 0.5, pointerEvents: hasMore ? "auto" : "none" }}>
@@ -185,9 +207,9 @@ export default function LeaderboardScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, {toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false}).start()}>
-          <View style={{alignItems: "center"}}>
-            {leadership.map((item, i) => <UserItem style={{marginTop: 10}} item={item} position={index * RecordsPerPage + i + 1}/>)}
+        <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
+          <View style={{ alignItems: "center" }}>
+            {leadership.map((item, i) => <UserItem style={{ marginTop: 10 }} item={item} position={index * RecordsPerPage + i + 1} />)}
 
             {isLoading ? (
               <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
@@ -201,11 +223,41 @@ export default function LeaderboardScreen({ navigation }: Props) {
             ) : null}
           </View>
 
-          <View style={{height: 50}}/>
+          <View style={{ height: 50 }} />
         </ScrollView>
 
         {leadership.length == 0 ? <Text>Brak wpisów</Text> : null}
       </View>
+
+      <InvitationsDialog visible={isInvitationDialogVisible} onDismiss={() => setIsInvitationDialogVisible(false)} />
+
+      {updatedSelfData == null ? null : (
+        <TouchableOpacity
+        onPress={()=>{
+          api.updateSelf({userName: updatedSelfData.userName}).then(result=>{
+            if(result.data?.newUser != null) {
+              setUser(result.data?.newUser)
+            } else {
+              Toast.show(`Unexpected Error!`, Toast.SHORT);
+            }
+          })
+          setUpdatedSelfData(null)
+        }} 
+        style={{
+          position: "absolute", right: 145, bottom: 200, backgroundColor: Resources.get().getColors().Primary, padding: 10, borderRadius: 10,
+          shadowColor: Resources.get().getColors().Black,
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+          shadowOpacity: 0.34,
+          shadowRadius: 3,
+  
+          elevation: 10,
+        }}>
+          <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Zapisz</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }

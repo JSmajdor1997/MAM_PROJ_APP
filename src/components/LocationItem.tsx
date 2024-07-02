@@ -1,10 +1,11 @@
-import { TouchableOpacity, View, Text, StyleSheet } from "react-native"
+import { TouchableOpacity, View, Text, StyleSheet, Dimensions } from "react-native"
 import { LatLng } from "react-native-maps"
 import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng"
 import formatDistance from "../utils/formatDistance"
 import Resources from "../../res/Resources"
 import IconType from "./WisbIcon/IconType"
 import WisbIcon from "./WisbIcon/WisbIcon"
+import { Neomorph } from "react-native-neomorph-shadows-fixes"
 
 export interface Props {
     onPress: () => void
@@ -20,19 +21,31 @@ export default function LocationItem({ onPress, userLocation, location }: Props)
         <TouchableOpacity
             style={styles.root}
             onPress={onPress}>
-            <View style={styles.nameContainer}>
-                <WisbIcon icon={IconType.MapPin} size={15} />
-                <Text style={styles.name}>{location.asText}</Text>
-            </View>
+            <Neomorph
+                inner
+                style={{
+                    shadowRadius: 10,
+                    borderRadius: 15,
+                    backgroundColor: Resources.get().getColors().Beige,
+                    width: Dimensions.get("window").width * 0.9,
+                    height: 50,
+                    overflow: "hidden",
+                    flexDirection: "row"
+                }}>
+                <View style={styles.nameContainer}>
+                    <WisbIcon icon={IconType.MapPin} size={15} />
+                    <Text style={styles.name}>{location.asText}</Text>
+                </View>
 
-            <Text style={styles.distanceInfo}>{Resources.get().getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.get().getStrings().Components.LocationItem.FromYouMessage}</Text>
+                <Text style={styles.distanceInfo}>{Resources.get().getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.get().getStrings().Components.LocationItem.FromYouMessage}</Text>
+            </Neomorph>
         </TouchableOpacity>
     )
 }
 
 const styles = StyleSheet.create({
     root: {
-        padding: 8, alignItems: "flex-end", justifyContent: "space-between"
+        padding: 8, alignItems: "center", justifyContent: "space-between",
     },
     nameContainer: {
         flexDirection: "row", padding: 8, alignItems: "center", justifyContent: "space-between", width: "100%"

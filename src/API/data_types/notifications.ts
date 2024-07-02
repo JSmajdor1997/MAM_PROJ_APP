@@ -52,24 +52,24 @@ export type Notification =
     | ObjectDeletionNotification
 
 export function switchNotification<R = void>(item: Notification, switcher: {
-    [NotificationType.NewObjectNotification]: (item: NewObjectNotification) => R,
-    [NotificationType.ObjectUpdatedNotification]: (item: ObjectUpdatedNotification) => R,
-    [NotificationType.WastelandClearedNotification]: (item: WastelandClearedNotification) => R,
-    [NotificationType.NewMessageNotification]: (item: NewMessageNotification) => R,
-    [NotificationType.NewEventInvitationNotification]: (item: NewEventInvitationNotification) => R,
-    [NotificationType.ObjectDeletionNotification]: (item: ObjectDeletionNotification) => R,
+    [NotificationType.NewObjectNotification]?: (item: NewObjectNotification) => R,
+    [NotificationType.ObjectUpdatedNotification]?: (item: ObjectUpdatedNotification) => R,
+    [NotificationType.WastelandClearedNotification]?: (item: WastelandClearedNotification) => R,
+    [NotificationType.NewMessageNotification]?: (item: NewMessageNotification) => R,
+    [NotificationType.NewEventInvitationNotification]?: (item: NewEventInvitationNotification) => R,
+    [NotificationType.ObjectDeletionNotification]?: (item: ObjectDeletionNotification) => R,
 }): R {
-    if ((item as NewObjectNotification).newItem !== undefined) {
+    if ((item as NewObjectNotification).newItem !== undefined && switcher[NotificationType.NewObjectNotification] != undefined) {
         return switcher[NotificationType.NewObjectNotification](item as NewObjectNotification)
-    } else if ((item as ObjectUpdatedNotification).updatedItem !== undefined) {
+    } else if ((item as ObjectUpdatedNotification).updatedItem !== undefined && switcher[NotificationType.ObjectUpdatedNotification] != undefined) {
         return switcher[NotificationType.ObjectUpdatedNotification](item as ObjectUpdatedNotification)
-    } else if ((item as WastelandClearedNotification).clearedWasteland !== undefined) {
+    } else if ((item as WastelandClearedNotification).clearedWasteland !== undefined && switcher[NotificationType.WastelandClearedNotification] != undefined) {
         return switcher[NotificationType.WastelandClearedNotification](item as WastelandClearedNotification)
-    } else if ((item as NewMessageNotification).content !== undefined) {
+    } else if ((item as NewMessageNotification).content !== undefined && switcher[NotificationType.NewMessageNotification] != undefined) {
         return switcher[NotificationType.NewMessageNotification](item as NewMessageNotification)
-    } else if ((item as NewEventInvitationNotification).sender !== undefined) {
+    } else if ((item as NewEventInvitationNotification).sender !== undefined && switcher[NotificationType.NewEventInvitationNotification] != undefined) {
         return switcher[NotificationType.NewEventInvitationNotification](item as NewEventInvitationNotification)
-    } else if ((item as ObjectDeletionNotification).deletedItem !== undefined) {
+    } else if ((item as ObjectDeletionNotification).deletedItem !== undefined && switcher[NotificationType.ObjectDeletionNotification] != undefined) {
         return switcher[NotificationType.ObjectDeletionNotification](item as ObjectDeletionNotification)
     } else {
         throw new Error("Unexpected notification item received!")

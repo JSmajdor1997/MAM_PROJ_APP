@@ -23,9 +23,10 @@ interface Props {
   item: Event;
   onOpen: (item: Event) => void
   isAdmin: boolean
+  widthCoeff: number
 }
 
-function EventItem({ item, onOpen, isAdmin }: Props) {
+function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.6}
@@ -36,7 +37,7 @@ function EventItem({ item, onOpen, isAdmin }: Props) {
           shadowRadius: 10,
           borderRadius: 15,
           backgroundColor: '#DDDDDD',
-          width: Dimensions.get("window").width * 0.9,
+          width: Dimensions.get("window").width * widthCoeff,
           height: 150,
           overflow: "hidden",
           flexDirection: "column"

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { Avatar, GiftedChat, IMessage, Message, MessageProps } from 'react-native-gifted-chat';
 import { Menu, MenuItem } from 'react-native-material-menu';
@@ -18,6 +19,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
 import { faArrowLeft, faCamera, faEllipsisV, faGripVertical, faMessage, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import Swiper from 'react-native-swiper';
+import ImagesGallery from '../components/ImagesGallery';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import getAPI from '../API/getAPI';
+import MessageType from '../API/data_types/Message';
+
+const api = getAPI()
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> {
 }
@@ -28,62 +36,31 @@ interface State {
   images: Array<string>;
 }
 
-export default function ChatScreen({ navigation, route: { params: { event } }  }: Props) {
-  const menuRef = React.useRef<Menu>(null)
+export default function ChatScreen({ navigation, route: { params: { event } } }: Props) {
+  const [inputMessage, setInputMessage] = React.useState("")
 
   const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
+  const [isMultimediaListVisible, setIsMultimediaListVisible] = React.useState(false)
 
   const [state, setState] = React.useState<State>({
     isImagePickerVisible: false,
-    messages: [
-      {
-        _id: 2,
-        text: '🙏',
-        createdAt: new Date(),
-        user: {
-          _id: 4,
-          name: 'Maciej Moczała',
-          avatar:
-            'https://static.wikia.nocookie.net/gartenofbanbanfanon/images/c/ce/Soyjak.png/revision/latest?cb=20230705190047',
-        },
+    messages: event.messages.map(it => ({
+      _id: it.date.getTime(),
+      text: it.content,
+      createdAt: it.date,
+      user: {
+        id: it.sender.id,
+        name: it.sender.userName,
+        avatar: it.sender.photoUrl,
       },
-      {
-        _id: 3,
-        text: '🙏',
-        createdAt: new Date(),
-        user: {
-          _id: 5,
-          name: 'Franciszek Plisz',
-          avatar:
-            'https://upload.wikimedia.org/wiktionary/en/f/f1/Soyjak.jpg',
-        },
-      },
-      {
-        _id: 1,
-        text: '🧹!',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'Jakub Smajdor',
-          avatar:
-            'https://e7.pngegg.com/pngimages/494/44/png-clipart-man-face-illustration-chad-internet-meme-know-your-meme-4chan-bill-clinton-celebrities-face.png',
-        },
-      },
-    ],
+    })),
     images: []
   })
-
-  const onSend = (messages: any) => {
-    // setState(previousState => ({
-    //   messages: GiftedChat.append(previousState.messages, messages),
-    // }));
-  }
 
   const renderInputBar = () => {
     return (
       <View
         style={{
-          bottom: 0,
           backgroundColor: Resources.get().getColors().White,
           alignItems: 'center',
           width: '96%',
@@ -125,6 +102,8 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
             marginEnd: 4,
           }}>
           <TextInput
+            value={inputMessage}
+            onChange={e=>setInputMessage(e.nativeEvent.text)}
             placeholder="Wpisz wiadomość..."
             placeholderTextColor={Resources.get().getColors().DarkBeige}
             style={{ flex: 1, padding: 0 }}
@@ -135,6 +114,13 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
             justifyContent: 'center',
             alignContent: 'center',
             padding: 4,
+          }}
+          onPress={()=>{
+            api.sendEventMessage(event, {
+              content: inputMessage,
+              photosUrls: [],
+            })
+            setInputMessage("")
           }}>
           <FontAwesomeIcon icon={faPaperPlane} color={Resources.get().getColors().Primary} size={20} />
         </TouchableOpacity>
@@ -158,7 +144,7 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
       };
     }
 
-    return <Message {...props} renderAvatar={avatar => <Avatar {...avatar}/>} messageTextStyle={messageTextStyle} />;
+    return <Message {...props} renderAvatar={avatar => <Avatar {...avatar} />} messageTextStyle={messageTextStyle} />;
   }
 
   const renderTopBar = () => {
@@ -233,7 +219,7 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
           anchor={
             <TouchableOpacity
               style={{ alignSelf: 'flex-end', marginRight: 2 }}
-              onPress={()=>setIsMoreMenuVisible(true)}>
+              onPress={() => setIsMoreMenuVisible(true)}>
               <FontAwesomeIcon color={Resources.get().getColors().Primary} icon={faEllipsisV} />
             </TouchableOpacity>
           }>
@@ -243,7 +229,7 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
           <MenuItem>
             Wycisz
           </MenuItem>
-          <MenuItem>
+          <MenuItem onPress={() => setIsMultimediaListVisible(true)}>
             Pokaż multimedia
           </MenuItem>
         </Menu>
@@ -252,9 +238,9 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
   }
 
   return (
-    <View
-      onTouchStart={()=>{
-        if(isMoreMenuVisible){
+    <ScrollView style={{ flex: 1 }} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps
+      onTouchStart={() => {
+        if (isMoreMenuVisible) {
           setIsMoreMenuVisible(false)
         }
       }}
@@ -267,21 +253,45 @@ export default function ChatScreen({ navigation, route: { params: { event } }  }
         barStyle="light-content"
         translucent
       />
-      {renderTopBar()}
-      <GiftedChat
-        messages={state.messages}
-        onSend={messages => onSend(messages)}
-        renderMessage={renderMessage}
-        renderInputToolbar={() => null}
-        user={{
-          _id: 1,
-        }}
-      />
-      {renderInputBar()}
-    </View>
+      <Swiper
+        index={isMultimediaListVisible ? 1 : 0}
+        showsButtons={false}
+        showsPagination={false}
+        scrollEnabled={false}
+        loop={false}>
+        <View style={{ flex: 1 }}>
+          {renderTopBar()}
+          <GiftedChat
+            messages={state.messages}
+            renderMessage={renderMessage}
+            renderInputToolbar={() => null}
+            user={{
+              _id: 1,
+            }}
+          />
+          {renderInputBar()}
+        </View>
+
+        <SafeAreaView style={{ flex: 1 }}>
+          <View>
+            <TouchableOpacity onPress={() => setIsMultimediaListVisible(false)}>
+              <FontAwesomeIcon icon={faArrowLeft} size={20} />
+            </TouchableOpacity>
+          </View>
+
+          <Text>Multimedia czatu</Text>
+
+          <ImagesGallery
+            style={{ flex: 1 }}
+            images={[event.iconUrl!]}
+            nrOfImagesPerRow={4}
+            interImagesSpace={10} />
+        </SafeAreaView>
+      </Swiper>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-    
+
 })

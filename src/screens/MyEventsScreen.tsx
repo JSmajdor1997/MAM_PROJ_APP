@@ -85,7 +85,8 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
         type={Type.Event}
         filter={{
           [Type.Event]: {
-            onlyOwn: true
+            onlyOwn: true,
+            activeOnly: onlyCurrentEvents
           }
         }}
         multi={false}

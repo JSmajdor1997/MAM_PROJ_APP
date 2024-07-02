@@ -1,7 +1,7 @@
 import MapView, { LatLng, Marker, Region } from "react-native-maps"
 import { faChevronDown, faChevronUp, faEarth, faLocationArrow } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { StyleSheet, Text, View, ViewStyle, Animated, Easing, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, ViewStyle, Animated, Easing, TouchableOpacity, Dimensions } from "react-native";
 import { GoogleStaticMapNext } from "react-native-google-static-map-next";
 import Resources from "../../res/Resources";
 import FAB from "./FAB";
@@ -15,6 +15,8 @@ import reverseGeoCode from "../utils/GooglePlacesAPI/reverseGeoCode";
 import LocationItem from "./LocationItem";
 import IconType from "./WisbIcon/IconType";
 import WisbIcon from "./WisbIcon/WisbIcon";
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
 
 export interface Props {
     style?: ViewStyle
@@ -61,16 +63,16 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
         if (isDropdownVisible) {
             Animated.timing(heightAnim, {
                 toValue: containerHeight - searchBarHeight,
-                duration: 400,
+                duration: 100,
                 useNativeDriver: false,
-                easing: Easing.quad
+                easing: Easing.linear
             }).start()
         } else {
             Animated.timing(heightAnim, {
                 toValue: 0,
-                duration: 400,
+                duration: 100,
                 useNativeDriver: false,
-                easing: Easing.quad
+                easing: Easing.linear
             }).start()
         }
     }, [isDropdownVisible, containerHeight, searchBarHeight])
@@ -89,7 +91,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
     }, [location.coords])
 
     return (
-        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.get().getColors().White }} onLayout={e => {
+        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.get().getColors().DarkBeige }} onLayout={e => {
             const newHeight = e.nativeEvent.layout.height
 
             if (newHeight != containerHeight) {
@@ -175,10 +177,25 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                 placeholder={Resources.get().getStrings().Components.LocationInput.EnterPlaceMessage} />
 
             {readonly ? null : <Animated.FlatList
-                style={{ width: "100%", backgroundColor: Resources.get().getColors().White, maxHeight: heightAnim, height: "100%" }}
+                style={{ width: "100%", backgroundColor: Resources.get().getColors().DarkBeige, maxHeight: heightAnim, height: "100%" }}
                 data={places}
                 ItemSeparatorComponent={Separator}
                 keyExtractor={place => place.id}
+                ListEmptyComponent={
+                    <View style={{ justifyContent: "center" }}>
+                        {Array.from({ length: 3 }, () => (
+                            <SkeletonPlaceholder borderRadius={4} backgroundColor="white">
+                                <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" width={"90%"} height={50}>
+                                    <SkeletonPlaceholder.Item width={20} height={20} borderRadius={100} left={10} />
+                                    <SkeletonPlaceholder.Item marginLeft={20}>
+                                        <SkeletonPlaceholder.Item width={Dimensions.get("window").width - 100} height={20} />
+                                        <SkeletonPlaceholder.Item marginTop={6} width={80} height={20} />
+                                    </SkeletonPlaceholder.Item>
+                                </SkeletonPlaceholder.Item>
+                            </SkeletonPlaceholder>
+                        ))}
+                    </View>
+                }
                 renderItem={({ item }) => (
                     <LocationItem
                         onPress={() => {

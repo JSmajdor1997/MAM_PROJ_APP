@@ -19,9 +19,10 @@ import IconType from './WisbIcon/IconType';
 interface Props {
   item: Wasteland;
   onOpen: (item: Wasteland) => void
+  widthCoeff: number
 }
 
-function WastelandItem({ item, onOpen }: Props) {
+function WastelandItem({ item, onOpen, widthCoeff }: Props) {
   return (
     <TouchableOpacity
       onPress={() => onOpen(item)}
@@ -32,7 +33,7 @@ function WastelandItem({ item, onOpen }: Props) {
           shadowRadius: 10,
           borderRadius: 15,
           backgroundColor: Resources.get().getColors().Primary,
-          width: Dimensions.get("window").width * 0.9,
+          width: Dimensions.get("window").width * widthCoeff,
           height: 150,
           overflow: "hidden",
           flexDirection: "row",

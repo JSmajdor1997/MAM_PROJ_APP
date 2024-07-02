@@ -23,8 +23,6 @@ import Event from '../API/data_types/Event';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import metersToLatLngDelta from '../utils/metersToDelta';
 import scaleRegion from '../utils/scaleRegion';
-import APIResponse from '../API/APIResponse';
-import { GeneralError } from '../API/API';
 import doesRegionInclude from '../utils/doesRegionInclude';
 import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
 import { MapObjects, Query, Type } from '../API/helpers';
@@ -37,6 +35,7 @@ import IconType from '../components/WisbIcon/IconType';
 import QueryInput from '../components/QueryInput/QueryInput';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import getFirstTodayTime from '../utils/getFirstTodayTime';
+import MapType from '../../res/MapType';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -113,7 +112,12 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     return null
   }
 
-  const [mapObjects, setMapObjects] = React.useState<MapObjects & { region: Region }>({
+  const [mapObjects, setMapObjects] = React.useState<{ 
+    [Type.Dumpster]: Dumpster[],
+    [Type.Event]: Event[],
+    [Type.Wasteland]: Wasteland[],
+    region: Region 
+  }>({
     [Type.Dumpster]: [],
     [Type.Event]: [],
     [Type.Wasteland]: [],
@@ -139,6 +143,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
       style={styles.root}>
       <MapView
         ref={mapRef}
+        mapType={Resources.get().getSettings().mapType == MapType.Default ? "standard" : "hybrid"}
         initialRegion={InitialRegion}
         onRegionChangeComplete={newRegion => {
           if (!doesRegionInclude(mapObjects.region, newRegion) && calcRegionAreaInMeters(newRegion) < 100000) {

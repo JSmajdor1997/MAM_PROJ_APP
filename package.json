@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@babel/plugin-proposal-decorators": "^7.24.7",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-brands-svg-icons": "^6.5.2",
     "@fortawesome/free-regular-svg-icons": "^6.5.2",
@@ -23,6 +24,7 @@
     "@react-native-community/cli": "^13.6.9",
     "@react-native-community/datetimepicker": "^8.1.1",
     "@react-native-community/geolocation": "^3.2.1",
+    "@react-native-masked-view/masked-view": "^0.3.1",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
     "@types/react-native-check-box": "^2.1.6",
@@ -48,6 +50,7 @@
     "react-native-google-static-map-next": "^1.0.2",
     "react-native-image-picker": "^7.1.2",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-loading-placeholder": "^0.0.6",
     "react-native-localize": "^3.1.0",
     "react-native-maps": "^1.15.1",
     "react-native-material-menu": "^2.0.0",
@@ -63,6 +66,7 @@
     "react-native-screens": "^3.31.1",
     "react-native-share": "^10.2.1",
     "react-native-simple-toast": "^3.3.1",
+    "react-native-skeleton-placeholder": "^5.2.4",
     "react-native-spinkit": "^1.5.1",
     "react-native-svg": "^15.2.0",
     "react-native-swiper": "^1.6.0-rc.3",

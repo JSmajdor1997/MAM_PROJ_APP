@@ -3,6 +3,8 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitThis": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "isolatedModules": true
   }
 }

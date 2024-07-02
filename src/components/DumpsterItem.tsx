@@ -20,9 +20,10 @@ interface Props {
   item: Dumpster;
   onOpen: (item: Dumpster) => void
   googleMapsAPIKey: string
+  widthCoeff: number
 }
 
-function DumpsterItem({ item, onOpen, googleMapsAPIKey }: Props) {
+function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
   return (
     <TouchableOpacity
       onPress={() => onOpen(item)}
@@ -33,7 +34,7 @@ function DumpsterItem({ item, onOpen, googleMapsAPIKey }: Props) {
           shadowRadius: 10,
           borderRadius: 15,
           backgroundColor: Resources.get().getColors().Primary,
-          width: Dimensions.get("window").width * 0.9,
+          width: Dimensions.get("window").width * widthCoeff,
           height: 150,
           overflow: "hidden",
           flexDirection: "row"

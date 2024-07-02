@@ -1,19 +1,23 @@
-import API, { ChangeListener, ClearingWastelandError, DumpstersQuery, EventsQuery, GeneralError, LeadershipQuery, LoginError, LogoutError, RemoveAccountError, SignUpError, UsersQuery, WastelandsQuery } from "../../API";
-import Dumpster from "../../data_types/Dumpster";
-import Event, { EventUser } from "../../data_types/Event";
+import API, { GeneralError, SignUpError, LoginError, LogoutError, RemoveAccountError } from "../../API";
+import type { ChangeListener, ClearingWastelandError, DumpstersQuery, EventsQuery, UsersQuery, WastelandsQuery } from "../../API";
+import type Dumpster from "../../data_types/Dumpster";
+import type Event from "../../data_types/Event";
+import type { EventUser } from "../../data_types/Event";
 import Message from "../../data_types/Message";
 import User from "../../data_types/User";
 import getMockupUsers from "./mockup_users"
-import Wasteland from "../../data_types/Wasteland";
+import type Wasteland from "../../data_types/Wasteland";
 import APIResponse from "../../APIResponse";
 import getMockupDumpsters from "./mockup_dumpsters";
 import getMockupEvents from "./mockup_events";
 import getMockupWastelands from "./mockup_wastelands";
 import { faker } from '@faker-js/faker';
 import isLatLngInRegion from "../../../utils/isLatLngInRegion";
-import { Notification, NotificationFilter } from "../../data_types/notifications";
+import type { Notification, NotificationFilter } from "../../data_types/notifications";
 import calcApproxDistanceBetweenLatLngInMeters from "../../../utils/calcApproxDistanceBetweenLatLng";
 import { LatLng } from "react-native-maps";
+import type { Invitation } from "../../data_types/Invitation";
+import getMockupInvitations from "./getMockupInvitations";
 
 function api_endpoint(checkLogin: boolean) {
     return function <T extends (...args: any[]) => Promise<any>>(target: any, key: string, descriptor: TypedPropertyDescriptor<any>): TypedPropertyDescriptor<T> | void {
@@ -34,20 +38,84 @@ function api_endpoint(checkLogin: boolean) {
 }
 
 export default class MockupAPI extends API {
-    private users = getMockupUsers()
-    private dumpsters = getMockupDumpsters(this.users)
-    private wastelands = getMockupWastelands(this.users)
-    private events = getMockupEvents(this.users, this.wastelands)
-
-    private loggedInUser: User | null = {
+    private users = [...getMockupUsers(), {
         id: 0,
         email: "aaa@bbb.com",
         userName: "Zeriusz",
-        password: "zaq1@WSX",
+        password: "abc",
         nrOfClearedWastelands: 0,
         addedDumpsters: 0,
         deletedDumpsters: 0
+    }]
+    private dumpsters = getMockupDumpsters(this.users)
+    private wastelands = getMockupWastelands(this.users)
+    private events = getMockupEvents(this.users, this.wastelands)
+    private invitations = getMockupInvitations(this.events, this.users)
+
+    constructor() {
+        super()
+
+        //creating random invitations
+        setInterval(() => {
+            return
+            const user = this.loggedInUser
+            if (user == null) {
+                return
+            }
+
+            const allEventsWithoutUser = this.events.filter(it => !it.members.some(it => it.id == user.id) && !it.admins.some(it => it.id == user.id))
+
+            if(allEventsWithoutUser.length == 0) {
+                return
+            }
+
+            const event = faker.helpers.arrayElement(allEventsWithoutUser).event
+            const invitation: Invitation = {
+                event,
+                user
+            }
+
+            this.invitations.push(invitation)
+
+            this.callAllListeners({
+                event,
+                sender: faker.helpers.arrayElement(this.users)
+            })
+        }, 1000 * 30)
+
+        //sending random messages
+        setInterval(() => {
+            return
+            const user = this.loggedInUser
+            if (user == null) {
+                return
+            }
+
+            const allEventsWithUser = this.events.filter(it => it.members.some(it => it.id == user.id) || it.admins.some(it => it.id == user.id))
+            if(allEventsWithUser.length == 0) {
+                return
+            }
+
+            const foundEvent = faker.helpers.arrayElement(allEventsWithUser).event
+
+            const message = {
+                event: foundEvent,
+                sender: faker.helpers.arrayElement(this.users),
+                content: faker.word.sample(),
+                date: new Date(),
+                photosUrls: []
+            }
+    
+            foundEvent.messages.push(message)
+    
+            this.callAllListeners({
+                event: foundEvent,
+                content: message.content
+            })
+        }, 1000 * 45)
     }
+
+    private loggedInUser: User | null = this.users[this.users.length-1]
 
     async getCurrentUser(): Promise<APIResponse<GeneralError, User>> {
         if (this.loggedInUser == null) {
@@ -88,14 +156,11 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async logout(): Promise<APIResponse<LogoutError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: LogoutError.UserNotAuthorized
-            }
-        }
-
         this.loggedInUser = null
+
+        this.onLogoutListeners.forEach(it => it())
 
         return {
             data: {}
@@ -141,13 +206,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async removeAccount(): Promise<APIResponse<RemoveAccountError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: RemoveAccountError.UserNotAuthorized
-            }
-        }
-
         this.users = this.users.filter(user => user.id != this.loggedInUser?.id)
         this.logout()
 
@@ -156,15 +216,10 @@ export default class MockupAPI extends API {
         }
     }
 
-    async updateSelf(newData: Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">): Promise<APIResponse<GeneralError, { newUser: User }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
+    @api_endpoint(true)
+    async updateSelf(newData: Partial<Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">>): Promise<APIResponse<GeneralError, { newUser: User }>> {
         this.loggedInUser = {
-            ...this.loggedInUser,
+            ...this.loggedInUser as User,
             ...newData
         }
 
@@ -187,13 +242,8 @@ export default class MockupAPI extends API {
         throw new Error("Method not implemented.");
     }
 
+    @api_endpoint(true)
     async getEvents<WithMembers extends boolean>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event & { members: EventUser[], admins: EventUser[] })[] }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const events = this.events.filter(({ event, members, admins }) => {
             if (query.onlyOwn && !members.some(member => member.id == this.loggedInUser!.id)) {
                 return false
@@ -204,6 +254,10 @@ export default class MockupAPI extends API {
             }
 
             if (query.region != null && !isLatLngInRegion(query.region, event.meetPlace.coords)) {
+                return false
+            }
+
+            if (query.activeOnly != null && event.dateRange[1] < new Date()) {
                 return false
             }
 
@@ -232,13 +286,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async getEventById<WithMembers extends boolean>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event & { members: EventUser[], admins: EventUser[] }) }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const foundEvent = this.events.find(it => it.event.id == id)
 
         if (foundEvent == null) {
@@ -252,13 +301,34 @@ export default class MockupAPI extends API {
         }
     }
 
-    async createEvent(newEvent: Omit<Event, "id" | "isFinished" | "messages">): Promise<APIResponse<GeneralError, { createdItem: Event }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
+    @api_endpoint(true)
+    async getMyInvitations(): Promise<APIResponse<GeneralError, { items: Invitation[] }>> {
+        return {
+            data: {
+                items: this.invitations.filter(it => it.user.id == this.loggedInUser!.id)
             }
         }
+    }
 
+    @api_endpoint(true)
+    async sendInvitation(invitation: Invitation): Promise<APIResponse<GeneralError, {}>> {
+        this.invitations = [
+            ...this.invitations,
+            invitation
+        ]
+
+        this.callAllListeners({
+            event: invitation.event,
+            sender: this.loggedInUser!
+        })
+
+        return {
+            data: {}
+        }
+    }
+
+    @api_endpoint(true)
+    async createEvent(newEvent: Omit<Event, "id" | "isFinished" | "messages">, invitations: User[]): Promise<APIResponse<GeneralError, { createdItem: Event }>> {
         const createdEvent: Event = {
             ...newEvent,
             messages: [],
@@ -269,8 +339,8 @@ export default class MockupAPI extends API {
             ...this.events,
             {
                 event: createdEvent,
-                members: [this.loggedInUser],
-                admins: [this.loggedInUser],
+                members: [this.loggedInUser as User],
+                admins: [this.loggedInUser as User],
             }
         ]
 
@@ -285,13 +355,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async deleteEvent(eventToDelete: Event): Promise<APIResponse<GeneralError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         if (this.events.find(it => it.event.id == eventToDelete.id)!.admins.some(admin => admin.id == this.loggedInUser?.id)) {
             return {
                 error: GeneralError.UserNotAuthorized,
@@ -310,13 +375,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async updateEvent(eventToUpdate: Event): Promise<APIResponse<GeneralError, { updatedItem: Event; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         if (this.events.find(it => it.event.id == eventToUpdate.id)!.admins.some(admin => admin.id == this.loggedInUser?.id)) {
             return {
                 error: GeneralError.UserNotAuthorized,
@@ -346,13 +406,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async joinEvent(eventToJoin: Event): Promise<APIResponse<GeneralError, { updatedItem: Event; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const foundEvent = this.events.find(it => it.event.id == eventToJoin.id)!
 
         if (foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
@@ -387,13 +442,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async leaveEvent(eventToLeave: Event): Promise<APIResponse<GeneralError, { updatedItem: Event; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const foundEvent = this.events.find(it => it.event.id == eventToLeave.id)!
 
         if (!foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
@@ -424,13 +474,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async getEventMessages(event: Event, dateRange: [Date, Date]): Promise<APIResponse<GeneralError, { messages: Message[]; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const foundEvent = this.events.find(it => it.event.id == event.id)!
         if (!foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
             return {
@@ -446,13 +491,8 @@ export default class MockupAPI extends API {
         }
     }
 
-    async sendEventMessage(event: Event, message: Omit<Message, "id" | "date">): Promise<APIResponse<GeneralError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
+    @api_endpoint(true)
+    async sendEventMessage(event: Event, message: Omit<Message, "id" | "date" | "sender">): Promise<APIResponse<GeneralError, {}>> {
         const foundEvent = this.events.find(it => it.event.id == event.id)!
         if (!foundEvent.members.some(member => member.id == this.loggedInUser!.id)) {
             return {
@@ -463,6 +503,7 @@ export default class MockupAPI extends API {
 
         event.messages.push({
             ...message,
+            sender: this.loggedInUser!,
             date: new Date()
         })
 
@@ -487,13 +528,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async getWastelands(query: WastelandsQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Wasteland[]; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const wastelands = this.wastelands.filter(({ place, description, reportedBy, afterCleaningData }) => {
             if ((query.phrase != null && query.phrase.length != 0) && !place.asText.includes(query.phrase) && !description.includes(query.phrase)) {
                 return false
@@ -520,18 +556,13 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async createWasteland(newWasteland: Omit<Wasteland, "id" | "createdDate" | "afterCleaningData" | "reportedBy">): Promise<APIResponse<GeneralError, { createdItem: Wasteland; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const createdWasteland: Wasteland = {
             ...newWasteland,
             id: Math.max(...this.wastelands.map(wasteland => wasteland.id)) + 1,
             creationDate: new Date(),
-            reportedBy: this.loggedInUser
+            reportedBy: this.loggedInUser!
         }
 
         this.wastelands = [
@@ -550,13 +581,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: string[]): Promise<APIResponse<ClearingWastelandError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: ClearingWastelandError.UserNotAuthorized
-            }
-        }
-
         this.wastelands = this.wastelands.map(it => {
             if (it.id == wasteland.id) {
                 return {
@@ -581,13 +607,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Dumpster[] }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const dumpsters = this.dumpsters.filter(dumpster => {
             if ((query.phrase != null && query.phrase.length != 0) && !dumpster.description.includes(query.phrase)) {
                 return false
@@ -610,13 +631,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async getUsers(query: UsersQuery, range: [number, number]): Promise<APIResponse<GeneralError, { items: User[] }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const users = this.users.filter(user => {
             if ((query.phrase != null && query.phrase.length != 0) && (!user.email.includes(query.phrase) && !user.userName.includes(query.phrase))) {
                 return false
@@ -635,13 +651,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async createDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { createdItem: Dumpster; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const addedDumpster = {
             ...newDumpster,
             id: Math.max(...this.dumpsters.map(it => it.id)) + 1
@@ -663,13 +674,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async deleteDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         this.dumpsters = this.dumpsters.filter(it => it.id != dumpster.id)
 
         this.callAllListeners({
@@ -681,13 +687,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async updateDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, { updatedItem: Dumpster; }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         this.events = this.events.map(event => {
             if (event.event.id == dumpster.id) {
                 return {
@@ -722,13 +723,8 @@ export default class MockupAPI extends API {
 
     private listeners = new Map<number, { filter: NotificationFilter, listener: ChangeListener }>()
 
+    @api_endpoint(true)
     async updateListener(listenerId: number, filter: NotificationFilter): Promise<APIResponse<GeneralError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         if (this.listeners.has(listenerId)) {
             const listener = this.listeners.get(listenerId)!
             this.listeners.set(listenerId, { listener: listener?.listener, filter })
@@ -743,13 +739,8 @@ export default class MockupAPI extends API {
         }
     }
 
+    @api_endpoint(true)
     async registerListener(filter: NotificationFilter, listener: ChangeListener): Promise<APIResponse<GeneralError, { listenerId: number }>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         const id = Math.max(...this.listeners.keys()) + 1
 
         this.listeners.set(id, { listener, filter })
@@ -761,12 +752,6 @@ export default class MockupAPI extends API {
 
     @api_endpoint(true)
     async removeListener(listenerId: number): Promise<APIResponse<GeneralError, {}>> {
-        if (this.loggedInUser == null) {
-            return {
-                error: GeneralError.UserNotAuthorized
-            }
-        }
-
         if (this.listeners.has(listenerId)) {
             this.listeners.delete(listenerId)
 
@@ -778,5 +763,14 @@ export default class MockupAPI extends API {
                 error: GeneralError.InvalidDataProvided
             }
         }
+    }
+
+    private onLogoutListeners: (() => void)[] = []
+    addOnLogoutListener(listener: () => void): void {
+        this.onLogoutListeners.push(listener)
+    }
+
+    removeOnLogoutListener(listener: () => void): void {
+        this.onLogoutListeners.splice(this.onLogoutListeners.indexOf(listener), 1)
     }
 }

@@ -1302,6 +1302,8 @@ PODS:
     - React
   - RNCAsyncStorage (1.23.1):
     - React-Core
+  - RNCMaskedView (0.3.1):
+    - React-Core
   - RNDateTimePicker (8.1.1):
     - React-Core
   - RNFastImage (8.6.3):
@@ -1419,6 +1421,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "ReactNativeART (from `../node_modules/@react-native-community/art`)"
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../node_modules/react-native-fast-image`)
   - RNLocalize (from `../node_modules/react-native-localize`)
@@ -1578,6 +1581,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/art"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNCMaskedView:
+    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
@@ -1669,6 +1674,7 @@ SPEC CHECKSUMS:
   ReactCommon: f42444e384d82ab89184aed5d6f3142748b54768
   ReactNativeART: 78edc68dd4a1e675338cd0cd113319cf3a65f2ab
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
+  RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
   RNDateTimePicker: 430174392d275f0ffefb627d04f0f8677f667fed
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNLocalize: b77875884750cb6a58cd6865863fe2ba2729b72b

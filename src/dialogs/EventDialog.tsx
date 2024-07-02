@@ -180,7 +180,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                             }
                                         }}
                                         mode="datetime"
-                                        minimumDate={new Date()} />
+                                        minimumDate={workingEvent?.dateRange?.[0] ?? new Date()} />
                                 </View>
 
                                 <TextInput
@@ -202,7 +202,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                 <LocationInput
                                     readonly={mode == Mode.Viewing}
                                     iconColor={Resources.get().getColors().DarkBeige}
-                                    style={{ flex: 1, width: "100%", height: 200 }}
+                                    style={{ width: "100%", height: "100%" }}
                                     userLocation={userLocation}
                                     apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                     onLocationChanged={(coords, asText) => {

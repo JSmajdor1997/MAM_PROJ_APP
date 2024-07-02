@@ -47,7 +47,7 @@ export interface Props<MiltiSelect extends boolean, ItemType extends Type> {
     onSelected?: (selected: TypeMap<ItemType>) => void
     selectedItemsIds?: number[]
 
-    phrase: string
+    phrase?: string
 
     currentUser: User
 
@@ -148,7 +148,7 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
 
         searchPlacesTimeoutId.current = setTimeout(() => {
             setIsLoading(true)
-            searchPlaces(googleMapsApiKey, phrase, Resources.get().getSettings().languageCode, placesConfig.userLocation, 1).then(places => {
+            searchPlaces(googleMapsApiKey, phrase ?? "", Resources.get().getSettings().languageCode, placesConfig.userLocation, 1).then(places => {
                 setPlaces(places ?? [])
                 setIsLoading(false)
             })
@@ -177,20 +177,22 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
                 }
                 style={{ flex: 1 }}
                 renderItem={({ item }) => (
-                    <View style={{ flexDirection: "row" }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                         {
-                            isWasteland(item) ? <WastelandItem key={`${Type.Wasteland}-${item.id}`} item={item} onOpen={onPressed as any} /> :
-                                isEvent(item) ? <EventItem key={`${Type.Event}-${item.id}`} item={item} onOpen={onPressed as any} isAdmin={(item as Event & { members: EventUser[], admins: EventUser[] }).admins.some(admin => admin.id == currentUser.id)} /> :
-                                    isDumpster(item) ? <DumpsterItem googleMapsAPIKey={googleMapsApiKey} key={`${Type.Dumpster}-${item.id}`} item={item} onOpen={onPressed as any} /> :
-                                        isUser(item) ? <UserItem item={item} onPress={() => { }} /> :
+                            isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Wasteland}-${item.id}`} item={item} onOpen={onPressed as any} /> :
+                                isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Event}-${item.id}`} item={item} onOpen={onPressed as any} isAdmin={(item as Event & { members: EventUser[], admins: EventUser[] }).admins.some(admin => admin.id == currentUser.id)} /> :
+                                    isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} key={`${Type.Dumpster}-${item.id}`} item={item} onOpen={onPressed as any} /> :
+                                        isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={() => { }} /> :
                                             null
                         }
 
-                        {multi ? <CheckBox
-                            style={{ flex: 1, padding: 10 }}
-                            onClick={() => onSelected?.(item as any)}
-                            isChecked={selectedItemsIds?.some(id => id == item.id) || false}
-                        /> : null}
+                        {multi ? (
+                            <View style={{ width: "20%", justifyContent: "center", alignItems: "center" }}>
+                                <CheckBox
+                                    onClick={() => onSelected?.(item as any)}
+                                    isChecked={selectedItemsIds?.some(id => id == item.id) || false} />
+                            </View>
+                        ) : null}
                     </View>
                 )}
                 keyExtractor={(item, index) => (item as any).key}

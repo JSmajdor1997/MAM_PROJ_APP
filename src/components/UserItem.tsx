@@ -10,11 +10,12 @@ export interface Props {
   position?: number
   onPress?: () => void
   style?: React.CSSProperties
+  widthCoeff: number
 }
 
 const api = getAPI()
 
-export default function UserItem({ item, position, style, onPress }: Props) {
+export default function UserItem({ item, position, style, onPress, widthCoeff }: Props) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -31,7 +32,7 @@ export default function UserItem({ item, position, style, onPress }: Props) {
           paddingLeft: 10,
           flex: 1,
           padding: 5,
-          width: Dimensions.get("window").width * 0.9,
+          width: Dimensions.get("window").width * widthCoeff,
           height: 50,
           overflow: "hidden",
           flexDirection: "row",

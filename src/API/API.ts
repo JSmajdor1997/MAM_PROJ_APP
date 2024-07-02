@@ -7,6 +7,7 @@ import Dumpster from "./data_types/Dumpster";
 import { Region } from "react-native-maps";
 import { MapObjects, Type } from "./helpers";
 import { Notification, NotificationFilter } from "./data_types/notifications";
+import { Invitation } from "./data_types/Invitation";
 
 export type ChangeListener = (notification: Notification) => void
 
@@ -15,6 +16,7 @@ export interface EventsQuery {
     phrase?: string
     onlyOwn?: boolean
     dateRange?: [Date | null, Date | null]
+    activeOnly?: boolean
 }
 
 export interface WastelandsQuery {
@@ -32,10 +34,6 @@ export interface UsersQuery {
     phrase?: string
 }
 
-export interface LeadershipQuery {
-    positionsRange: [number, number]
-}
-
 export default abstract class API {
     private static readonly WisbEventQrCodePrefix = "Wisb-Event"
     abstract isUserLoggedIn(): Promise<boolean>
@@ -46,7 +44,7 @@ export default abstract class API {
     abstract logout(): Promise<APIResponse<LogoutError, {}>>
     abstract signUp(data: Omit<User, "id" | "photoUrl" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters"> & { photoFile?: File }): Promise<APIResponse<SignUpError, {}>>
     abstract removeAccount(): Promise<APIResponse<RemoveAccountError, {}>>
-    abstract updateSelf(newData: Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">): Promise<APIResponse<GeneralError, { newUser: User }>>
+    abstract updateSelf(newData: Partial<Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">>): Promise<APIResponse<GeneralError, { newUser: User }>>
     abstract resetPassword(): Promise<APIResponse<GeneralError, { newUser: User }>>
 
     abstract getUsers(query: UsersQuery, range: [number, number]): Promise<APIResponse<GeneralError, { items: User[] }>>
@@ -56,13 +54,15 @@ export default abstract class API {
 
     abstract getEventById<WithMembers extends true | false>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event & { members: EventUser[], admins: EventUser[] }) }>>;
 
-    abstract createEvent(newEvent: Omit<Event, "id">): Promise<APIResponse<GeneralError, { createdItem: Event }>>
+    abstract getMyInvitations(): Promise<APIResponse<GeneralError, { items: Invitation[] }>>
+    abstract createEvent(newEvent: Omit<Event, "id">, invitations: User[]): Promise<APIResponse<GeneralError, { createdItem: Event }>>
+    abstract sendInvitation(invitation: Invitation): Promise<APIResponse<GeneralError, { }>>
     abstract deleteEvent(event: Event): Promise<APIResponse<GeneralError, {}>>
     abstract updateEvent(event: Event): Promise<APIResponse<GeneralError, { updatedItem: Event }>>
     abstract joinEvent(event: Event): Promise<APIResponse<GeneralError, { updatedItem: Event }>>
     abstract leaveEvent(event: Event): Promise<APIResponse<GeneralError, { updatedItem: Event }>>
     abstract getEventMessages(event: Event, dateRange: [Date, Date]): Promise<APIResponse<GeneralError, { messages: Message[] }>>
-    abstract sendEventMessage(event: Event, message: Omit<Message, "id" | "date">): Promise<APIResponse<GeneralError, {}>>
+    abstract sendEventMessage(event: Event, message: Omit<Message, "id" | "date" | "sender">): Promise<APIResponse<GeneralError, {}>>
     getQRCode(event: Event): string {
         return `${API.WisbEventQrCodePrefix}-${event.id}`
     }
@@ -92,6 +92,9 @@ export default abstract class API {
     calculateUserRank(user: { nrOfClearedWastelands: number, addedDumpsters: number, deletedDumpsters: number }) {
         return 10 * user.nrOfClearedWastelands + 2 * user.addedDumpsters + user.deletedDumpsters
     }
+
+    abstract addOnLogoutListener(listener: ()=>void): void;
+    abstract removeOnLogoutListener(listener: ()=>void): void;
 }
 
 export enum LoginError {

@@ -29,13 +29,7 @@ enum Mode {
   SignUp
 }
 
-// export default interface User {
-//   userName: string
-//   photoUrl?: string
-// }
-
-
-export default function LoginScreen({ navigation }: Props) {
+export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: Props) {
   const [mode, setMode] = React.useState(Mode.Login)
 
   const [email, setEmail] = React.useState("")
@@ -47,6 +41,18 @@ export default function LoginScreen({ navigation }: Props) {
   const toast = (message: string) => {
     Toast.showWithGravityAndOffset(message, Toast.SHORT, Toast.CENTER, 0, 10)
   }
+
+  React.useState(async ()=>{
+    await new Promise((resolve)=>setTimeout(resolve, 400))
+
+    getAPI().login("aaa@bbb.com", "abc").then(result => {
+      if(result.data!=null){
+        setEmail("")
+        setPassword("")
+        onUserLoggedIn(result.data)
+      }
+    })
+  })
 
   return (
     <View
@@ -69,6 +75,7 @@ export default function LoginScreen({ navigation }: Props) {
             placeholder={Resources.get().getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
             keyboardType="email-address"
+            placeholderTextColor={Resources.get().getColors().DarkBeige}
             autoCapitalize="none"
             onChangeText={value => {
               setEmail(value)
@@ -78,6 +85,7 @@ export default function LoginScreen({ navigation }: Props) {
             placeholder={Resources.get().getStrings().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
+            placeholderTextColor={Resources.get().getColors().DarkBeige}
             autoCapitalize="none"
             onChangeText={value => {
               setPassword(value)
@@ -90,6 +98,7 @@ export default function LoginScreen({ navigation }: Props) {
                 placeholder={Resources.get().getStrings().Screens.LoginScreen.UserNameLabel}
                 style={styles.input}
                 secureTextEntry
+                placeholderTextColor={Resources.get().getColors().DarkBeige}
                 autoCapitalize="none"
                 onChangeText={value => {
                   setUserName(value)
@@ -100,6 +109,7 @@ export default function LoginScreen({ navigation }: Props) {
                 placeholder={Resources.get().getStrings().Screens.LoginScreen.PhotoLabel}
                 style={styles.input}
                 secureTextEntry
+                placeholderTextColor={Resources.get().getColors().DarkBeige}
                 autoCapitalize="none"
                 onChangeText={value => {
                   setPhoto(value)
@@ -116,8 +126,12 @@ export default function LoginScreen({ navigation }: Props) {
                     toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
                   } else if (result.error == LoginError.UserDoesNotExist) {
                     toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorUserDoesntExistMessage);
+                  } else if(result.data!=null){
+                    setEmail("")
+                    setPassword("")
+                    onUserLoggedIn(result.data)
                   } else {
-                    navigation.push(WisbScreens.MapScreen, {} as any)
+                    toast("Unknown error occurred!!!");
                   }
                 })
               } else {

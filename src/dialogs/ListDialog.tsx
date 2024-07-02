@@ -45,26 +45,7 @@ export interface Props {
   currentUser: User
 }
 
-const PageSize = 10
-
-const api = getAPI()
-
 export default function ListDialog({ visible, onDismiss, onItemSelected, query, googleMapsApiKey, userLocation, onPlaceSelected, currentUser }: Props) {
-  const flatListRef = React.useRef<FlatList>(null)
-
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [hasMore, setHasMore] = React.useState(true)
-
-  const [items, setItems] = React.useState<{
-    items: (Wasteland | (Event & { members: EventUser[], admins: EventUser[] }) | Dumpster)[]
-    index: number
-    type: Type
-  }>({
-    items: [],
-    index: 0,
-    type: Type.Event
-  })
-
   return (
     <Dialog
       onDismiss={onDismiss}
