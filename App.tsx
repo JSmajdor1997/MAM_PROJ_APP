@@ -26,6 +26,7 @@ import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 import DumpsterDialog from './src/dialogs/DumpsterDialog';
 import EventDialog from './src/dialogs/EventDialog';
 import WastelandDialog from './src/dialogs/WastelandDialog';
+import DateTimePickerModal from "react-native-modal-datetime-picker"
 import { Mode } from './src/dialogs/WisbDialog';
 import { PortalProvider } from '@gorhom/portal';
 import { ClickOutsideProvider } from 'react-native-click-outside';
@@ -111,7 +112,7 @@ export default function App() {
     return Resources.get().registerUserLocationListener(newLocation => {
       setUserLocation(newLocation)
     })
-  })
+  }, [])
 
   const onItemSelected = (item: Event | Wasteland | Dumpster) => {
     if (isDumpster(item)) {
@@ -138,15 +139,15 @@ export default function App() {
     }
   }
 
-  if(currentUser == null) {
+  if (currentUser == null) {
     return (
-      <View style={{width: "100%", height: "100%", justifyContent: "center", alignItems: "center"}}>
-          <Spinner type="Circle"/>
+      <View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}>
+        <Spinner type="Circle" />
       </View>
     )
   }
 
-  const getCurrentUser = ()=>currentUser
+  const getCurrentUser = () => currentUser
 
   return (
     <ClickOutsideProvider>
@@ -163,7 +164,7 @@ export default function App() {
           }}>
             <Stack.Navigator
               initialRouteName={currentScreen}
-              screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500 }}>
+              screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500, gestureEnabled: false }}>
               <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
               <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} />
               <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
@@ -187,7 +188,7 @@ export default function App() {
               {
                 render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MyEventsScreen, {getCurrentUser})
+                  navigationRef.navigate(WisbScreens.MyEventsScreen, { getCurrentUser })
                 },
                 bubbles: [
                   {
@@ -250,9 +251,11 @@ export default function App() {
 
           <EventDialog
             visible={dialogData[Type.Event] != null}
+            googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
             event={dialogData[Type.Event]?.item}
             mode={dialogData[Type.Event]?.mode ?? Mode.Viewing}
             userLocation={userLocation}
+            currentUser={currentUser}
             onDismiss={() => setDialogData({})}
             onOpenChat={event => {
               navigationRef.navigate(WisbScreens.ChatScreen, { event })
@@ -263,8 +266,10 @@ export default function App() {
             wasteland={dialogData[Type.Wasteland]?.item}
             mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing}
             userLocation={userLocation}
+            currentUser={currentUser}
             onDismiss={() => setDialogData({})} />
           <DumpsterDialog
+            currentUser={currentUser}
             visible={dialogData[Type.Dumpster] != null}
             dumpster={dialogData[Type.Dumpster]?.item}
             mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing}

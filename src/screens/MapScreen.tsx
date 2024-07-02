@@ -36,6 +36,7 @@ import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import IconType from '../components/WisbIcon/IconType';
 import QueryInput from '../components/QueryInput/QueryInput';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
+import getFirstTodayTime from '../utils/getFirstTodayTime';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -123,9 +124,9 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     const api = getAPI()
 
       Promise.all([
-        api.getWastelands({region}),
+        api.getWastelands({region, activeOnly: true}),
         api.getDumpsters({region}),
-        api.getEvents({region}, null, false)
+        api.getEvents({region, dateRange: [getFirstTodayTime(new Date()), null]}, null, false)
       ]).then(result => ({
         [Type.Wasteland]: result[0].data!.items,
         [Type.Dumpster]: result[1].data!.items,

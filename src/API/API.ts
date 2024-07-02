@@ -3,10 +3,12 @@ import Event, { EventUser } from "./data_types/Event";
 import APIResponse from "./APIResponse";
 import Message from "./data_types/Message";
 import Wasteland from "./data_types/Wasteland";
-import LeadershipRecord from "./data_types/LeadershipRecord";
 import Dumpster from "./data_types/Dumpster";
 import { Region } from "react-native-maps";
 import { MapObjects, Type } from "./helpers";
+import { Notification, NotificationFilter } from "./data_types/notifications";
+
+export type ChangeListener = (notification: Notification) => void
 
 export interface EventsQuery {
     region?: Region
@@ -18,6 +20,7 @@ export interface EventsQuery {
 export interface WastelandsQuery {
     region?: Region
     phrase?: string
+    activeOnly?: boolean
 }
 
 export interface DumpstersQuery {
@@ -25,17 +28,13 @@ export interface DumpstersQuery {
     phrase?: string
 }
 
+export interface UsersQuery {
+    phrase?: string
+}
+
 export interface LeadershipQuery {
     positionsRange: [number, number]
 }
-
-export enum ChangeSource {
-    Events,
-    Wastelands,
-    Dumpsters
-}
-
-export type ChangeListener = (source: ChangeSource) => void
 
 export default abstract class API {
     private static readonly WisbEventQrCodePrefix = "Wisb-Event"
@@ -50,10 +49,12 @@ export default abstract class API {
     abstract updateSelf(newData: Omit<User, "id" | "nrOfClearedWastelands" | "addedDumpsters" | "deletedDumpsters">): Promise<APIResponse<GeneralError, { newUser: User }>>
     abstract resetPassword(): Promise<APIResponse<GeneralError, { newUser: User }>>
 
-    ////////////events related functions
-    abstract getEvents<WithMembers extends true | false>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event&{members: EventUser[], admins: EventUser[]})[] }>> ;
+    abstract getUsers(query: UsersQuery, range: [number, number]): Promise<APIResponse<GeneralError, { items: User[] }>>
 
-    abstract getEventById<WithMembers extends true | false>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event&{members: EventUser[], admins: EventUser[]}) }>> ;
+    ////////////events related functions
+    abstract getEvents<WithMembers extends true | false>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event & { members: EventUser[], admins: EventUser[] })[] }>>;
+
+    abstract getEventById<WithMembers extends true | false>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event & { members: EventUser[], admins: EventUser[] }) }>>;
 
     abstract createEvent(newEvent: Omit<Event, "id">): Promise<APIResponse<GeneralError, { createdItem: Event }>>
     abstract deleteEvent(event: Event): Promise<APIResponse<GeneralError, {}>>
@@ -67,7 +68,7 @@ export default abstract class API {
     }
 
     getEventByQrCode(qrCode: string): Promise<APIResponse<GeneralError, { item: Event }>> {
-        const parsedId = parseInt(qrCode.substring(API.WisbEventQrCodePrefix.length+1))
+        const parsedId = parseInt(qrCode.substring(API.WisbEventQrCodePrefix.length + 1))
 
         return this.getEventById(parsedId, false)
     }
@@ -78,19 +79,17 @@ export default abstract class API {
     abstract clearWasteland(wasteland: Wasteland, otherCleaners: User[], photos: string[]): Promise<APIResponse<ClearingWastelandError, {}>>
 
     ////////////dumpsters related functions
-    abstract getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, {items: Dumpster[]}>>
+    abstract getDumpsters(query: DumpstersQuery, range?: [number, number]): Promise<APIResponse<GeneralError, { items: Dumpster[] }>>
     abstract createDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { createdItem: Dumpster; }>>
     abstract updateDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { updatedItem: Dumpster }>>
     abstract deleteDumpster(dumpster: Dumpster): Promise<APIResponse<GeneralError, {}>>
 
-    ////////////leadership related functions
-    abstract getLeadership(query: LeadershipQuery): Promise<APIResponse<GeneralError, { users: LeadershipRecord[], ownPosition: number }>>
-
     ////////////WebSocket - changed stream
-    abstract registerListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>>
-    abstract removeListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>>
+    abstract registerListener(filter: NotificationFilter, listener: ChangeListener): Promise<APIResponse<GeneralError, { listenerId: number }>>
+    abstract updateListener(listenerId: number, filter: NotificationFilter): Promise<APIResponse<GeneralError, {}>>
+    abstract removeListener(listenerId: number): Promise<APIResponse<GeneralError, {}>>
 
-    calculateUserRank(user: {nrOfClearedWastelands: number, addedDumpsters: number, deletedDumpsters: number}) {
+    calculateUserRank(user: { nrOfClearedWastelands: number, addedDumpsters: number, deletedDumpsters: number }) {
         return 10 * user.nrOfClearedWastelands + 2 * user.addedDumpsters + user.deletedDumpsters
     }
 }

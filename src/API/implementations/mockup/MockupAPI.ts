@@ -1,7 +1,6 @@
-import API, { ChangeListener, ChangeSource, ClearingWastelandError, DumpstersQuery, EventsQuery, GeneralError, LeadershipQuery, LoginError, LogoutError, RemoveAccountError, SignUpError, WastelandsQuery } from "../../API";
+import API, { ChangeListener, ClearingWastelandError, DumpstersQuery, EventsQuery, GeneralError, LeadershipQuery, LoginError, LogoutError, RemoveAccountError, SignUpError, UsersQuery, WastelandsQuery } from "../../API";
 import Dumpster from "../../data_types/Dumpster";
 import Event, { EventUser } from "../../data_types/Event";
-import LeadershipRecord from "../../data_types/LeadershipRecord";
 import Message from "../../data_types/Message";
 import User from "../../data_types/User";
 import getMockupUsers from "./mockup_users"
@@ -12,15 +11,33 @@ import getMockupEvents from "./mockup_events";
 import getMockupWastelands from "./mockup_wastelands";
 import { faker } from '@faker-js/faker';
 import isLatLngInRegion from "../../../utils/isLatLngInRegion";
+import { Notification, NotificationFilter } from "../../data_types/notifications";
+import calcApproxDistanceBetweenLatLngInMeters from "../../../utils/calcApproxDistanceBetweenLatLng";
+import { LatLng } from "react-native-maps";
 
+function api_endpoint(checkLogin: boolean) {
+    return function <T extends (...args: any[]) => Promise<any>>(target: any, key: string, descriptor: TypedPropertyDescriptor<any>): TypedPropertyDescriptor<T> | void {
+        const originalMethod = descriptor.value!;
+        descriptor.value = async function (...args: Parameters<T>): Promise<ReturnType<T>> {
+            if (checkLogin && (this as any).loggedInUser == null) {
+                return {
+                    error: GeneralError.UserNotAuthorized
+                } as any;
+            }
+            const delay = Math.floor(Math.random() * 400);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return await originalMethod.apply(this, args);
+        };
+
+        return descriptor;
+    };
+}
 
 export default class MockupAPI extends API {
     private users = getMockupUsers()
     private dumpsters = getMockupDumpsters(this.users)
     private wastelands = getMockupWastelands(this.users)
     private events = getMockupEvents(this.users, this.wastelands)
-
-    private listeners: ChangeListener[] = []
 
     private loggedInUser: User | null = {
         id: 0,
@@ -30,10 +47,6 @@ export default class MockupAPI extends API {
         nrOfClearedWastelands: 0,
         addedDumpsters: 0,
         deletedDumpsters: 0
-    }
-
-    private callAllListeners(source: ChangeSource) {
-        this.listeners.forEach(listener => listener(source))
     }
 
     async getCurrentUser(): Promise<APIResponse<GeneralError, User>> {
@@ -174,7 +187,7 @@ export default class MockupAPI extends API {
         throw new Error("Method not implemented.");
     }
 
-    async getEvents<WithMembers extends boolean>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event&{members: EventUser[], admins: EventUser[]})[] }>> {
+    async getEvents<WithMembers extends boolean>(query: EventsQuery, range: [number, number] | null, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { items: Event[] } : { items: (Event & { members: EventUser[], admins: EventUser[] })[] }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -205,7 +218,9 @@ export default class MockupAPI extends API {
             }
 
             return true
-        }).sort((a, b) => a.event.dateRange[0] > b.event.dateRange[1] ? -1 : +1).map(({event, members, admins})=>withMembers == true ? ({...event, members, admins}) : event)
+        })
+            .sort((a, b) => a.event.dateRange[0] > b.event.dateRange[1] ? -1 : +1)
+            .map(({ event, members, admins }) => withMembers == true ? ({ ...event, members, admins }) : event)
 
         const from = range == null ? 0 : range[0]
         const to = range == null ? events.length : range[1]
@@ -217,7 +232,7 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getEventById<WithMembers extends boolean>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event&{members: EventUser[], admins: EventUser[]}) }>> {
+    async getEventById<WithMembers extends boolean>(id: number, withMembers: WithMembers): Promise<APIResponse<GeneralError, WithMembers extends false ? { item: Event } : { item: (Event & { members: EventUser[], admins: EventUser[] }) }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
@@ -233,7 +248,7 @@ export default class MockupAPI extends API {
         }
 
         return {
-            data: { item: {...foundEvent.event, members: foundEvent.members, admins: foundEvent.admins} } as any
+            data: { item: { ...foundEvent.event, members: foundEvent.members, admins: foundEvent.admins } } as any
         }
     }
 
@@ -259,7 +274,9 @@ export default class MockupAPI extends API {
             }
         ]
 
-        this.callAllListeners(ChangeSource.Events)
+        this.callAllListeners({
+            newItem: createdEvent
+        }, newEvent.meetPlace.coords)
 
         return {
             data: {
@@ -284,7 +301,9 @@ export default class MockupAPI extends API {
 
         this.events = this.events.filter(event => eventToDelete.id != event.event.id)
 
-        this.callAllListeners(ChangeSource.Events)
+        this.callAllListeners({
+            deletedItem: eventToDelete
+        }, eventToDelete.meetPlace.coords)
 
         return {
             data: {}
@@ -316,7 +335,9 @@ export default class MockupAPI extends API {
             return event
         })
 
-        this.callAllListeners(ChangeSource.Events)
+        this.callAllListeners({
+            updatedItem: eventToUpdate
+        }, eventToUpdate.meetPlace.coords)
 
         return {
             data: {
@@ -355,7 +376,9 @@ export default class MockupAPI extends API {
             return event
         })
 
-        this.callAllListeners(ChangeSource.Events)
+        this.callAllListeners({
+            updatedItem: eventToJoin
+        }, eventToJoin.meetPlace.coords)
 
         return {
             data: {
@@ -393,8 +416,6 @@ export default class MockupAPI extends API {
 
             return event
         })
-
-        this.callAllListeners(ChangeSource.Events)
 
         return {
             data: {
@@ -456,7 +477,10 @@ export default class MockupAPI extends API {
             return ev
         })
 
-        this.callAllListeners(ChangeSource.Events)
+        this.callAllListeners({
+            event,
+            content: message.content
+        })
 
         return {
             data: {}
@@ -470,12 +494,16 @@ export default class MockupAPI extends API {
             }
         }
 
-        const wastelands = this.wastelands.filter(({ place, description, reportedBy }) => {
+        const wastelands = this.wastelands.filter(({ place, description, reportedBy, afterCleaningData }) => {
             if ((query.phrase != null && query.phrase.length != 0) && !place.asText.includes(query.phrase) && !description.includes(query.phrase)) {
                 return false
             }
 
             if (query.region != null && !isLatLngInRegion(query.region, place.coords)) {
+                return false
+            }
+
+            if (query.activeOnly === true && afterCleaningData != null) {
                 return false
             }
 
@@ -511,7 +539,9 @@ export default class MockupAPI extends API {
             createdWasteland
         ]
 
-        this.callAllListeners(ChangeSource.Wastelands)
+        this.callAllListeners({
+            newItem: createdWasteland
+        }, newWasteland.place.coords)
 
         return {
             data: {
@@ -542,7 +572,9 @@ export default class MockupAPI extends API {
             return it
         })
 
-        this.callAllListeners(ChangeSource.Wastelands)
+        this.callAllListeners({
+            clearedWasteland: wasteland
+        }, wasteland.place.coords)
 
         return {
             data: {}
@@ -578,6 +610,31 @@ export default class MockupAPI extends API {
         }
     }
 
+    async getUsers(query: UsersQuery, range: [number, number]): Promise<APIResponse<GeneralError, { items: User[] }>> {
+        if (this.loggedInUser == null) {
+            return {
+                error: GeneralError.UserNotAuthorized
+            }
+        }
+
+        const users = this.users.filter(user => {
+            if ((query.phrase != null && query.phrase.length != 0) && (!user.email.includes(query.phrase) && !user.userName.includes(query.phrase))) {
+                return false
+            }
+
+            return true
+        })
+
+        const from = range == null ? 0 : range[0]
+        const to = range == null ? users.length : range[1]
+
+        return {
+            data: {
+                items: users.map(it => ({ ...it, password: "", email: "", points: this.calculateUserRank(it) })).sort((a, b) => b.points - a.points).slice(from, to)
+            }
+        }
+    }
+
     async createDumpster(newDumpster: Omit<Dumpster, "id">): Promise<APIResponse<GeneralError, { createdItem: Dumpster; }>> {
         if (this.loggedInUser == null) {
             return {
@@ -595,7 +652,9 @@ export default class MockupAPI extends API {
             addedDumpster
         ]
 
-        this.callAllListeners(ChangeSource.Dumpsters)
+        this.callAllListeners({
+            newItem: addedDumpster
+        }, addedDumpster.place.coords)
 
         return {
             data: {
@@ -613,7 +672,9 @@ export default class MockupAPI extends API {
 
         this.dumpsters = this.dumpsters.filter(it => it.id != dumpster.id)
 
-        this.callAllListeners(ChangeSource.Dumpsters)
+        this.callAllListeners({
+            deletedItem: dumpster
+        }, dumpster.place.coords)
 
         return {
             data: {}
@@ -638,7 +699,9 @@ export default class MockupAPI extends API {
             return event
         })
 
-        this.callAllListeners(ChangeSource.Dumpsters)
+        this.callAllListeners({
+            updatedItem: dumpster
+        }, dumpster.place.coords)
 
         return {
             data: {
@@ -647,61 +710,73 @@ export default class MockupAPI extends API {
         }
     }
 
-    async getLeadership(query: LeadershipQuery): Promise<APIResponse<GeneralError, { users: LeadershipRecord[]; ownPosition: number; }>> {
+    private callAllListeners(notification: Notification, location?: LatLng) {
+        this.listeners.forEach(it => {
+            if (location == null || calcApproxDistanceBetweenLatLngInMeters(it.filter.location, location) > 5000) {
+                return
+            }
+
+            it.listener(notification)
+        })
+    }
+
+    private listeners = new Map<number, { filter: NotificationFilter, listener: ChangeListener }>()
+
+    async updateListener(listenerId: number, filter: NotificationFilter): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        let userPosition = 0
-        const userRecords = this.users
-            .map((user, index) => {
-                if(user.id == this.loggedInUser!.id) {
-                    userPosition = index + 1
-                }
+        if (this.listeners.has(listenerId)) {
+            const listener = this.listeners.get(listenerId)!
+            this.listeners.set(listenerId, { listener: listener?.listener, filter })
 
-                return {
-                    ...user,
-                    position: this.calculateUserRank(user),
-                    points: this.calculateUserRank(user)
-                }
-            })
-            .sort((a, b) => b.points - a.points)
-
-        return {
-            data: {
-                users: userRecords.slice(query.positionsRange[0], query.positionsRange[1]),
-                ownPosition: userPosition
+            return {
+                data: {}
+            }
+        } else {
+            return {
+                error: GeneralError.InvalidDataProvided
             }
         }
     }
 
-    async registerListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>> {
+    async registerListener(filter: NotificationFilter, listener: ChangeListener): Promise<APIResponse<GeneralError, { listenerId: number }>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        this.listeners.push(listener)
+        const id = Math.max(...this.listeners.keys()) + 1
+
+        this.listeners.set(id, { listener, filter })
 
         return {
-            data: {}
+            data: { listenerId: id }
         }
     }
 
-    async removeListener(listener: ChangeListener): Promise<APIResponse<GeneralError, {}>> {
+    @api_endpoint(true)
+    async removeListener(listenerId: number): Promise<APIResponse<GeneralError, {}>> {
         if (this.loggedInUser == null) {
             return {
                 error: GeneralError.UserNotAuthorized
             }
         }
 
-        this.listeners.splice(this.listeners.indexOf(listener), 1)
+        if (this.listeners.has(listenerId)) {
+            this.listeners.delete(listenerId)
 
-        return {
-            data: {}
+            return {
+                data: {}
+            }
+        } else {
+            return {
+                error: GeneralError.InvalidDataProvided
+            }
         }
     }
 }

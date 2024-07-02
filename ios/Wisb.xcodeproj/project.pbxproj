@@ -35,6 +35,8 @@
 		E6E5EB812BF01F0800A7F865 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E6E5EB6D2BF01F0800A7F865 /* Octicons.ttf */; };
 		E6E5EB822BF01F0800A7F865 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E6E5EB6E2BF01F0800A7F865 /* SimpleLineIcons.ttf */; };
 		E6E5EB832BF01F0800A7F865 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E6E5EB6F2BF01F0800A7F865 /* Zocial.ttf */; };
+		E6FE72502C332F4E00A6CA4D /* Social.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6FE724F2C332F4E00A6CA4D /* Social.framework */; };
+		E6FE72522C332F5600A6CA4D /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6FE72512C332F5600A6CA4D /* MessageUI.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +89,8 @@
 		E6E5EB6E2BF01F0800A7F865 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SimpleLineIcons.ttf; sourceTree = "<group>"; };
 		E6E5EB6F2BF01F0800A7F865 /* Zocial.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Zocial.ttf; sourceTree = "<group>"; };
 		E6ED85A82C30444C00B3360D /* Wisb.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Wisb.entitlements; path = Wisb/Wisb.entitlements; sourceTree = "<group>"; };
+		E6FE724F2C332F4E00A6CA4D /* Social.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
+		E6FE72512C332F5600A6CA4D /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -103,6 +107,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E6FE72502C332F4E00A6CA4D /* Social.framework in Frameworks */,
+				E6FE72522C332F5600A6CA4D /* MessageUI.framework in Frameworks */,
 				0C80B921A6F3F58F76C31292 /* libPods-Wisb.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -155,6 +161,8 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E6FE72512C332F5600A6CA4D /* MessageUI.framework */,
+				E6FE724F2C332F4E00A6CA4D /* Social.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				5DCACB8F33CDC322A6C60F78 /* libPods-Wisb.a */,
 				19F6CBCC0A4E27FBF8BF4A61 /* libPods-Wisb-WisbTests.a */,
@@ -699,10 +707,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -774,10 +779,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

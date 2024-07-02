@@ -3,6 +3,7 @@ import { View, Text, ViewStyle, Image, LayoutChangeEvent, TouchableHighlight, To
 import Resources from "../../res/Resources";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faAd, faAdd, faClose, faPen } from "@fortawesome/free-solid-svg-icons";
+import ImageInput from "./ImageInput";
 
 export interface Props {
     images: string[]
@@ -41,13 +42,13 @@ export default function ImagesGallery({ images, onAddRequest, onRemoveRequest, n
                     {getImagesIndices(images.length, nrOfImagesPerRow, rowIndex).map((index) => (
                         <Fragment>
                             <ImageComponent key={index} imageSrc={images[index]} width={imageWidth} margin={interImagesSpace} onRemoveRequest={onRemoveRequest == null ? undefined : () => onRemoveRequest(images[index])} />
-                            {onAddRequest != null && index == images.length-1  ? <ImageAddingComponent width={imageWidth} margin={interImagesSpace} onPress={onAddRequest} /> : null}
+                            {onAddRequest != null && index == images.length-1  ? <ImageInput readonly={false} style={{width: imageWidth, height: imageWidth, margin: interImagesSpace}} onImageSelected={onAddRequest} /> : null}
                         </Fragment>
                     ))}
                 </Row>
             ))}
 
-            {onAddRequest != null && images.length == 0 ? <ImageAddingComponent width={imageWidth} margin={interImagesSpace} onPress={onAddRequest} /> : null}
+            {onAddRequest != null && images.length == 0 ? <ImageInput readonly={false} style={{width: imageWidth, height: imageWidth, margin: interImagesSpace}} onImageSelected={onAddRequest} /> : null}
         </View>
     )
 }
@@ -127,28 +128,3 @@ interface ImageAddingComponentProps {
     margin: number
     onPress?: () => void
 }
-
-function ImageAddingComponent({ margin, width, onPress }: ImageAddingComponentProps) {
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            style={{
-                margin,
-                shadowColor: Resources.get().getColors().Black,
-                width,
-                height: width,
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 10,
-                borderStyle: "dashed",
-                borderWidth: 2,
-                borderColor: Resources.get().getColors().Blue,
-            }}>
-            <FontAwesomeIcon icon={faAdd} color={Resources.get().getColors().Blue} />
-        </TouchableOpacity>
-    )
-}
-
-const styles = StyleSheet.create({
-
-})

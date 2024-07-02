@@ -18,14 +18,14 @@ import { faMapPin } from '@fortawesome/free-solid-svg-icons';
 
 interface Props {
   item: Dumpster;
-  onPress: (item: Dumpster) => void
+  onOpen: (item: Dumpster) => void
   googleMapsAPIKey: string
 }
 
-function DumpsterItem({ item, onPress, googleMapsAPIKey }: Props) {
+function DumpsterItem({ item, onOpen, googleMapsAPIKey }: Props) {
   return (
     <TouchableOpacity
-      onPress={() => onPress(item)}
+      onPress={() => onOpen(item)}
       activeOpacity={0.6}
       style={styles.root}>
       <Neomorph

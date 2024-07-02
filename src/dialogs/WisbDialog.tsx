@@ -8,7 +8,9 @@ import {
     ScrollView,
     View,
     TouchableOpacity,
-    StyleSheet
+    StyleSheet,
+    StyleProp,
+    ViewStyle
 } from 'react-native';
 import WisbIcon from "../components/WisbIcon/WisbIcon"
 import Swiper from 'react-native-swiper';
@@ -16,7 +18,6 @@ import Resources from '../../res/Resources';
 import ProgressInput from '../components/ProgressInput';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import useShaky from '../hooks/useShaky';
-import IdType from '../utils/IdType';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faClose, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
@@ -36,7 +37,7 @@ export interface Section<IndexType> {
     color: string
     name: string
 
-    enabled?: () => boolean
+    enabled: () => boolean
     renderPage(props: RenderPageProps<IndexType>, index: number): React.ReactNode
 }
 
@@ -52,7 +53,8 @@ export interface Action {
     onPress: (startConfetti: () => void) => void
 }
 
-export interface Props<IndexType extends IdType> {
+export interface Props<IndexType extends number> {
+    style?: ViewStyle
     mode: Mode
     onDismiss(): void
     visible: boolean
@@ -70,7 +72,7 @@ const ShakeOffset = 15
 const ShakingDuration = 15
 const TranslationAnimationDuration = 300
 
-export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, visible, sections, sectionsOrder, actions, moreActions, mainIcon }: Props<IndexType>) {
+export default function WisbDialog<IndexType extends number>({ style, mode, onDismiss, visible, sections, sectionsOrder, actions, moreActions, mainIcon }: Props<IndexType>) {
     const shadowAnim = React.useRef(new Animated.Value(0)).current;
     const swiperRef = React.useRef<Swiper>(null)
     const [currentIndex, setCurrentIndex] = React.useState<IndexType>(sectionsOrder[0])
@@ -111,7 +113,7 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
             onDismiss={onDismiss}>
 
             <Pressable
-                style={{ height: "100%", display: "flex" }}
+                style={{ height: "100%", display: "flex", ...style }}
                 onPress={onDismiss} >
                 <View style={{ backgroundColor: Resources.get().getColors().BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
                     <Animated.View
@@ -203,12 +205,12 @@ export default function WisbDialog<IndexType extends IdType>({ mode, onDismiss, 
                                     <ProgressInput
                                         translationAnimationTime={TranslationAnimationDuration}
                                         selectedOptionIndex={sectionsOrder.indexOf(currentIndex)}
-                                        options={sectionsOrder.map(it => {
+                                        options={sectionsOrder.map((it, index) => {
                                             const section = sections[it]
 
                                             return {
                                                 ...section,
-                                                disabled: section.enabled == null ? false : !section.enabled()
+                                                disabled: !sectionsOrder.slice(0, index).every(it => sections[it].enabled())
                                             }
                                         })}
                                         style={{ width: "95%" }}

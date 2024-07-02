@@ -18,13 +18,13 @@ import IconType from './WisbIcon/IconType';
 
 interface Props {
   item: Wasteland;
-  onPress: (item: Wasteland) => void
+  onOpen: (item: Wasteland) => void
 }
 
-function WastelandItem({ item, onPress }: Props) {
+function WastelandItem({ item, onOpen }: Props) {
   return (
     <TouchableOpacity
-      onPress={() => onPress(item)}
+      onPress={() => onOpen(item)}
       activeOpacity={0.6}
       style={[styles.root, item.afterCleaningData == null ? { opacity: 1 } : { opacity: 0.3, shadowOpacity: 0 }]}>
       <Neomorph

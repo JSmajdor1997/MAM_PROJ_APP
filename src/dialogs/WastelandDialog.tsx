@@ -10,6 +10,8 @@ import LocationInput from "../components/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
 import WisbIcon from "../components/WisbIcon/WisbIcon";
 import Wasteland from "../API/data_types/Wasteland";
+import React from "react";
+import User from "../API/data_types/User";
 
 enum Sections {
     BasicInfo,
@@ -24,9 +26,12 @@ export interface Props {
     onAdd?: (wasteland: Wasteland) => void
     visible: boolean
     userLocation: LatLng
+    currentUser: User
 }
 
-export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, visible, userLocation }: Props) {
+export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
+    const [workingWasteland, setWorkingWasteland] = React.useState<Partial<Wasteland>>(wasteland ?? {})
+
     return (
         <WisbDialog
             visible={visible}
@@ -34,12 +39,6 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
             mode={mode}
             onDismiss={onDismiss}
             moreActions={[
-                {
-                    label: Resources.get().getStrings().Dialogs.WastelandDialog.DeleteAction,
-                    icon: <FontAwesomeIcon icon={faTrash} />,
-                    color: Resources.get().getColors().Red,
-                    onPress: () => { }
-                },
                 {
                     label: Resources.get().getStrings().Dialogs.WastelandDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
@@ -52,7 +51,7 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                     label: Resources.get().getStrings().Dialogs.WastelandDialog.CleanAction,
                     icon: <FontAwesomeIcon icon={faBroom} />,
                     color: Resources.get().getColors().Primary,
-                    onPress: (startConfetti) => { startConfetti()},
+                    onPress: (startConfetti) => { startConfetti() },
                 },
                 {
                     label: Resources.get().getStrings().Dialogs.WastelandDialog.ShareAction,
@@ -70,6 +69,7 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
             sectionsOrder={[Sections.BasicInfo, Sections.BeforeCleaningPhotos, Sections.AfterCleaningPhotos]}
             sections={{
                 [Sections.BasicInfo]: {
+                    enabled: () => workingWasteland.place != null && workingWasteland.description != null && workingWasteland.description.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, margin: 5 }}>
                             <View style={{ flex: 1, padding: 10 }}>
@@ -79,50 +79,37 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                                     apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                     userLocation={userLocation}
                                     location={{
-                                        coords: {
-                                            latitude: 51.246452,
-                                            longitude: 22.568445
-                                        },
+                                        coords: workingWasteland.place?.coords ?? userLocation,
                                         asText: "Jakaś lokalizacja"
                                     }} />
-                            </View>
-
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10 }}>
-                                <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>Szczebrzeszyno dolne</Text>
-                                <FontAwesomeIcon icon={faMapPin} size={15} />
                             </View>
 
                             <View style={{ flexDirection: "row", padding: 10, justifyContent: "space-between" }}>
                                 <FontAwesomeIcon icon={faCalendar} size={15} />
                                 <View style={{ flexDirection: "row" }}>
                                     <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>{Resources.get().getStrings().Dialogs.WastelandDialog.ReportedLabel}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>wczoraj</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{(workingWasteland.creationDate ?? new Date()).toLocaleDateString(Resources.get().getLocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</Text>
                                     <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5 }}>{Resources.get().getStrings().Dialogs.WastelandDialog.ByLabel}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>Mariusz1997</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{workingWasteland.reportedBy?.userName ?? currentUser.userName}</Text>
                                 </View>
                             </View>
 
                             <View>
-                                <Text style={{fontWeight: "bold"}}>Opis</Text>
-                                <TextInput multiline style={{backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2}}>
-                                    Opis
+                                <Text style={{ fontWeight: "bold" }}>Opis</Text>
+                                <TextInput placeholder="Opis" multiline style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }}>
+                                    {workingWasteland.description}
                                 </TextInput>
                             </View>
                         </View>
                     )
                 },
                 [Sections.BeforeCleaningPhotos]: {
+                    enabled: () => workingWasteland.photos != null && workingWasteland.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 15 }}>
-                            <Text style={{fontWeight: "bold"}}>Zdjęcia z przed sprzątnięcia</Text>
+                            <Text style={{ fontWeight: "bold" }}>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
-                                images={[
-                                    "https://plus.unsplash.com/premium_photo-1661905921900-a8b49e65feeb?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                    "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                    "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                    "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                    "https://plus.unsplash.com/premium_photo-1681681061526-5f5496c635e1?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                ]}
+                                images={workingWasteland.photos ?? []}
                                 nrOfImagesPerRow={3}
                                 interImagesSpace={5}
                                 onAddRequest={() => { }}
@@ -134,21 +121,16 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                     )
                 },
                 [Sections.AfterCleaningPhotos]: {
+                    enabled: () => workingWasteland.afterCleaningData != null && workingWasteland.afterCleaningData.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faBroom} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }, index) => (
                         <View key={index} style={{ flex: 1 }}>
                             <View style={{
                                 width: "100%",
                                 marginTop: 40
                             }}>
-                                <Text style={{fontWeight: "bold"}}>{Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
+                                <Text style={{ fontWeight: "bold" }}>{Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
                                 <ImagesGallery
-                                    images={[
-                                        "https://plus.unsplash.com/premium_photo-1661905921900-a8b49e65feeb?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                        "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                        "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                        "https://plus.unsplash.com/premium_photo-1681681061526-5f5496c635e1?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                                    ]}
+                                    images={workingWasteland.afterCleaningData?.photos ?? []}
                                     nrOfImagesPerRow={3}
                                     interImagesSpace={5}
                                     style={{
@@ -163,5 +145,5 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
 }
 
 const styles = StyleSheet.create({
-    
+
 })

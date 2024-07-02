@@ -22,6 +22,15 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>mailto</string>
+		<string>instagram</string>
+		<string>instagram-stories</string>
+		<string>fb</string>
+		<string>facebook-stories</string>
+	</array>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
@@ -34,7 +43,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera Access Required</string>
+	<string>1</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string></string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>1</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>1</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Access to GPS is required</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

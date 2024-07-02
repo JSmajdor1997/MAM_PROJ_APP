@@ -18,29 +18,16 @@ import SearchBar from '../components/SearchBar';
 import QueryInput from '../components/QueryInput/QueryInput';
 import getAPI from '../API/getAPI';
 import Event, { EventUser } from '../API/data_types/Event';
+import ObjectsList from '../components/ObjectsList';
+import { isEvent } from '../API/data_types/type_guards';
+import { Type } from '../API/helpers';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
-const api = getAPI()
-
 export default function EventsScreen({ route: { params: { getCurrentUser } } }: Props) {
-  const [events, setEvents] = React.useState<(Event&{members: EventUser[], admins: EventUser[]})[]>([])
-
   const [phrase, setPhrase] = React.useState("")
   const [isSearching, setIsSearching] = React.useState(false)
   const [onlyCurrentEvents, setOnlyCurrentEvents] = React.useState(true)
-
-  React.useEffect(() => {
-    api.getEvents({
-      phrase,
-      onlyOwn: true,
-      dateRange: onlyCurrentEvents ? [new Date(), null] : [null, new Date()]
-    }, [0, 20], true).then(result => {
-      if (result.data) {
-        setEvents(result.data.items)
-      }
-    })
-  }, [])
 
   return (
     <View
@@ -92,32 +79,30 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
         />
       </View>
 
-      <FlatList
+      <ObjectsList
         style={styles.flatList}
-        contentContainerStyle={styles.flatListContentContainer}
-        ListEmptyComponent={
-          <FontAwesomeIcon color={Resources.get().getColors().BackdropWhite} icon={faCalendar} size={70} />
-        }
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-        data={events}
-        keyExtractor={() => Math.random().toString()}
-        ListFooterComponent={
-          <View style={{ height: 120 }} />
-        }
-        renderItem={data => (
-          <EventItem
-            isAdmin={data.item.admins.some(admin => admin.id == getCurrentUser().id)}
-            onPress={() => { }}
-            item={data.item}
-          />
-        )}
+        currentUser={getCurrentUser()}
+        type={Type.Event}
+        filter={{
+          [Type.Event]: {
+            onlyOwn: true
+          }
+        }}
+        multi={false}
+        onPressed={(item: Event) => {
+          if (!isEvent(item)) {
+
+          }
+        }}
+        phrase={phrase}
+        googleMapsApiKey={""}
       />
 
       <View style={{
         position: "absolute", width: "120%", left: -20, height: 120, bottom: -120,
         shadowColor: "#000000",
-        backgroundColor: "red",
+        backgroundColor: "black",
+        borderRadius: 100,
         shadowOffset: {
           width: 0,
           height: -110,

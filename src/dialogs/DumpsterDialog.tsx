@@ -9,6 +9,8 @@ import IconType from "../components/WisbIcon/IconType";
 import WisbIcon from "../components/WisbIcon/WisbIcon";
 import ImagesGallery from "../components/ImagesGallery";
 import Dumpster from "../API/data_types/Dumpster";
+import React from "react";
+import User from "../API/data_types/User";
 
 enum Sections {
     BasicInfo,
@@ -23,9 +25,12 @@ export interface Props {
     onAdd?: (dumpster: Dumpster) => void
     visible: boolean
     userLocation: LatLng
+    currentUser: User
 }
 
-export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation }: Props) {
+export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
+    const [workingDumpster, setWorkingDumpster] = React.useState<Partial<Dumpster>>(dumpster ?? {})
+
     return (
         <WisbDialog
             visible={visible}
@@ -49,6 +54,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
             ]}
             sections={{
                 [Sections.Location]: {
+                    enabled: () => workingDumpster.place != null,
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Green, name: Resources.get().getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 15 }}>
                             <LocationInput
@@ -57,47 +63,46 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                                 apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
                                 location={{
-                                    coords: {
-                                        latitude: 51.246452,
-                                        longitude: 22.568445
-                                    },
+                                    coords: workingDumpster.place?.coords ?? userLocation,
                                     asText: "Jakaś lokalizacja"
                                 }} />
                         </View>
                     )
                 },
                 [Sections.BasicInfo]: {
+                    enabled: () => workingDumpster.description != null && workingDumpster.description.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 10 }}>
                             <View>
-                                <Text style={{fontWeight: "bold"}}>Opis</Text>
+                                <Text style={{ fontWeight: "bold" }}>Opis</Text>
 
-                                <TextInput multiline style={{backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2}}>
+                                <TextInput placeholder="Opis" multiline style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }}>
                                     Opis
                                 </TextInput>
                             </View>
 
-                            <View style={{marginTop: 10, flexDirection: "row", justifyContent: "space-between"}}>
+                            <View style={{ marginTop: 10, flexDirection: "row", justifyContent: "space-between" }}>
                                 <Text style={{ fontWeight: "bold" }}>Dodane przez</Text>
-                                <Text style={{  }}>Agatkę</Text>
+                                <Text style={{}}>{currentUser.userName}</Text>
                             </View>
                         </View>
                     )
                 },
                 [Sections.Photos]: {
+                    enabled: () => workingDumpster.photos != null && workingDumpster.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 10 }}>
-                            <Text style={{fontWeight: "bold"}}>
+                            <Text style={{ fontWeight: "bold" }}>
                                 Zdjęcia
                             </Text>
 
                             <ImagesGallery
-                                images={[]}
+                                images={workingDumpster.photos ?? []}
                                 interImagesSpace={5}
-                                style={{width: "100%"}}
-                                onAddRequest={()=>{}}
-                                onRemoveRequest={()=>{}}
-                                nrOfImagesPerRow={4}/>
+                                style={{ width: "100%" }}
+                                onAddRequest={() => { }}
+                                onRemoveRequest={() => { }}
+                                nrOfImagesPerRow={4} />
                         </View>
                     )
                 },
@@ -106,5 +111,5 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
 }
 
 const styles = StyleSheet.create({
-    
+
 })

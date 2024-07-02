@@ -25,8 +25,7 @@ import WisbIcon from '../components/WisbIcon/WisbIcon';
 import IconType from '../components/WisbIcon/IconType';
 import getAPI from '../API/getAPI';
 import User from '../API/data_types/User';
-import LeadershipRecord from '../API/data_types/LeadershipRecord';
-import LeaderShipItem from '../components/LeaderShipItem';
+import UserItem from '../components/UserItem';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -44,20 +43,20 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
   const [user, setUser] = React.useState<User | null>(null)
 
-  const [leadership, setLeadership] = React.useState<LeadershipRecord[]>([])
+  const [leadership, setLeadership] = React.useState<User[]>([])
 
   React.useEffect(() => {
     Promise.all([
       api.getCurrentUser().then(result => setUser(result.data ?? null)),
-      api.getLeadership({ positionsRange: [index, index + RecordsPerPage] }).then(result => setLeadership(result.data?.users ?? []))
+      api.getUsers({}, [index, index + RecordsPerPage]).then(result => setLeadership(result.data?.items ?? []))
     ]).then(() => setIsLoading(false))
   }, [])
 
   React.useEffect(() => {
     setIsLoading(true)
-    api.getLeadership({ positionsRange: [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage] })
+    api.getUsers({ }, [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage])
       .then(result => {
-        const users = result.data?.users ?? []
+        const users = result.data?.items ?? []
         setLeadership(users)
         setHasMore(users.length > 0)
       })
@@ -188,7 +187,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
         <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, {toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false}).start()}>
           <View style={{alignItems: "center"}}>
-            {leadership.map((record, i) => <LeaderShipItem style={{marginTop: 10}} record={record} position={index * RecordsPerPage + i + 1}/>)}
+            {leadership.map((item, i) => <UserItem style={{marginTop: 10}} item={item} position={index * RecordsPerPage + i + 1}/>)}
 
             {isLoading ? (
               <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>

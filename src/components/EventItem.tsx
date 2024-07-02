@@ -21,15 +21,15 @@ import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 
 interface Props {
   item: Event;
-  onPress: (item: Event) => void
+  onOpen: (item: Event) => void
   isAdmin: boolean
 }
 
-function EventItem({ item, onPress, isAdmin }: Props) {
+function EventItem({ item, onOpen, isAdmin }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.6}
-      onPress={() => onPress(item)}
+      onPress={() => onOpen(item)}
       style={styles.root}>
       <Neomorph
         style={{
@@ -64,16 +64,10 @@ function EventItem({ item, onPress, isAdmin }: Props) {
           </View>
 
           {isAdmin ? (
-            <Fragment>
-              <View style={{ position: "absolute", borderRadius: 15, padding: 3, flexDirection: "row", top: 10, right: 10, backgroundColor: "white", alignItems: "center" }}>
-                <FontAwesomeIcon icon={faUnlock} size={10} color={Resources.get().getColors().Red} />
-                <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 900, letterSpacing: 1, color: Resources.get().getColors().Red }}>jesteś administratorem</Text>
-              </View>
-
-              <View style={{ position: "absolute", borderRadius: 15, padding: 10, flexDirection: "row", bottom: 10, right: 10, backgroundColor: "white", alignItems: "center" }}>
-                <FontAwesomeIcon icon={faEdit} size={20} color={Resources.get().getColors().Red} />
-              </View>
-            </Fragment>
+            <View style={{ position: "absolute", borderRadius: 15, padding: 3, flexDirection: "row", top: 10, right: 10, backgroundColor: "white", alignItems: "center" }}>
+              <FontAwesomeIcon icon={faUnlock} size={10} color={Resources.get().getColors().Red} />
+              <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 900, letterSpacing: 1, color: Resources.get().getColors().Red }}>jesteś administratorem</Text>
+            </View>
           ) : null}
         </View>
 
