@@ -7,7 +7,7 @@ import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
 import React from "react";
 import Spinner from "react-native-spinkit";
 import Resources from "../../res/Resources";
-import { isWasteland, isEvent, isDumpster, isUser } from "../API/data_types/type_guards";
+import { isWasteland, isEvent, isDumpster, isUser } from "../API/type_guards";
 import DumpsterItem from "./DumpsterItem";
 import EventItem from "./EventItem";
 import LocationItem from "./LocationItem";
@@ -93,7 +93,7 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
     const [places, setPlaces] = React.useState<Place[]>([])
 
     const updateItems = (append: boolean, index: number) => {
-        if (isLoading || !hasMore) {
+        if (isLoading || (!hasMore && append)) {
             return;
         }
 
@@ -138,6 +138,8 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
 
     const searchPlacesTimeoutId = React.useRef<NodeJS.Timeout | null>(null)
     React.useEffect(() => {
+        updateItems(false, 0)
+
         if (placesConfig == null) {
             return
         }
@@ -179,9 +181,9 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
                 renderItem={({ item }) => (
                     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                         {
-                            isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Wasteland}-${item.id}`} item={item} onOpen={onPressed as any} /> :
-                                isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Event}-${item.id}`} item={item} onOpen={onPressed as any} isAdmin={(item as Event & { members: EventUser[], admins: EventUser[] }).admins.some(admin => admin.id == currentUser.id)} /> :
-                                    isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} key={`${Type.Dumpster}-${item.id}`} item={item} onOpen={onPressed as any} /> :
+                            isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Wasteland}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> :
+                                isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Event}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} isAdmin={(item as Event & { members: EventUser[], admins: EventUser[] }).admins.some(admin => admin.id == currentUser.id)} /> :
+                                    isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} key={`${Type.Dumpster}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> :
                                         isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={() => { }} /> :
                                             null
                         }

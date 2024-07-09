@@ -1,13 +1,16 @@
 import { faker } from '@faker-js/faker';
-import Dumpster from "../../data_types/Dumpster";
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
-import User from '../../data_types/User';
 import getSeededImage from './getSeededImage';
+import { WisbDumpster, WisbUser } from '../interfaces';
+import WisbObjectType from '../WisbObjectType';
+import Ref from '../Ref';
 
-export default function getMockupDumpsters(users: User[]): Dumpster[] {
+export default function getMockupDumpsters(users: Map<number, WisbUser>): Map<number, WisbDumpster> {
+    const usersList = [...users.values()]
+
     return faker.helpers.multiple(() => ({
         id: 0,
-        addedBy: faker.helpers.arrayElement(users),
+        addedBy: { id: faker.helpers.arrayElement(usersList).id, type: WisbObjectType.User } as Ref<WisbObjectType.User>,
         place: {
             coords: getRandomLatLngInPoland(),
             asText: faker.location.streetAddress({ useFullAddress: true })
@@ -19,5 +22,5 @@ export default function getMockupDumpsters(users: User[]): Dumpster[] {
         ...it,
         photos: faker.helpers.multiple(() => getSeededImage(it.id.toString())),
         id: index
-    }))
+    } satisfies WisbDumpster)).reduce((map, obj) => map.set(obj.id, obj), new Map<number, WisbDumpster>())
 }

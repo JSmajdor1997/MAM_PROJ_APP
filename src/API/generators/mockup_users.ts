@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
-import User from '../../data_types/User';
 import getSeededImage from './getSeededImage';
+import { WisbUser } from '../interfaces';
 
-export default function getMockupUsers(): User[] {
+export default function getMockupUsers(): Map<number, WisbUser> {
     return faker.helpers.multiple(() => ({
         id: 0,
         email: faker.internet.email(),
@@ -17,5 +17,5 @@ export default function getMockupUsers(): User[] {
         ...it,
         photoUrl: faker.datatype.boolean() ? getSeededImage(it.email) : undefined,
         id: index
-    }))
+    } satisfies WisbUser)).reduce((map, obj) => map.set(obj.id, obj), new Map<number, WisbUser>())
 }

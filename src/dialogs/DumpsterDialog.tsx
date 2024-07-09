@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { Mode } from "./WisbDialog";
-import { faGripLines, faMapPin, faTrash, faPerson, faShare, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
+import { faGripLines, faMapPin, faTrash, faPerson, faShare, faEdit, faImage } from "@fortawesome/free-solid-svg-icons";
+import { Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import { LatLng } from "react-native-maps";
@@ -11,6 +11,9 @@ import ImagesGallery from "../components/ImagesGallery";
 import Dumpster from "../API/data_types/Dumpster";
 import React from "react";
 import User from "../API/data_types/User";
+import QRCode from "react-native-qrcode-svg";
+import Spinner from "react-native-spinkit";
+import getAPI from "../API/getAPI";
 
 enum Sections {
     BasicInfo,
@@ -28,8 +31,12 @@ export interface Props {
     currentUser: User
 }
 
+const api = getAPI()
+
 export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
     const [workingDumpster, setWorkingDumpster] = React.useState<Partial<Dumpster>>(dumpster ?? {})
+
+    const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
 
     return (
         <WisbDialog
@@ -58,13 +65,14 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Green, name: Resources.get().getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 15 }}>
                             <LocationInput
-                                readonly
+                                readonly={mode == Mode.Viewing}
                                 style={{ flex: 1, height: 300 }}
                                 apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
-                                location={{
-                                    coords: workingDumpster.place?.coords ?? userLocation,
-                                    asText: "Jakaś lokalizacja"
+                                onLocationChanged={(latLng, asText) => setWorkingDumpster({ ...workingDumpster, place: { coords: latLng, asText } })}
+                                location={workingDumpster.place ?? {
+                                    coords: userLocation,
+                                    asText: "Obecna"
                                 }} />
                         </View>
                     )
@@ -76,9 +84,13 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                             <View>
                                 <Text style={{ fontWeight: "bold" }}>Opis</Text>
 
-                                <TextInput placeholder="Opis" multiline style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }}>
-                                    Opis
-                                </TextInput>
+                                <TextInput
+                                    placeholder="Opis"
+                                    multiline
+                                    readOnly={mode == Mode.Viewing}
+                                    onChange={e => setWorkingDumpster({ ...workingDumpster, description: e.nativeEvent.text })}
+                                    value={workingDumpster.description ?? ""}
+                                    style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
                             </View>
 
                             <View style={{ marginTop: 10, flexDirection: "row", justifyContent: "space-between" }}>
@@ -90,21 +102,61 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                 },
                 [Sections.Photos]: {
                     enabled: () => workingDumpster.photos != null && workingDumpster.photos.length > 0,
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 10 }}>
-                            <Text style={{ fontWeight: "bold" }}>
-                                Zdjęcia
-                            </Text>
+                    icon: <FontAwesomeIcon icon={faImage} />,
+                    color: Resources.get().getColors().Yellow,
+                    name: "Zdjęcia",
+                    renderPage: (props, index) => {
+                        if (mode == Mode.Adding) {
+                            if (props.currentIndex == Sections.Photos && addingPhase == AddingPhases.Added) {
+                                props.startConfetti()
+                            }
 
-                            <ImagesGallery
-                                images={workingDumpster.photos ?? []}
-                                interImagesSpace={5}
-                                style={{ width: "100%" }}
-                                onAddRequest={() => { }}
-                                onRemoveRequest={() => { }}
-                                nrOfImagesPerRow={4} />
-                        </View>
-                    )
+                            if (addingPhase == AddingPhases.None) {
+                                return (
+                                    <View>
+                                        <View key={index} style={{ flex: 1, padding: 10 }}>
+                                            <Text style={{ fontWeight: "bold" }}>
+                                                Zdjęcia
+                                            </Text>
+
+                                            <ImagesGallery
+                                                images={workingDumpster.photos ?? []}
+                                                interImagesSpace={5}
+                                                style={{ width: "100%" }}
+                                                onAddRequest={() => { }}
+                                                onRemoveRequest={() => { }}
+                                                nrOfImagesPerRow={4} />
+
+
+                                        </View>
+                                        <TouchableOpacity onPress={() => {
+                                            setAddingPhase(AddingPhases.Adding)
+                                            api.createDumpster(workingDumpster as Dumpster).then(() => {
+                                                setAddingPhase(AddingPhases.Added)
+                                            })
+                                        }}>
+                                            <Text>DODAJ</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )
+                            }
+
+                            if (addingPhase == AddingPhases.Adding) {
+                                return (
+                                    <View>
+                                        <Spinner />
+                                    </View>
+                                )
+                            }
+                        }
+
+
+                        return (
+                            <View key={index} style={{ flex: 1 }}>
+                                <Text>:) to już wszystko</Text>
+                            </View>
+                        )
+                    }
                 },
             }} />
     )

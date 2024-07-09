@@ -26,6 +26,12 @@ import WisbScreens from '../screens/WisbScreens';
 import IconType from '../components/WisbIcon/IconType';
 import ModificatorType from '../components/WisbIcon/ModificatorType';
 
+export enum AddingPhases {
+    None,
+    Adding,
+    Added
+}
+
 export interface RenderPageProps<IndexType> {
     currentIndex: IndexType
     shake: () => void
@@ -181,6 +187,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                         {
                             mode == Mode.Adding ? (
                                 <Swiper
+                                    loadMinimal
                                     ref={swiperRef}
                                     showsButtons={false}
                                     showsPagination={false}

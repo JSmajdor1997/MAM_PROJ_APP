@@ -15,23 +15,23 @@ import Dialog, { Position } from './Dialog';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
-import Wasteland from '../API/data_types/Wasteland';
-import Event, { EventUser } from '../API/data_types/Event';
-import Dumpster from '../API/data_types/Dumpster';
-import { MapObjects, Query, Type } from '../API/helpers';
 import { GeneralError } from '../API/API';
 import APIResponse from '../API/APIResponse';
 import getAPI from '../API/getAPI';
 import Toast from 'react-native-simple-toast';
-import { isDumpster, isEvent, isUser, isWasteland } from '../API/data_types/type_guards';
+import { isDumpster, isEvent, isUser, isWasteland } from '../API/type_guards';
 import DumpsterItem from '../components/DumpsterItem';
 import Separator from '../components/Separator';
 import searchPlaces, { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import { LatLng } from 'react-native-maps';
 import LocationItem from '../components/LocationItem';
 import Spinner from 'react-native-spinkit';
-import User from '../API/data_types/User';
 import ObjectsList from '../components/ObjectsList';
+
+export interface Query {
+  type: Type
+  phrase: string
+}
 
 export interface Props {
   visible: boolean;

@@ -8,7 +8,7 @@ import MapType from "./MapType";
 import NotificationType from "./NotificationType";
 import Settings from "./Settings";
 import { MMKV } from 'react-native-mmkv'
-import getRandomLatLngInPoland from "../src/API/implementations/mockup/getRandomLatLngInPoland";
+import getRandomLatLngInPoland from "../src/API/generators/getRandomLatLngInPoland";
 import { LatLng } from "react-native-maps";
 import Geolocation, { GeolocationResponse, GeolocationError } from "@react-native-community/geolocation";
 

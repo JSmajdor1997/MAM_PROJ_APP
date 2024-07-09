@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { Mode } from "./WisbDialog";
+import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faLocationArrow, faCalendar, faClose, faBroom, faEdit } from "@fortawesome/free-solid-svg-icons";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import MapView, { LatLng } from "react-native-maps";
@@ -31,6 +31,8 @@ export interface Props {
 
 export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
     const [workingWasteland, setWorkingWasteland] = React.useState<Partial<Wasteland>>(wasteland ?? {})
+
+    const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
 
     return (
         <WisbDialog
@@ -74,13 +76,14 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                         <View key={index} style={{ flex: 1, margin: 5 }}>
                             <View style={{ flex: 1, padding: 10 }}>
                                 <LocationInput
-                                    readonly
+                                    readonly={mode == Mode.Viewing}
                                     style={{ width: "100%", height: 200 }}
                                     apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                                     userLocation={userLocation}
-                                    location={{
-                                        coords: workingWasteland.place?.coords ?? userLocation,
-                                        asText: "Jakaś lokalizacja"
+                                    onLocationChanged={(latLng, asText) => setWorkingWasteland({ ...workingWasteland, place: { coords: latLng, asText } })}
+                                    location={workingWasteland.place ?? {
+                                        coords: userLocation,
+                                        asText: "Obecna"
                                     }} />
                             </View>
 
@@ -96,9 +99,16 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
 
                             <View>
                                 <Text style={{ fontWeight: "bold" }}>Opis</Text>
-                                <TextInput placeholder="Opis" multiline style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }}>
-                                    {workingWasteland.description}
-                                </TextInput>
+                                <TextInput
+                                    placeholder="Opis"
+                                    readOnly={mode == Mode.Viewing}
+                                    value={workingWasteland.description ?? ""}
+                                    onChange={e => setWorkingWasteland({
+                                        ...workingWasteland,
+                                        description: e.nativeEvent.text
+                                    })}
+                                    multiline
+                                    style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
                             </View>
                         </View>
                     )

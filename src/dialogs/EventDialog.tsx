@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { Mode } from "./WisbDialog";
+import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage, faCopy, faClock } from "@fortawesome/free-solid-svg-icons";
 import { Animated, FlatList, Image, StyleSheet, Text, TextInput, Touchable, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -21,10 +21,10 @@ import UserItem from "../components/UserItem";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import ImageInput from "../components/ImageInput";
 import ObjectsList from "../components/ObjectsList";
-import { isUser, isWasteland } from "../API/data_types/type_guards";
+import { isUser, isWasteland } from "../API/type_guards";
 import { Type } from "../API/helpers";
 import Share from 'react-native-share';
-import getMockupEvents from "../API/implementations/mockup/mockup_events";
+import getMockupEvents from "../API/generators/mockup_events";
 import getAPI from "../API/getAPI";
 import Spinner from "react-native-spinkit";
 
@@ -48,12 +48,6 @@ export interface Props {
 }
 
 const api = getAPI()
-
-enum AddingPhases {
-    None,
-    Adding,
-    Added
-}
 
 export default function EventDialog({ mode, event, onDismiss, visible, userLocation, onOpenChat, currentUser, googleMapsApiKey }: Props) {
     const [workingEvent, setWorkingEvent] = React.useState<Partial<Event>>(event ?? {})
@@ -114,7 +108,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                 sectionsOrder={[Sections.BasicInfo, Sections.MeetPlace, Sections.Wastelands, Sections.Members, Sections.Sharing]}
                 sections={{
                     [Sections.BasicInfo]: {
-                        enabled: () => workingEvent.iconUrl != null && workingEvent.dateRange != null && workingEvent.description != null && workingEvent.description.length != null,
+                        enabled: () => workingEvent.name != null && workingEvent.iconUrl != null && workingEvent.dateRange != null && workingEvent.description != null && workingEvent.description.length != null && addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: "Podstawowe informacje", renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 10 }}>
                                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 120 }}>
@@ -132,7 +126,9 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                     <View style={{ flex: 1, justifyContent: "center", height: "100%", alignItems: "center" }}>
                                         <TextInput
                                             readOnly={mode == Mode.Viewing}
-                                            style={{ fontSize: 20, fontWeight: "500", letterSpacing: 1, fontStyle: "italic", fontFamily: "Avenir" }}
+                                            placeholder="Nazwa"
+                                            placeholderTextColor={"white"}
+                                            style={{ fontSize: 20, padding: 2, textAlign: "center", fontWeight: "500", letterSpacing: 1, fontStyle: "italic", fontFamily: "Avenir", backgroundColor: Resources.get().getColors().DarkBeige, width: "100%", marginLeft: 4, borderRadius: 15 }}
                                             onChange={e => setWorkingEvent({ ...workingEvent, name: e.nativeEvent.text })}>
                                             {workingEvent.name}
                                         </TextInput>
@@ -196,7 +192,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         ),
                     },
                     [Sections.MeetPlace]: {
-                        enabled: () => workingEvent.meetPlace != null,
+                        enabled: () => workingEvent.meetPlace != null && addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 15 }}>
                                 <LocationInput
@@ -205,24 +201,16 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                     style={{ width: "100%", height: "100%" }}
                                     userLocation={userLocation}
                                     apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
-                                    onLocationChanged={(coords, asText) => {
-                                        setWorkingEvent({
-                                            ...workingEvent,
-                                            meetPlace: {
-                                                coords,
-                                                asText
-                                            }
-                                        })
-                                    }}
-                                    location={{
-                                        coords: event?.meetPlace.coords ?? userLocation,
-                                        asText: "Jakaś lokalizacja"
+                                    onLocationChanged={(latLng, asText) => setWorkingEvent({ ...workingEvent, meetPlace: { coords: latLng, asText } })}
+                                    location={workingEvent.meetPlace ?? {
+                                        coords: userLocation,
+                                        asText: "Obecna"
                                     }} />
                             </View>
                         )
                     },
                     [Sections.Wastelands]: {
-                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0,
+                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0 && addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, minHeight: 50 }}>
                                 <Text>Co sprzątamy?</Text>
@@ -246,13 +234,13 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                             if (workingEvent.wastelands != null && workingEvent.wastelands.some(it => it.id == selectedItem.id)) {
                                                 setWorkingEvent({
                                                     ...workingEvent,
-                                                    wastelands: workingEvent.wastelands!.filter(it => it.id != selectedItem.id)
+                                                    wastelands: workingEvent.wastelands.filter(it => it.id != selectedItem.id)
                                                 })
                                             } else {
                                                 setWorkingEvent({
                                                     ...workingEvent,
                                                     wastelands: [
-                                                        ...workingEvent.wastelands!,
+                                                        ...workingEvent.wastelands ?? [],
                                                         selectedItem
                                                     ]
                                                 })
@@ -266,7 +254,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         )
                     },
                     [Sections.Members]: {
-                        enabled: () => true,
+                        enabled: () => addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faPerson} />, color: Resources.get().getColors().Purple, name: Resources.get().getStrings().Dialogs.EventDialog.MembersLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1 }}>
                                 <Text>Zaproś uczestników</Text>
@@ -314,7 +302,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                         <View>
                                             <TouchableOpacity onPress={() => {
                                                 setAddingPhase(AddingPhases.Adding)
-                                                api.createEvent(workingEvent as Event).then(() => {
+                                                api.createEvent(workingEvent as Event, []).then(() => {
                                                     setAddingPhase(AddingPhases.Added)
                                                 })
                                             }}>

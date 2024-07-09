@@ -1,0 +1,3 @@
+export default async function waitMs(ms: number) {
+    await new Promise(resolve => setTimeout(resolve, ms));
+}

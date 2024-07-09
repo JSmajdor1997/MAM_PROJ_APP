@@ -19,7 +19,7 @@ import QueryInput from '../components/QueryInput/QueryInput';
 import getAPI from '../API/getAPI';
 import Event, { EventUser } from '../API/data_types/Event';
 import ObjectsList from '../components/ObjectsList';
-import { isEvent } from '../API/data_types/type_guards';
+import { isEvent } from '../API/type_guards';
 import { Type } from '../API/helpers';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }

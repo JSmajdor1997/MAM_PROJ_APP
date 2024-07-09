@@ -33,7 +33,7 @@ import { ClickOutsideProvider } from 'react-native-click-outside';
 import { LatLng } from 'react-native-maps';
 import Dumpster from './src/API/data_types/Dumpster';
 import Event from './src/API/data_types/Event';
-import { isDumpster, isEvent, isWasteland } from './src/API/data_types/type_guards';
+import { isDumpster, isEvent, isWasteland } from './src/API/type_guards';
 import { LogBox } from 'react-native';
 import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
@@ -297,7 +297,7 @@ export default function App() {
           {
             currentUser == null ? null : (
               <>
-                <EventDialog
+                {dialogData[Type.Event] != null ? <EventDialog
                   visible={dialogData[Type.Event] != null}
                   googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
                   event={dialogData[Type.Event]?.item}
@@ -308,26 +308,26 @@ export default function App() {
                   onOpenChat={event => {
                     navigationRef.navigate(WisbScreens.ChatScreen, { event })
                     setDialogData({})
-                  }} />
-                <WastelandDialog
+                  }} /> : null}
+                {dialogData[Type.Wasteland] != null ? <WastelandDialog
                   visible={dialogData[Type.Wasteland] != null}
                   wasteland={dialogData[Type.Wasteland]?.item}
                   mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing}
                   userLocation={userLocation}
                   currentUser={currentUser}
-                  onDismiss={() => setDialogData({})} />
-                <DumpsterDialog
+                  onDismiss={() => setDialogData({})} /> : null}
+                {dialogData[Type.Dumpster] != null ? <DumpsterDialog
                   currentUser={currentUser}
                   visible={dialogData[Type.Dumpster] != null}
                   dumpster={dialogData[Type.Dumpster]?.item}
                   mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing}
                   userLocation={userLocation}
-                  onDismiss={() => setDialogData({})} />
+                  onDismiss={() => setDialogData({})} /> : null}
               </>
             )
           }
 
-          <QRCodeDialog
+          {isQrCodeDialogVisible ? <QRCodeDialog
             visible={isQrCodeDialogVisible}
             onDismiss={() => setIsQrCodeDialogVisible(false)}
             onEvent={event => {
@@ -338,7 +338,7 @@ export default function App() {
                   item: event
                 }
               })
-            }} />
+            }} /> : null}
         </View>
       </PortalProvider>
     </ClickOutsideProvider>
