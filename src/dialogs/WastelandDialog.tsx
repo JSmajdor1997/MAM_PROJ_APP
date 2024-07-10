@@ -4,14 +4,11 @@ import { faGripLines, faMapPin, faTrash, faPerson, faShare, faLocationArrow, faC
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import MapView, { LatLng } from "react-native-maps";
 import Resources from "../../res/Resources";
-import FAB from "../components/FAB";
 import ImagesGallery from "../components/ImagesGallery";
 import LocationInput from "../components/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
-import WisbIcon from "../components/WisbIcon/WisbIcon";
-import Wasteland from "../API/data_types/Wasteland";
 import React from "react";
-import User from "../API/data_types/User";
+import { WisbWasteland, WisbUser } from "../API/interfaces";
 
 enum Sections {
     BasicInfo,
@@ -20,17 +17,17 @@ enum Sections {
 }
 
 export interface Props {
-    wasteland?: Wasteland
+    wasteland?: WisbWasteland
     mode: Mode
     onDismiss(): void
-    onAdd?: (wasteland: Wasteland) => void
+    onAdd?: (wasteland: WisbWasteland) => void
     visible: boolean
     userLocation: LatLng
-    currentUser: User
+    currentUser: WisbUser
 }
 
 export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
-    const [workingWasteland, setWorkingWasteland] = React.useState<Partial<Wasteland>>(wasteland ?? {})
+    const [workingWasteland, setWorkingWasteland] = React.useState<Partial<WisbWasteland>>(wasteland ?? {})
 
     const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
 

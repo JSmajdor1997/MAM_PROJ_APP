@@ -1,8 +1,4 @@
 import { FlatList, StyleSheet, Text, View, ViewStyle } from "react-native";
-import { Type } from "../API/helpers";
-import Dumpster from "../API/data_types/Dumpster";
-import Wasteland from "../API/data_types/Wasteland";
-import Event, { EventUser } from "../API/data_types/Event";
 import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
 import React from "react";
 import Spinner from "react-native-spinkit";
@@ -15,32 +11,26 @@ import WastelandItem from "./WastelandItem";
 import getAPI from "../API/getAPI";
 import Toast from 'react-native-simple-toast';
 import { LatLng } from "react-native-maps";
-import User from "../API/data_types/User";
 import UserItem from "./UserItem";
 import CheckBox from 'react-native-check-box'
-import { DumpstersQuery, EventsQuery, UsersQuery, WastelandsQuery } from "../API/API";
+import WisbObjectType from "../API/WisbObjectType";
+import { QueryMap, TypeMap } from "../API/API";
+import { WisbDumpster, WisbUser, WisbWasteland } from "../API/interfaces";
 
 export type Multiple<MiltiSelect extends boolean, T> = MiltiSelect extends true ? T[] : T
 
-export type TypeMap<ItemType extends Type> = (
-    ItemType extends Type.Dumpster ? Dumpster :
-    ItemType extends Type.Wasteland ? Wasteland :
-    ItemType extends Type.User ? User :
-    Event
-)
+export type DataType<MiltiSelect extends boolean, ItemType extends WisbObjectType> = Multiple<MiltiSelect, TypeMap<ItemType>>
 
-export type DataType<MiltiSelect extends boolean, ItemType extends Type> = Multiple<MiltiSelect, TypeMap<ItemType>>
-
-export interface Props<MiltiSelect extends boolean, ItemType extends Type> {
+export interface Props<MiltiSelect extends boolean, ItemType extends WisbObjectType> {
     style?: ViewStyle
     type: ItemType
     multi: MiltiSelect
 
     filter?: {
-        [Type.Dumpster]?: DumpstersQuery,
-        [Type.Wasteland]?: WastelandsQuery,
-        [Type.User]?: UsersQuery,
-        [Type.Event]?: EventsQuery,
+        [WisbObjectType.Dumpster]?: QueryMap<WisbObjectType.Dumpster>,
+        [WisbObjectType.Wasteland]?: QueryMap<WisbObjectType.Wasteland>,
+        [WisbObjectType.User]?: QueryMap<WisbObjectType.User>,
+        [WisbObjectType.Event]?: QueryMap<WisbObjectType.Event>,
     }
 
     onPressed?: (selected: TypeMap<ItemType>) => void
@@ -49,7 +39,7 @@ export interface Props<MiltiSelect extends boolean, ItemType extends Type> {
 
     phrase?: string
 
-    currentUser: User
+    currentUser: WisbUser
 
     googleMapsApiKey: string
     placesConfig?: {
@@ -62,7 +52,7 @@ const PageSize = 10
 
 const api = getAPI()
 
-export default function ObjectsList<MiltiSelect extends boolean, ItemType extends Type>({
+export default function ObjectsList<MiltiSelect extends boolean, ItemType extends WisbObjectType>({
     style,
     type,
     multi,
@@ -81,13 +71,13 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
     const [hasMore, setHasMore] = React.useState(true)
 
     const [items, setItems] = React.useState<{
-        items: (Wasteland | (Event & { members: EventUser[], admins: EventUser[] }) | Dumpster)[]
+        items: (WisbWasteland | (Event & { members: WisbEventUser[], admins: EventUser[] }) | WisbDumpster)[]
         index: number
-        type: Type
+        type: WisbObjectType
     }>({
         items: [],
         index: 0,
-        type: Type.Event
+        type: WisbObjectType.Event
     })
 
     const [places, setPlaces] = React.useState<Place[]>([])
@@ -159,7 +149,7 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
 
     return (
         <View style={{ flex: 1, ...style }}>
-            <FlatList<User | Dumpster | Wasteland | Event>
+            <FlatList<WisbUser | WisbDumpster | WisbWasteland | WisbEvent>
                 ref={flatListRef}
                 onEndReached={() => updateItems(true, items.index + 1)}
                 onEndReachedThreshold={0.5}
@@ -181,9 +171,9 @@ export default function ObjectsList<MiltiSelect extends boolean, ItemType extend
                 renderItem={({ item }) => (
                     <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                         {
-                            isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Wasteland}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> :
-                                isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} key={`${Type.Event}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} isAdmin={(item as Event & { members: EventUser[], admins: EventUser[] }).admins.some(admin => admin.id == currentUser.id)} /> :
-                                    isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} key={`${Type.Dumpster}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> :
+                            isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} key={`${WisbObjectType.Wasteland}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> :
+                                isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} key={`${WisbObjectType.Event}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} isAdmin={(item as WisbEvent & { members: EventUser[], admins: EventUser[] }).admins.some(admin => admin.id == currentUser.id)} /> :
+                                    isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} key={`${WisbObjectType.Dumpster}-${item.id}`} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> :
                                         isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={() => { }} /> :
                                             null
                         }

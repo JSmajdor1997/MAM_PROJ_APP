@@ -14,19 +14,17 @@ import SearchBar from "../components/SearchBar";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import React, { Fragment } from "react";
 import WastelandItem from "../components/WastelandItem";
-import Wasteland from "../API/data_types/Wasteland";
-import User from "../API/data_types/User";
-import Event from "../API/data_types/Event";
 import UserItem from "../components/UserItem";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import ImageInput from "../components/ImageInput";
 import ObjectsList from "../components/ObjectsList";
 import { isUser, isWasteland } from "../API/type_guards";
-import { Type } from "../API/helpers";
 import Share from 'react-native-share';
 import getMockupEvents from "../API/generators/mockup_events";
 import getAPI from "../API/getAPI";
 import Spinner from "react-native-spinkit";
+import { WisbEvent, WisbUser } from "../API/interfaces";
+import WisbObjectType from "../API/WisbObjectType";
 
 enum Sections {
     BasicInfo,
@@ -37,24 +35,24 @@ enum Sections {
 }
 
 export interface Props {
-    event?: Event
+    event?: WisbEvent
     mode: Mode
     onDismiss(): void
     visible: boolean
     userLocation: LatLng
-    onOpenChat: (event: Event) => void
-    currentUser: User
+    onOpenChat: (event: WisbEvent) => void
+    currentUser: WisbUser
     googleMapsApiKey: string
 }
 
 const api = getAPI()
 
 export default function EventDialog({ mode, event, onDismiss, visible, userLocation, onOpenChat, currentUser, googleMapsApiKey }: Props) {
-    const [workingEvent, setWorkingEvent] = React.useState<Partial<Event>>(event ?? {})
+    const [workingEvent, setWorkingEvent] = React.useState<Partial<WisbEvent>>(event ?? {})
     const [wastelandPhrase, setWastelandPhrase] = React.useState("")
     const [userPhrase, setUserPhrase] = React.useState("")
 
-    const [selectedMembers, setSelectedMembers] = React.useState<User[]>([])
+    const [selectedMembers, setSelectedMembers] = React.useState<WisbUser[]>([])
 
     const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
 
@@ -192,7 +190,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         ),
                     },
                     [Sections.MeetPlace]: {
-                        enabled: () => workingEvent.meetPlace != null && addingPhase != AddingPhases.Added,
+                        enabled: () => workingEvent.place != null && addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 15 }}>
                                 <LocationInput
@@ -201,8 +199,8 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                     style={{ width: "100%", height: "100%" }}
                                     userLocation={userLocation}
                                     apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
-                                    onLocationChanged={(latLng, asText) => setWorkingEvent({ ...workingEvent, meetPlace: { coords: latLng, asText } })}
-                                    location={workingEvent.meetPlace ?? {
+                                    onLocationChanged={(latLng, asText) => setWorkingEvent({ ...workingEvent, place: { coords: latLng, asText } })}
+                                    location={workingEvent.place ?? {
                                         coords: userLocation,
                                         asText: "Obecna"
                                     }} />
@@ -210,7 +208,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         )
                     },
                     [Sections.Wastelands]: {
-                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0 && addingPhase != AddingPhases.Added,
+                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.size > 0 && addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, minHeight: 50 }}>
                                 <Text>Co sprzątamy?</Text>
@@ -222,11 +220,11 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
 
                                 <ObjectsList
                                     filter={{
-                                        [Type.Wasteland]: {
+                                        [WisbObjectType.Wasteland]: {
                                             activeOnly: true
                                         }
                                     }}
-                                    type={Type.Wasteland}
+                                    type={WisbObjectType.Wasteland}
                                     multi={true}
                                     selectedItemsIds={workingEvent.wastelands?.map(it => it.id) ?? []}
                                     onSelected={selectedItem => {
@@ -265,7 +263,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                     onPhraseChanged={setUserPhrase} /> : null}
 
                                 <ObjectsList
-                                    type={Type.User}
+                                    type={WisbObjectType.User}
                                     multi={mode == Mode.Adding}
                                     selectedItemsIds={selectedMembers.map(it => it.id)}
                                     onSelected={selectedItem => {
@@ -302,7 +300,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                         <View>
                                             <TouchableOpacity onPress={() => {
                                                 setAddingPhase(AddingPhases.Adding)
-                                                api.createEvent(workingEvent as Event, []).then(() => {
+                                                api.createOne(WisbObjectType.Event, workingEvent as WisbEvent).then(() => {
                                                     setAddingPhase(AddingPhases.Added)
                                                 })
                                             }}>

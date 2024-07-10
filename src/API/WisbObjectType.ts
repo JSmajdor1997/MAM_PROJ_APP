@@ -1,8 +1,8 @@
 enum WisbObjectType {
-    User,
-    Wasteland,
-    Dumpster,
-    Event
+    User = "User",
+    Wasteland = "Wasteland",
+    Dumpster = "Dumpster",
+    Event = "Event"
 }
 
 export default WisbObjectType

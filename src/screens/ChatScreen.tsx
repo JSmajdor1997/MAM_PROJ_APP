@@ -23,7 +23,6 @@ import Swiper from 'react-native-swiper';
 import ImagesGallery from '../components/ImagesGallery';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import getAPI from '../API/getAPI';
-import MessageType from '../API/data_types/Message';
 
 const api = getAPI()
 
@@ -116,10 +115,10 @@ export default function ChatScreen({ navigation, route: { params: { event } } }:
             padding: 4,
           }}
           onPress={()=>{
-            api.sendEventMessage(event, {
-              content: inputMessage,
-              photosUrls: [],
-            })
+            // api.sendEventMessage(event, {
+            //   content: inputMessage,
+            //   photosUrls: [],
+            // })
             setInputMessage("")
           }}>
           <FontAwesomeIcon icon={faPaperPlane} color={Resources.get().getColors().Primary} size={20} />
@@ -238,7 +237,7 @@ export default function ChatScreen({ navigation, route: { params: { event } } }:
   }
 
   return (
-    <ScrollView style={{ flex: 1 }} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps
+    <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps
       onTouchStart={() => {
         if (isMoreMenuVisible) {
           setIsMoreMenuVisible(false)

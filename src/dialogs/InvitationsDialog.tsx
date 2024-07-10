@@ -12,7 +12,7 @@ import Resources from '../../res/Resources';
 import Dialog, { Position } from './Dialog';
 import Toast from 'react-native-simple-toast';
 import getAPI from '../API/getAPI';
-import { Invitation } from '../API/data_types/Invitation';
+import { Invitation } from '../API/interfaces';
 
 export interface Props {
   visible: boolean;
@@ -27,7 +27,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
   React.useEffect(() => {
     api.getMyInvitations().then(result => {
       if (result.data != null) {
-        setInvitations(result.data.items)
+        setInvitations(result.data)
       }
     })
   }, [])
@@ -50,7 +50,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
             <TouchableOpacity 
               style={{ backgroundColor: Resources.get().getColors().DarkBeige }}
               onPress={()=>{
-                api.joinEvent(invitation.event).then(()=>{
+                api.joinEvent(invitation).then(()=>{
                   Toast.show(`Dołączono do wydarzenia ${invitation.event.name}!`, Toast.SHORT)
                 })
               }}>

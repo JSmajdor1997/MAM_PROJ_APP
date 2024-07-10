@@ -8,12 +8,12 @@ import { LatLng } from "react-native-maps";
 import IconType from "../components/WisbIcon/IconType";
 import WisbIcon from "../components/WisbIcon/WisbIcon";
 import ImagesGallery from "../components/ImagesGallery";
-import Dumpster from "../API/data_types/Dumpster";
 import React from "react";
-import User from "../API/data_types/User";
 import QRCode from "react-native-qrcode-svg";
 import Spinner from "react-native-spinkit";
 import getAPI from "../API/getAPI";
+import { WisbDumpster, WisbUser } from "../API/interfaces";
+import WisbObjectType from "../API/WisbObjectType";
 
 enum Sections {
     BasicInfo,
@@ -22,19 +22,19 @@ enum Sections {
 }
 
 export interface Props {
-    dumpster?: Dumpster
+    dumpster?: WisbDumpster
     mode: Mode
     onDismiss(): void
-    onAdd?: (dumpster: Dumpster) => void
+    onAdd?: (dumpster: WisbDumpster) => void
     visible: boolean
     userLocation: LatLng
-    currentUser: User
+    currentUser: WisbUser
 }
 
 const api = getAPI()
 
 export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
-    const [workingDumpster, setWorkingDumpster] = React.useState<Partial<Dumpster>>(dumpster ?? {})
+    const [workingDumpster, setWorkingDumpster] = React.useState<Partial<WisbDumpster>>(dumpster ?? {})
 
     const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
 
@@ -131,7 +131,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                                         </View>
                                         <TouchableOpacity onPress={() => {
                                             setAddingPhase(AddingPhases.Adding)
-                                            api.createDumpster(workingDumpster as Dumpster).then(() => {
+                                            api.createOne(WisbObjectType.Dumpster, workingDumpster as WisbDumpster).then(() => {
                                                 setAddingPhase(AddingPhases.Added)
                                             })
                                         }}>

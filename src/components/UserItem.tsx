@@ -2,11 +2,11 @@ import { View, Text, StyleSheet, Dimensions, StyleProp, Touchable, TouchableOpac
 import Resources from "../../res/Resources";
 import Avatar from "./Avatar";
 import { Neomorph } from "react-native-neomorph-shadows-fixes";
-import User from "../API/data_types/User";
 import getAPI from "../API/getAPI";
+import { WisbUser } from "../API/interfaces";
 
 export interface Props {
-  item: User
+  item: WisbUser
   position?: number
   onPress?: () => void
   style?: React.CSSProperties

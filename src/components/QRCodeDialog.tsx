@@ -9,11 +9,11 @@ import getAPI from "../API/getAPI";
 import Spinner from "react-native-spinkit";
 import BlurryView from "./BlurryView";
 import useShaky from "../hooks/useShaky";
-import Event from "../API/data_types/Event";
+import { WisbEvent } from "../API/interfaces";
 
 export interface Props {
     visible: boolean
-    onEvent: (event: Event) => void
+    onEvent: (event: WisbEvent) => void
     onDismiss: () => void
 }
 
@@ -46,7 +46,7 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
                             onRead={async result => {
                                 setIsLoading(true)
                                 const api = getAPI()
-                                const event = (await api.getEventByQrCode(result.data))?.data?.item
+                                const event = (await api.getEventByQrCode(result.data))?.data
 
                                 setIsLoading(false)
 

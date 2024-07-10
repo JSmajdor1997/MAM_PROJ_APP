@@ -31,6 +31,7 @@ import UserItem from '../components/UserItem';
 import InvitationsDialog from '../dialogs/InvitationsDialog';
 import ObjectsList from '../components/ObjectsList';
 import { Type } from '../API/helpers';
+import WisbObjectType from '../API/WisbObjectType';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -209,7 +210,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
         <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
           <View style={{ alignItems: "center" }}>
-            {leadership.map((item, i) => <UserItem style={{ marginTop: 10 }} item={item} position={index * RecordsPerPage + i + 1} />)}
+            {leadership.map((item, i) => <UserItem widthCoeff={0.9} style={{ marginTop: 10 }} item={item} position={index * RecordsPerPage + i + 1} />)}
 
             {isLoading ? (
               <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
@@ -234,9 +235,9 @@ export default function LeaderboardScreen({ navigation }: Props) {
       {updatedSelfData == null ? null : (
         <TouchableOpacity
         onPress={()=>{
-          api.updateSelf({userName: updatedSelfData.userName}).then(result=>{
-            if(result.data?.newUser != null) {
-              setUser(result.data?.newUser)
+          api.updateOne({type: WisbObjectType.User, id: api.getCurrentUser()!.id}, {userName: updatedSelfData.userName}).then(result=>{
+            if(result.data != null) {
+              setUser(updatedSelfData.userName)
             } else {
               Toast.show(`Unexpected Error!`, Toast.SHORT);
             }

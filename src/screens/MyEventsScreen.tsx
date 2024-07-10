@@ -17,10 +17,9 @@ import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 import SearchBar from '../components/SearchBar';
 import QueryInput from '../components/QueryInput/QueryInput';
 import getAPI from '../API/getAPI';
-import Event, { EventUser } from '../API/data_types/Event';
 import ObjectsList from '../components/ObjectsList';
 import { isEvent } from '../API/type_guards';
-import { Type } from '../API/helpers';
+import WisbObjectType from '../API/WisbObjectType';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
@@ -82,18 +81,16 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
       <ObjectsList
         style={styles.flatList}
         currentUser={getCurrentUser()}
-        type={Type.Event}
+        type={WisbObjectType.Event}
         filter={{
-          [Type.Event]: {
+          [WisbObjectType.Event]: {
             onlyOwn: true,
             activeOnly: onlyCurrentEvents
           }
         }}
         multi={false}
         onPressed={(item: Event) => {
-          if (!isEvent(item)) {
-
-          }
+          
         }}
         phrase={phrase}
         googleMapsApiKey={""}

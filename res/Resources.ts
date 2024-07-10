@@ -3,9 +3,7 @@ import BelarusianTranslation from "./translations/BelarusianTranslation";
 import EnglishTranslation from "./translations/EnglishTranslation";
 import PolishTranslation from "./translations/PolishTranslation";
 import * as RNLocalize from 'react-native-localize';
-import ColorMode from "./ColorMode";
 import MapType from "./MapType";
-import NotificationType from "./NotificationType";
 import Settings from "./Settings";
 import { MMKV } from 'react-native-mmkv'
 import getRandomLatLngInPoland from "../src/API/generators/getRandomLatLngInPoland";
@@ -31,8 +29,6 @@ export default class Resources {
             mapType: MapType.Default,
             languageCode: RNLocalize.findBestLanguageTag(Resources.SupportedLanguages.map(it => it.code))?.languageTag ?? Resources.FallBackLanguage.code,
             showAdds: true,
-            enabledNotifications: [NotificationType.MessagesFromCreators, NotificationType.NewEventNearby, NotificationType.NewWastelandNearby],
-            colorMode: ColorMode.Light,
             defaultLocation: null,
             showDumpstersOnMap: true
         }

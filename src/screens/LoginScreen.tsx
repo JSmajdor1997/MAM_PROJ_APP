@@ -42,18 +42,6 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
     Toast.showWithGravityAndOffset(message, Toast.SHORT, Toast.CENTER, 0, 10)
   }
 
-  React.useState(async ()=>{
-    await new Promise((resolve)=>setTimeout(resolve, 400))
-
-    getAPI().login("aaa@bbb.com", "abc").then(result => {
-      if(result.data!=null){
-        setEmail("")
-        setPassword("")
-        onUserLoggedIn(result.data)
-      }
-    })
-  })
-
   return (
     <View
       style={styles.root}>

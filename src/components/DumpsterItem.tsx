@@ -10,15 +10,15 @@ import {
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCalendarAlt, faMessage } from '@fortawesome/free-regular-svg-icons';
-import Dumpster from '../API/data_types/Dumpster';
 import Resources from '../../res/Resources';
 import { GoogleStaticMapNext } from 'react-native-google-static-map-next';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 import { faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { WisbDumpster } from '../API/interfaces';
 
 interface Props {
-  item: Dumpster;
-  onOpen: (item: Dumpster) => void
+  item: WisbDumpster;
+  onOpen: (item: WisbDumpster) => void
   googleMapsAPIKey: string
   widthCoeff: number
 }

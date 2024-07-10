@@ -20,13 +20,11 @@ export default function SplashScreen({ navigation }: Props) {
       setIsBlurred(true)
 
       setTimeout(() => {
-        getAPI().isUserLoggedIn().then(result => {
-          if (result) {
-            navigation.push(WisbScreens.MapScreen, {} as any)
-          } else {
-            navigation.push(WisbScreens.LoginScreen, {})
-          }
-        })
+        if (getAPI().getCurrentUser != null) {
+          navigation.push(WisbScreens.MapScreen, {} as any)
+        } else {
+          navigation.push(WisbScreens.LoginScreen, {})
+        }
       }, 1000)
     }, 500)
   }, [])

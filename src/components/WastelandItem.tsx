@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import Wasteland from '../API/data_types/Wasteland';
 import Resources from '../../res/Resources';
 import { faImage, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -15,10 +14,11 @@ import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 import FastImage from 'react-native-fast-image';
 import WisbIcon from './WisbIcon/WisbIcon';
 import IconType from './WisbIcon/IconType';
+import { WisbWasteland } from '../API/interfaces';
 
 interface Props {
-  item: Wasteland;
-  onOpen: (item: Wasteland) => void
+  item: WisbWasteland;
+  onOpen: (item: WisbWasteland) => void
   widthCoeff: number
 }
 

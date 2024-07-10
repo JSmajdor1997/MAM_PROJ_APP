@@ -1,48 +1,33 @@
-import React, { Component, ReactElement } from 'react';
+import React from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
-  FlatList,
   Dimensions,
-  ScrollView,
 } from 'react-native';
-import EventItem from '../components/EventItem';
-import WastelandItem from '../components/WastelandItem';
 import Resources from '../../res/Resources';
 import Dialog, { Position } from './Dialog';
-import FAB from '../components/FAB';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faClose } from '@fortawesome/free-solid-svg-icons';
-import { GeneralError } from '../API/API';
-import APIResponse from '../API/APIResponse';
-import getAPI from '../API/getAPI';
-import Toast from 'react-native-simple-toast';
-import { isDumpster, isEvent, isUser, isWasteland } from '../API/type_guards';
-import DumpsterItem from '../components/DumpsterItem';
-import Separator from '../components/Separator';
-import searchPlaces, { Place } from '../utils/GooglePlacesAPI/searchPlaces';
+import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import { LatLng } from 'react-native-maps';
-import LocationItem from '../components/LocationItem';
-import Spinner from 'react-native-spinkit';
 import ObjectsList from '../components/ObjectsList';
+import WisbObjectType from '../API/WisbObjectType';
+import { WisbWasteland, WisbEvent, WisbDumpster, WisbUser } from '../API/interfaces';
+import { isUser } from '../API/type_guards';
 
 export interface Query {
-  type: Type
+  type: WisbObjectType
   phrase: string
 }
 
 export interface Props {
   visible: boolean;
   onDismiss: () => void;
-  onItemSelected: (item: Wasteland | Event | Dumpster) => void;
+  onItemSelected: (item: WisbWasteland | WisbEvent | WisbDumpster) => void;
   onPlaceSelected: (place: Place) => void
   query: Query
   googleMapsApiKey: string
   userLocation: LatLng
 
-  currentUser: User
+  currentUser: WisbUser
 }
 
 export default function ListDialog({ visible, onDismiss, onItemSelected, query, googleMapsApiKey, userLocation, onPlaceSelected, currentUser }: Props) {
@@ -59,7 +44,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
         <ObjectsList
           type={query.type}
           multi={false}
-          onPressed={(item: Event | Wasteland | Dumpster | User) => {
+          onPressed={(item: WisbEvent | WisbWasteland | WisbDumpster | WisbUser) => {
             if (!isUser(item)) {
               onItemSelected(item)
             }

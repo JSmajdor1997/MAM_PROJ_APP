@@ -17,15 +17,11 @@ import Geolocation from '@react-native-community/geolocation';
 import ListDialog from '../dialogs/ListDialog';
 import getAPI from '../API/getAPI';
 import Toast from 'react-native-simple-toast';
-import Wasteland from '../API/data_types/Wasteland';
-import Dumpster from '../API/data_types/Dumpster';
-import Event from '../API/data_types/Event';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import metersToLatLngDelta from '../utils/metersToDelta';
 import scaleRegion from '../utils/scaleRegion';
 import doesRegionInclude from '../utils/doesRegionInclude';
 import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
-import { MapObjects, Query, Type } from '../API/helpers';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowUp, faChevronDown, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import isLatLngInRegion from '../utils/isLatLngInRegion';
@@ -36,6 +32,8 @@ import QueryInput from '../components/QueryInput/QueryInput';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import getFirstTodayTime from '../utils/getFirstTodayTime';
 import MapType from '../../res/MapType';
+import WisbObjectType from '../API/WisbObjectType';
+import { WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
 const map_style = require('../../res/map_style.json');
 
 const TrackingIconRadius = 150
@@ -55,6 +53,11 @@ const InitialRegion = {
   longitudeDelta: 0.1,
 }
 
+interface Query {
+  phrase: string
+  type: WisbObjectType.Dumpster |WisbObjectType.Event |WisbObjectType.Wasteland
+}
+
 export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser } } }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
 
@@ -63,7 +66,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   const [isReverseGeocoding, setIsReverseGeocoding] = React.useState(true)
   const [currentLocationAsText, setCurrentLocationAsText] = React.useState<string | null>(null)
 
-  const [query, setQuery] = React.useState<Query>({ phrase: "", type: Type.Event })
+  const [query, setQuery] = React.useState<Query>({ phrase: "", type: WisbObjectType.Event })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
 
   const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
@@ -113,14 +116,14 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   }
 
   const [mapObjects, setMapObjects] = React.useState<{ 
-    [Type.Dumpster]: Dumpster[],
-    [Type.Event]: Event[],
-    [Type.Wasteland]: Wasteland[],
+    [WisbObjectType.Dumpster]: WisbDumpster[],
+    [WisbObjectType.Event]: WisbEvent[],
+    [WisbObjectType.Wasteland]: WisbWasteland[],
     region: Region 
   }>({
-    [Type.Dumpster]: [],
-    [Type.Event]: [],
-    [Type.Wasteland]: [],
+    [WisbObjectType.Dumpster]: [],
+    [WisbObjectType.Event]: [],
+    [WisbObjectType.Wasteland]: [],
     region: InitialRegion
   })
 
@@ -128,13 +131,13 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     const api = getAPI()
 
       Promise.all([
-        api.getWastelands({region, activeOnly: true}),
-        api.getDumpsters({region}),
-        api.getEvents({region, dateRange: [getFirstTodayTime(new Date()), null]}, null, false)
+        api.getMany(WisbObjectType.Wasteland, {region, activeOnly: true}, [0, NaN]),
+        api.getMany(WisbObjectType.Dumpster, {region}, [0, NaN]),
+        api.getMany(WisbObjectType.Event, {region, dateRange: [getFirstTodayTime(new Date()), null]}, [0, NaN])
       ]).then(result => ({
-        [Type.Wasteland]: result[0].data!.items,
-        [Type.Dumpster]: result[1].data!.items,
-        [Type.Event]: result[2].data!.items
+        [WisbObjectType.Wasteland]: result[0].data!,
+        [WisbObjectType.Dumpster]: result[1].data!,
+        [WisbObjectType.Event]: result[2].data!
       })).then(result =>  setMapObjects(mapObjects => ({...mapObjects, ...result})))
   }
 
@@ -209,27 +212,27 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           )}
 
-          {mapObjects[Type.Wasteland].map(wasteland => (
+          {mapObjects[WisbObjectType.Wasteland].map(wasteland => (
             <Marker
-              key={`${Type.Wasteland}${MarkerIdSeparator}${wasteland.id}`}
+              key={`${WisbObjectType.Wasteland}${MarkerIdSeparator}${wasteland.id}`}
               onPress={() => onItemSelected(wasteland)}
               coordinate={wasteland.place.coords}>
               <WisbIcon size={30} icon={IconType.WastelandIcon} />
             </Marker>
           ))}
 
-          {mapObjects[Type.Event].map(event => (
+          {mapObjects[WisbObjectType.Event].map(event => (
             <Marker
-              key={`${Type.Event}${MarkerIdSeparator}${event.id}`}
+              key={`${WisbObjectType.Event}${MarkerIdSeparator}${event.id}`}
               onPress={() => onItemSelected(event)}
-              coordinate={event.meetPlace.coords}>
+              coordinate={event.place.coords}>
               <WisbIcon size={30} icon={IconType.Calendar} />
             </Marker>
           ))}
 
-          {mapObjects[Type.Dumpster].map(dumpster => (
+          {mapObjects[WisbObjectType.Dumpster].map(dumpster => (
             <Marker
-              key={`${Type.Dumpster}${MarkerIdSeparator}${dumpster.id}`}
+              key={`${WisbObjectType.Dumpster}${MarkerIdSeparator}${dumpster.id}`}
               onPress={() => onItemSelected(dumpster)}
               coordinate={dumpster.place.coords}>
               <WisbIcon size={30} icon={IconType.Dumpster} />
@@ -287,32 +290,32 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
           phrase={!isSearchDialogVisible && query.phrase.length == 0 && currentLocationAsText != null && !isReverseGeocoding ? currentLocationAsText : query.phrase}
           items={[
             {
-              isSelected: query.type.includes(Type.Dumpster),
-              component: <WisbIcon icon={IconType.Dumpster} size={20} greyOut={query.type != Type.Dumpster} />,
+              isSelected: query.type.includes(WisbObjectType.Dumpster),
+              component: <WisbIcon icon={IconType.Dumpster} size={20} greyOut={query.type != WisbObjectType.Dumpster} />,
               onClick: () => {
                 setQuery({
                   ...query,
-                  type: Type.Dumpster
+                  type: WisbObjectType.Dumpster
                 })
               }
             },
             {
-              isSelected: query.type.includes(Type.Event),
-              component: <WisbIcon icon={IconType.Calendar} size={20} greyOut={query.type != Type.Event} />,
+              isSelected: query.type.includes(WisbObjectType.Event),
+              component: <WisbIcon icon={IconType.Calendar} size={20} greyOut={query.type != WisbObjectType.Event} />,
               onClick: () => {
                 setQuery({
                   ...query,
-                  type: Type.Event
+                  type: WisbObjectType.Event
                 })
               }
             },
             {
-              isSelected: query.type.includes(Type.Wasteland),
-              component: <WisbIcon icon={IconType.WastelandIcon} size={20} greyOut={query.type != Type.Wasteland} />,
+              isSelected: query.type.includes(WisbObjectType.Wasteland),
+              component: <WisbIcon icon={IconType.WastelandIcon} size={20} greyOut={query.type != WisbObjectType.Wasteland} />,
               onClick: () => {
                 setQuery({
                   ...query,
-                  type: Type.Wasteland
+                  type: WisbObjectType.Wasteland
                 })
               }
             }

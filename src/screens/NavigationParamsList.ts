@@ -1,8 +1,5 @@
-import Dumpster from "../API/data_types/Dumpster"
-import Wasteland from "../API/data_types/Wasteland"
-import Event from "../API/data_types/Event"
+import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces"
 import WisbScreens from "./WisbScreens"
-import User from "../API/data_types/User"
 
 type NavigationParamsList = {
     [WisbScreens.ChatScreen]: {
@@ -10,14 +7,14 @@ type NavigationParamsList = {
     },
     [WisbScreens.LeaderBoardScreen]: {},
     [WisbScreens.LoginScreen]: {
-        onUserLoggedIn: (user: User) => void
+        onUserLoggedIn: (user: WisbUser) => void
     },
     [WisbScreens.MapScreen]: {
-        onItemSelected: (item: Wasteland | Event | Dumpster) => void
-        getCurrentUser(): User
+        onItemSelected: (item: WisbWasteland | WisbEvent | WisbDumpster) => void
+        getCurrentUser(): WisbUser
     },
     [WisbScreens.MyEventsScreen]: {
-        getCurrentUser(): User
+        getCurrentUser(): WisbUser
     },
     [WisbScreens.SettingsScreen]: {},
     [WisbScreens.SplashScreen]: {},

@@ -14,14 +14,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import WisbIcon from './WisbIcon/WisbIcon';
 import { faCalendar, faCalendarAlt, faCrown, faEdit, faMapPin, faMobileRetro, faUnlock } from '@fortawesome/free-solid-svg-icons';
 import { faMessage } from '@fortawesome/free-regular-svg-icons';
-import Event from '../API/data_types/Event';
 import Resources from '../../res/Resources';
 import IconType from './WisbIcon/IconType';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';
+import { WisbEvent } from '../API/interfaces';
 
 interface Props {
-  item: Event;
-  onOpen: (item: Event) => void
+  item: WisbEvent;
+  onOpen: (item: WisbEvent) => void
   isAdmin: boolean
   widthCoeff: number
 }
@@ -61,7 +61,7 @@ function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
 
           <View style={{ position: "absolute", borderRadius: 15, padding: 3, flexDirection: "row", bottom: 10, left: 10, backgroundColor: "white", alignItems: "center" }}>
             <FontAwesomeIcon icon={faMapPin} size={10} />
-            <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 500 }}>{item.meetPlace.asText}</Text>
+            <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 500 }}>{item.place.asText}</Text>
           </View>
 
           {isAdmin ? (

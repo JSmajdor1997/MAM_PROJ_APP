@@ -12,9 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LocationInput from '../components/LocationInput';
 import Separator from '../components/Separator';
 import MapType from '../../res/MapType';
-import NotificationType from '../../res/NotificationType';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
-import ColorMode from '../../res/ColorMode';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.SettingsScreen> { }
 
@@ -55,34 +53,6 @@ export default function SettingsScreen({ navigation }: Props) {
           icon={<FontAwesomeIcon icon={faLanguage} size={20} color={Resources.get().getColors().Green} />} />
         <BooleanItem label='Reklamy' icon={<FontAwesomeIcon icon={faSmile} size={20} color={Resources.get().getColors().Primary} />} value={Resources.get().getSettings().showAdds} onValueChanged={item => Resources.get().setSettings({showAdds: item})} />
         <BooleanItem label='Pokazuj śmietniki na mapie' icon={<FontAwesomeIcon icon={faDumpster} size={20} color={Resources.get().getColors().Yellow} />} value={Resources.get().getSettings().showDumpstersOnMap} onValueChanged={item => Resources.get().setSettings({showDumpstersOnMap: item})} />
-
-        <ItemTemplate
-          icon={<FontAwesomeIcon icon={faBell} size={20} color={Resources.get().getColors().Golden} />}
-          label={'Powiadomiania'}>
-          <MultiSelect
-            data={[
-              { value: NotificationType.NewEventNearby, label: "Nowe wydarzenia w okolicy" },
-              { value: NotificationType.MessagesFromCreators, label: "Wiadomości ogólne" },
-              { value: NotificationType.NewWastelandNearby, label: "Nowe wysypiska w okolicy" },
-            ]}
-            style={{ width: 200 }}
-            value={Resources.get().getSettings().enabledNotifications}
-            labelField={"label"}
-            valueField={"value"}
-            renderItem={(item) => <View><Text>{item.label}</Text></View>}
-            onChange={(items) => Resources.get().setSettings({enabledNotifications: items as NotificationType[]})} />
-        </ItemTemplate>
-
-        <DropDownItem
-          label='Motyw'
-          selectedValue={Resources.get().getSettings().colorMode}
-          onSelected={item => Resources.get().setSettings({colorMode: item.value})}
-          data={[
-            { value: ColorMode.Light, label: "Jasny motyw" },
-            { value: ColorMode.Dark, label: "Ciemny motywa" },
-            { value: ColorMode.Auto, label: "Ustawienia systemowe" },
-          ]}
-          icon={<FontAwesomeIcon icon={faLightbulb} size={20} color={Resources.get().getColors().Lime} />} />
 
         <ItemTemplate icon={<FontAwesomeIcon icon={faLocationDot} color={Resources.get().getColors().Red} />} label='GPS'>
           <View style={{ flexDirection: "column" }}>
