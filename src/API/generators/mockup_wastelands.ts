@@ -5,7 +5,7 @@ import { WisbUser, WisbWasteland } from '../interfaces';
 import WisbObjectType from '../WisbObjectType';
 import Ref from '../Ref';
 
-export default function getMockupWastelands(users: Map<number, WisbUser>): Map<number, WisbWasteland> {
+export default function getMockupWastelands(users: Map<number, WisbUser>, count: number = 30): Map<number, WisbWasteland> {
     const usersList = [...users.values()]
 
     return faker.helpers.multiple(() => ({
@@ -18,7 +18,7 @@ export default function getMockupWastelands(users: Map<number, WisbUser>): Map<n
         creationDate: faker.date.recent(),
         reportedBy: { type: WisbObjectType.User, id: faker.helpers.arrayElement(usersList).id } as Ref<WisbObjectType.User>,
     }), {
-        count: 30,
+        count,
     }).map((it, index) => ({
         ...it,
         photos: faker.helpers.multiple(() => getSeededImage(it.place.asText)),

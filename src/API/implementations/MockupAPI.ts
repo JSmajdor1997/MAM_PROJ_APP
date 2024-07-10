@@ -11,10 +11,13 @@ import getMockupWastelands from "../generators/mockup_wastelands";
 import getMockupMessages from "../generators/getMockupMessages";
 import type Ref from "../Ref";
 import api_endpoint from "./api_endpoint";
-import { CRUD } from "../notifications";
+import { CRUD, ObjectCRUDNotification } from "../notifications";
 import { isEvent } from "../type_guards";
 import isLatLngInRegion from "../../utils/isLatLngInRegion";
 import MapType from "../../../res/MapType";
+import { faker } from "@faker-js/faker";
+import { LatLng } from "react-native-maps";
+import getSeededImage from "../generators/getSeededImage";
 
 interface DB {
     users: Map<number, WisbUser>
@@ -94,12 +97,171 @@ export default class MockupAPI extends API {
                     },
                 }]))
         }
+
+        //return
+        const getRandomNonCurrentUser = (currentUser: WisbUser) => {
+            for (const user of [...this.db.users.values()]) {
+                if (user.id != currentUser.id) {
+                    return currentUser
+                }
+            }
+
+            throw new Error("Internal API error")
+        }
+
+        //send message
+        setInterval(() => {
+            const currentUser = this.getCurrentUser()
+            if (currentUser == null) {
+                return
+            }
+
+            for (const event of [...this.db.events.values()]) {
+                if ([...event.members.values()].some(it => it.id == currentUser?.id)) {
+                    const randomUser = getRandomNonCurrentUser(currentUser)
+
+                    const messages = this.db.messages.get(event.id) ?? []
+
+                    const message: Message = {
+                        date: new Date(),
+                        content: faker.word.sample(),
+                        sender: { type: WisbObjectType.User, id: randomUser.id },
+                        event: { type: WisbObjectType.Event, id: event.id }
+                    }
+
+                    this.db.messages.set(event.id, [
+                        ...messages,
+                        message
+                    ])
+
+                    this.broadcastNotifications({ message, author: { type: WisbObjectType.User, id: randomUser.id } })
+
+                    return
+                }
+            }
+        }, 1000 * 5)
+
+        //send invitation
+        setInterval(() => {
+            const currentUser = this.getCurrentUser()
+            if (currentUser == null) {
+                return
+            }
+
+            for (const event of [...this.db.events.values()]) {
+                if (![...event.members.values()].some(it => it.id == currentUser?.id)) {
+                    const randomUser = getRandomNonCurrentUser(currentUser)
+
+                    const invitations = this.db.invitations.get(event.id) ?? []
+                    const invitation = {
+                        event: { type: WisbObjectType.Event, id: event.id },
+                        user: { type: WisbObjectType.User, id: currentUser.id },
+                        asAdmin: faker.datatype.boolean({ probability: 0.2 })
+                    } as Invitation
+
+                    this.db.invitations.set(event.id, [
+                        ...invitations,
+                        invitation
+                    ])
+
+                    this.broadcastNotifications({ invitation, author: { type: WisbObjectType.User, id: randomUser.id } })
+
+                    return
+                }
+            }
+        }, 1000 * 5 + 10 * 1000)
+
+        //add random object (Wasteland, Event, Dumpster)
+        setInterval(() => {
+            const currentUser = this.getCurrentUser()
+            if (currentUser == null) {
+                return
+            }
+
+            const randomUser = getRandomNonCurrentUser(currentUser)
+
+            let type: WisbObjectType
+            let location: LatLng
+
+            if (faker.datatype.boolean()) {
+                const randomWasteland = {
+                    ...[...getMockupWastelands(this.db.users, 1).values()][0],
+                    id: Math.max(...[...this.db.wastelands.values()].map(it => it.id)) + 1,
+                }
+
+                type = WisbObjectType.Wasteland
+                location = randomWasteland.place.coords
+
+                this.db.wastelands.set(randomWasteland.id, randomWasteland)
+
+            } else if (faker.datatype.boolean()) {
+                const randomDumpster = {
+                    ...[...getMockupDumpsters(this.db.users, 1).values()][0],
+                    id: Math.max(...[...this.db.dumpsters.values()].map(it => it.id)) + 1,
+                }
+
+                type = WisbObjectType.Dumpster
+                location = randomDumpster.place.coords
+
+                this.db.dumpsters.set(randomDumpster.id, randomDumpster)
+            } else {
+                const randomEvent = {
+                    ...[...getMockupEvents(this.db.users, this.db.wastelands, 1).values()][0],
+                    id: Math.max(...[...this.db.events.values()].map(it => it.id)) + 1,
+                }
+
+                type = WisbObjectType.Event
+                location = randomEvent.place.coords
+
+                this.db.events.set(randomEvent.id, randomEvent)
+            }
+
+            this.broadcastNotifications({
+                author: { type: WisbObjectType.User, id: randomUser.id },
+                type,
+                action: CRUD.Created,
+                location
+            })
+        }, 2000 * 5 + 10 * 1000)
+
+        //clear wasteland
+        setInterval(() => {
+            const currentUser = this.getCurrentUser()
+            if (currentUser == null) {
+                return
+            }
+
+            const randomUser = getRandomNonCurrentUser(currentUser)
+
+            const wastelands = [...this.db.wastelands.values()]
+            const index = faker.number.int({ min: 0, max: wastelands.length - 1 })
+
+            // readonly cleanedBy: Ref<WisbObjectType.User>[]
+            // readonly date: Date
+            // readonly photos: string[]
+
+            const afterCleaningData = {
+                cleanedBy: [{ type: WisbObjectType.User, id: randomUser.id }],
+                date: new Date(),
+                photos: faker.helpers.multiple(() => getSeededImage("seed"), { count: 2 })
+            }
+
+            const wasteland = {
+                ...wastelands[index],
+                afterCleaningData
+            } as WisbWasteland
+
+            this.db.wastelands.set(wasteland.id, wasteland)
+
+            this.broadcastNotifications({
+                author: { type: WisbObjectType.User, id: randomUser.id },
+                ref: { type: WisbObjectType.Wasteland, id: wasteland.id },
+                action: CRUD.Updated,
+                updatedFields: { "afterCleaningData": afterCleaningData }
+            })
+        }, 4000 * 5 + 10 * 1000)
     }
 
-    // ref: Ref<T>
-    // location?: unknown
-    // action: CRUD.Updated
-    // updatedFields: { [key in keyof TypeMap<T>]?: TypeMap<T>[key] }
     @api_endpoint({ checkLogin: true, altersData: true, notification: (_, event) => [{ ref: { type: WisbObjectType.Event, id: event.id }, action: CRUD.Updated, type: WisbObjectType.Event }] })
     async updateMemberType(event: WisbEvent, user: Ref<WisbObjectType.User>, isAdmin: boolean): Promise<APIResponse<GeneralError, {}>> {
         const actualEvent = this.db.events.get(event.id)
@@ -289,49 +451,49 @@ export default class MockupAPI extends API {
 
         const currentUser = this.getCurrentUser()!
 
-        if(ref.type == WisbObjectType.Dumpster) {
+        if (ref.type == WisbObjectType.Dumpster) {
             const dumpster = this.db.dumpsters.get(ref.id)
 
-            if(dumpster == null) {
+            if (dumpster == null) {
                 return {
                     error: GeneralError.InvalidDataProvided,
                     description: "Item of provided id does not exist"
                 }
             }
 
-            if(dumpster.addedBy.id != currentUser.id) {
+            if (dumpster.addedBy.id != currentUser.id) {
                 return {
                     error: GeneralError.UserNotAuthorized,
-                    description: "Only user who reported Wasteland may delete it"
+                    description: "Only user who reported Dumpster may delete it"
                 }
             }
-        } else if(ref.type == WisbObjectType.Wasteland) {
+        } else if (ref.type == WisbObjectType.Wasteland) {
             const wasteland = this.db.wastelands.get(ref.id)
 
-            if(wasteland == null) {
+            if (wasteland == null) {
                 return {
                     error: GeneralError.InvalidDataProvided,
                     description: "Item of provided id does not exist"
                 }
             }
 
-            if(wasteland.reportedBy.id != currentUser.id) {
+            if (wasteland.reportedBy.id != currentUser.id) {
                 return {
                     error: GeneralError.UserNotAuthorized,
                     description: "Only user who reported Wasteland may delete it"
                 }
             }
-        } else if(ref.type == WisbObjectType.Event) {
+        } else if (ref.type == WisbObjectType.Event) {
             const event = this.db.events.get(ref.id)
 
-            if(event == null) {
+            if (event == null) {
                 return {
                     error: GeneralError.InvalidDataProvided,
                     description: "Item of provided id does not exist"
                 }
             }
 
-            if(![...event.members.values()].some(it => it.id == currentUser.id && it.isAdmin)) {
+            if (![...event.members.values()].some(it => it.id == currentUser.id && it.isAdmin)) {
                 return {
                     error: GeneralError.UserNotAuthorized,
                     description: "Only administrator of event may delete it"
@@ -360,7 +522,7 @@ export default class MockupAPI extends API {
                 }
             }
 
-            if(currentUser.id != dumpster.addedBy.id) {
+            if (currentUser.id != dumpster.addedBy.id) {
                 return {
                     error: GeneralError.UserNotAuthorized,
                     description: "Only user who reported the dumpster may report it"
@@ -378,7 +540,7 @@ export default class MockupAPI extends API {
                 }
             }
 
-            if(currentUser.id != wasteland.reportedBy.id) {
+            if (currentUser.id != wasteland.reportedBy.id) {
                 return {
                     error: GeneralError.UserNotAuthorized,
                     description: "Only user who reported the wasteland may report it"
@@ -396,7 +558,7 @@ export default class MockupAPI extends API {
                 }
             }
 
-            if([...event.members.values()].some(it => it.id == currentUser.id && it.isAdmin)) {
+            if ([...event.members.values()].some(it => it.id == currentUser.id && it.isAdmin)) {
                 return {
                     error: GeneralError.UserNotAuthorized,
                     description: "Only user who reported the wasteland may report it"
@@ -414,7 +576,7 @@ export default class MockupAPI extends API {
                 }
             }
 
-            if(currentUser.id != user.id) {
+            if (currentUser.id != user.id) {
                 return {
                     error: GeneralError.UserNotAuthorized,
                     description: "User may only change own data"
@@ -463,7 +625,6 @@ export default class MockupAPI extends API {
 
             const userInvitations = this.db.invitations.get(currentUser.id) ?? []
             this.db.invitations.set(currentUser.id, userInvitations.filter(it => it.event.id != invitation.event.id))
-            //usuń zaproszenie, dolacz do eventu
 
             eventId = invitation.event.id
             asAdmin = invitation.asAdmin

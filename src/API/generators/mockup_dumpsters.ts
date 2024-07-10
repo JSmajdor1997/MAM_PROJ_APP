@@ -5,7 +5,7 @@ import { WisbDumpster, WisbUser } from '../interfaces';
 import WisbObjectType from '../WisbObjectType';
 import Ref from '../Ref';
 
-export default function getMockupDumpsters(users: Map<number, WisbUser>): Map<number, WisbDumpster> {
+export default function getMockupDumpsters(users: Map<number, WisbUser>, count: number = 30): Map<number, WisbDumpster> {
     const usersList = [...users.values()]
 
     return faker.helpers.multiple(() => ({
@@ -17,7 +17,7 @@ export default function getMockupDumpsters(users: Map<number, WisbUser>): Map<nu
         },
         description: faker.word.words(),
     }), {
-        count: 30,
+        count,
     }).map((it, index) => ({
         ...it,
         photos: faker.helpers.multiple(() => getSeededImage(it.id.toString())),

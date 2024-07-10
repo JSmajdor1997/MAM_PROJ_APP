@@ -13,7 +13,7 @@ function getYearDateRange(): [Date, Date] {
     return [new Date(), nextYearDate]
 }
 
-export default function getMockupEvents(users: Map<number, WisbUser>, wastelands: Map<number, WisbWasteland>): Map<number, WisbEvent> {
+export default function getMockupEvents(users: Map<number, WisbUser>, wastelands: Map<number, WisbWasteland>, count: number = 30): Map<number, WisbEvent> {
     const usersList = [...users.values()]
 
     return faker.helpers.multiple(() => {
@@ -40,7 +40,7 @@ export default function getMockupEvents(users: Map<number, WisbUser>, wastelands
 
         } satisfies WisbEvent
     }, {
-        count: 30,
+        count,
     }).map((it, index) => ({
         ...it,
         id: index

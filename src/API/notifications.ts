@@ -14,14 +14,14 @@ export type ObjectCRUDNotification<T extends WisbObjectType> = {
     author: Ref<WisbObjectType.User>
     type?: never
     ref: Ref<T>
-    location?: unknown
+    location?: never
     action: CRUD.Deleted
     updatedFields?: never
 } | {
     author: Ref<WisbObjectType.User>
     type?: never
     ref: Ref<T>
-    location?: unknown
+    location?: never
     action: CRUD.Updated
     updatedFields: { [key in keyof TypeMap<T>]?: TypeMap<T>[key] }
 } | {
@@ -30,7 +30,7 @@ export type ObjectCRUDNotification<T extends WisbObjectType> = {
     type: WisbObjectType
     location?: LatLng
     action: CRUD.Created
-    updatedFields?: unknown
+    updatedFields?: never
 }
 
 export interface NewMessageNotification {
