@@ -54,7 +54,7 @@ export default function ChatScreen({ route: { params: { event, navigate } } }: P
     setIsLoading(true);
 
     const range: [number, number] = [index * PageSize, (index + 1) * PageSize];
-    const result = await api.getEventMessages(event, {}, range);
+    const result = await api.getEventMessages(event, range);
 
     if (result.data != null) {
       setData(prevData => ({

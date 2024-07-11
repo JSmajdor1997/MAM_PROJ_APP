@@ -7,12 +7,15 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import NavigationParamsList from './NavigationParamsList';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faMap } from '@fortawesome/free-regular-svg-icons';
-import { faBell, faChevronLeft, faCog, faColonSign, faDumpster, faLanguage, faLightbulb, faLocationDot, faSmile, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faChevronLeft, faCog, faColonSign, faDumpster, faEnvelope, faHandsBubbles, faLanguage, faLightbulb, faLocationDot, faMessage, faSmile, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LocationInput from '../components/LocationInput';
 import Separator from '../components/Separator';
 import MapType from '../../res/MapType';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
+import WisbIcon from '../components/WisbIcon/WisbIcon';
+import IconType from '../components/WisbIcon/IconType';
+import ModificatorType from '../components/WisbIcon/ModificatorType';
 
 const res = Resources.get()
 
@@ -46,20 +49,18 @@ export default function SettingsScreen({ route: {params: {navigate}}  }: Props) 
             { label: "Satelitarna", value: MapType.Satellite },
           ]}
           selectedValue={res.getSettings().mapType}
-          onSelected={value => res.setSettings({languageCode: value.value})} />
+          onSelected={value => res.setSettings({mapType: value.value})} />
         <DropDownItem
           label='Język'
           selectedValue={res.getSettings().languageCode}
           onSelected={item => res.setSettings({languageCode: item.value})}
           data={res.getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text>{language.flagEmoji}</Text>, value: language.code }))}
           icon={<FontAwesomeIcon icon={faLanguage} size={20} color={res.getColors().Green} />} />
-        <BooleanItem label='Reklamy' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
-        <BooleanItem label='Powiadomienia o nowych wydarzeniach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
-        <BooleanItem label='Powiadomienia o nowych śmietnikach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
-        <BooleanItem label='Powiadomienia o nowych wysypiskach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
-        <BooleanItem label='Powiadomienia o zaproszeniach do wydarzeń' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
-        <BooleanItem label='Powiadomienia o nowych wiadomościach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
-        <BooleanItem label='Pokazuj śmietniki na mapie' icon={<FontAwesomeIcon icon={faDumpster} size={20} color={res.getColors().Yellow} />} value={res.getSettings().showDumpstersOnMap} onValueChanged={item => res.setSettings({showDumpstersOnMap: item})} />
+        <BooleanItem label='Powiadomienia o nowych wydarzeniach' icon={<WisbIcon icon={IconType.Calendar} size={20}/>} value={res.getSettings().notifications.newEventInArea} onValueChanged={item => res.setSettings({notifications: {newEventInArea: item}})} />
+        <BooleanItem label='Powiadomienia o nowych śmietnikach' icon={<WisbIcon icon={IconType.Dumpster} size={20}/>} value={res.getSettings().notifications.newDumpsterInArea} onValueChanged={item => res.setSettings({notifications: {newDumpsterInArea: item}})} />
+        <BooleanItem label='Powiadomienia o nowych wysypiskach' icon={<WisbIcon icon={IconType.WastelandIcon} size={20}/>} value={res.getSettings().notifications.newWastelandInArea} onValueChanged={item => res.setSettings({notifications: {newWastelandInArea: item}})} />
+        <BooleanItem label='Powiadomienia o zaproszeniach do wydarzeń' icon={<FontAwesomeIcon icon={faEnvelope} size={20} color={res.getColors().Primary} />} value={res.getSettings().notifications.newInvitation} onValueChanged={item => res.setSettings({notifications: {newInvitation: item}})} />
+        <BooleanItem label='Powiadomienia o nowych wiadomościach' icon={<FontAwesomeIcon icon={faMessage} size={20} color={res.getColors().Primary} />} value={res.getSettings().notifications.newMessage} onValueChanged={item => res.setSettings({notifications: {newMessage: item}})} />
 
         <ItemTemplate icon={<FontAwesomeIcon icon={faLocationDot} color={res.getColors().Red} />} label='GPS'>
           <View style={{ flexDirection: "column" }}>

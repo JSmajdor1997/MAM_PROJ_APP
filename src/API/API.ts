@@ -114,7 +114,7 @@ export default abstract class API {
 
     abstract sendEventMessage(message: Omit<WisbMessage, "date" | "sender">): Promise<APIResponse<GeneralError, {}>>
 
-    abstract getEventMessages(event: WisbEvent, query: { phrase?: string }, indices: [number, number]): Promise<APIResponse<{}, {items: WisbMessage[], totalLength: number}>>
+    abstract getEventMessages(event: WisbEvent, indices: [number, number]): Promise<APIResponse<{}, {items: WisbMessage[], totalLength: number}>>
 
     abstract clearWasteland(wasteland: WisbWasteland, cleaningData: WastelandCleaningData): Promise<APIResponse<GeneralError, {}>>
 

@@ -784,16 +784,10 @@ export default class MockupAPI extends API {
     }
 
     @api_endpoint({ checkLogin: true })
-    async getEventMessages(event: WisbEvent, query: { phrase?: string }, indices: [number, number]): Promise<APIResponse<{}, { items: WisbMessage[], totalLength: number }>> {
-        const messages = this.db.messages.get(event.id.toString())?.sort((a, b) => b.date.getTime() - a.date.getTime()).filter(message => {
-            if (query.phrase != null && !message.content.toLocaleLowerCase().includes(query.phrase.toLocaleLowerCase())) {
-                return false
-            }
-
-            return true
-        })
-
-        console.log(indices)
+    async getEventMessages(event: WisbEvent, indices: [number, number]): Promise<APIResponse<{}, { items: WisbMessage[], totalLength: number }>> {
+        const messages = this.db.messages
+            .get(event.id.toString())
+            ?.sort((a, b) => b.date.getTime() - a.date.getTime())
 
         return {
             data: {

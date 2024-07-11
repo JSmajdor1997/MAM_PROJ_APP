@@ -22,15 +22,20 @@ export default class Resources {
         EnglishTranslation,
         BelarusianTranslation
     ]
-    private static readonly FallBackLocation = getRandomLatLngInPoland()
+    private lastLocation: LatLng = getRandomLatLngInPoland()
 
     private static getDefaultSettings(): Settings {
         return {
             mapType: MapType.Default,
             languageCode: RNLocalize.findBestLanguageTag(Resources.SupportedLanguages.map(it => it.code))?.languageTag ?? Resources.FallBackLanguage.code,
-            showAdds: true,
             defaultLocation: null,
-            showDumpstersOnMap: true
+            notifications: {
+                newMessage: true,
+                newInvitation: true,
+                newDumpsterInArea: true,
+                newWastelandInArea: true,
+                newEventInArea: true
+            }
         }
     }
 
@@ -43,30 +48,52 @@ export default class Resources {
         return Resources._instance
     }
 
-    private readonly storage = new MMKV()
+    private static readonly MMKV_ID = "resources"
+    private static readonly MMKV_KEY = "resources"
+    private storage = new MMKV({
+        id: Resources.MMKV_ID,
+        encryptionKey: 'hunter2'
+    })
+
     private settingsCache: Settings
 
-    constructor() {
-        const stringifiedSettings = this.storage.getString(MMKVSettingsKey)
+    private geolocationWatcherId: number = -1
 
-        if (stringifiedSettings == null) {
-            this.settingsCache = Resources.getDefaultSettings()
-            this.storage.set(MMKVSettingsKey, JSON.stringify(this.settingsCache))
-        } else {
-            this.settingsCache = JSON.parse(stringifiedSettings)
-        }
-
-        //last position i listeners
-        Geolocation.watchPosition(
-            (position) => {
-                this.lastUserLocation = position.coords
+    private startGeolocation() {
+        this.geolocationWatcherId = Geolocation.watchPosition(
+            position => {
+                this.lastLocation = position.coords
                 this.userLocationListeners.forEach(listener => listener(position.coords))
             },
-            (error) => {
+            error => {
                 console.log(error)
             },
             { enableHighAccuracy: true, distanceFilter: 0, interval: 10000, fastestInterval: 5000 }
         );
+    }
+
+    private stopGeolocation() {
+        if (this.geolocationWatcherId != -1) {
+            Geolocation.clearWatch(this.geolocationWatcherId)
+            this.geolocationWatcherId = -1
+        }
+    }
+
+    constructor() {
+        if (!this.storage.contains(Resources.MMKV_KEY)) {
+            this.storage.set(Resources.MMKV_KEY, JSON.stringify(Resources.getDefaultSettings()))
+        }
+
+        this.settingsCache = JSON.parse(this.storage.getString(Resources.MMKV_KEY)!)
+
+        if (this.settingsCache.defaultLocation != null) {
+            this.lastLocation = this.settingsCache.defaultLocation.coords
+        }
+
+        //last position i listeners
+        if (this.settingsCache.defaultLocation == null) {
+            this.startGeolocation()
+        }
     }
 
     getSupportedLanguages() {
@@ -77,13 +104,25 @@ export default class Resources {
         return this.settingsCache
     }
 
-    setSettings(setObject: Partial<Settings>) {
-        this.settingsCache = {
-            ...this.settingsCache,
-            ...setObject
+    setSettings(setObject: Partial<Omit<Settings, "notifications"> & { notifications?: Partial<Settings["notifications"]> }>) {
+        if (setObject.defaultLocation != this.settingsCache.defaultLocation) {
+            if (this.settingsCache.defaultLocation == null) {
+                this.startGeolocation()
+            } else {
+                this.stopGeolocation()
+            }
         }
 
-        this.storage.set(MMKVSettingsKey, JSON.stringify(setObject))
+        this.settingsCache = {
+            ...this.settingsCache,
+            ...setObject,
+            notifications: {
+                ...this.settingsCache.notifications,
+                ...(setObject.notifications ?? {})
+            }
+        }
+
+        this.storage.set(Resources.MMKV_KEY, JSON.stringify(this.settingsCache))
     }
 
     getColors() {
@@ -130,15 +169,14 @@ export default class Resources {
     }
 
     getStrings() {
-        const defaultLanguage = EnglishTranslation
-
         const supportedLanguages = {
-            [EnglishTranslation.code]: defaultLanguage,
+            [EnglishTranslation.code]: EnglishTranslation,
             [PolishTranslation.code]: PolishTranslation,
             [BelarusianTranslation.code]: BelarusianTranslation
         }
 
-        return supportedLanguages[this.settingsCache.languageCode]
+
+        return supportedLanguages[this.settingsCache.languageCode] ?? EnglishTranslation
     }
 
     getLocale() {
@@ -151,13 +189,8 @@ export default class Resources {
         }
     }
 
-    private lastUserLocation: LatLng | null = null
     getLastLocation(): LatLng {
-        if (this.lastUserLocation == null) {
-            return Resources.FallBackLocation
-        }
-
-        return this.lastUserLocation
+        return this.lastLocation
     }
 
     private userLocationListeners: UserPositionListener[] = []
@@ -167,6 +200,7 @@ export default class Resources {
         }
 
         this.userLocationListeners.push(listener)
+        listener(this.lastLocation)
         return () => {
             const index = this.userLocationListeners.indexOf(listener)
 
