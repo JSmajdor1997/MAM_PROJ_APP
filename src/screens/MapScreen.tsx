@@ -30,7 +30,6 @@ import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import IconType from '../components/WisbIcon/IconType';
 import QueryInput from '../components/QueryInput/QueryInput';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
-import getFirstTodayTime from '../utils/getFirstTodayTime';
 import MapType from '../../res/MapType';
 import WisbObjectType from '../API/WisbObjectType';
 import { WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
@@ -133,12 +132,14 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
       Promise.all([
         api.getMany(WisbObjectType.Wasteland, {region, activeOnly: true}, [0, NaN]),
         api.getMany(WisbObjectType.Dumpster, {region}, [0, NaN]),
-        api.getMany(WisbObjectType.Event, {region, dateRange: [getFirstTodayTime(new Date()), null]}, [0, NaN])
+        api.getMany(WisbObjectType.Event, {region, activeOnly: true}, [0, NaN])
       ]).then(result => ({
         [WisbObjectType.Wasteland]: result[0].data!,
         [WisbObjectType.Dumpster]: result[1].data!,
         [WisbObjectType.Event]: result[2].data!
-      })).then(result =>  setMapObjects(mapObjects => ({...mapObjects, ...result})))
+      })).then(result =>  {
+        setMapObjects(mapObjects => ({...mapObjects, ...result}))
+      })
   }
 
   return (

@@ -77,8 +77,9 @@ export default function QueryInput({ style, onPress, phrase, onPhraseChanged, it
                 onPhraseChanged={onPhraseChanged} />
 
             <Animated.View style={{ flexDirection: "row", justifyContent: "space-around", width: "100%", height: heightAnim, overflow: "hidden", alignItems: "center", maxWidth: "100%" }}>
-                {items.map(item => (
+                {items.map((item, index) => (
                     <TouchableOpacity
+                        key={index}
                         disabled={item.isSelected}
                         style={{ opacity: item.isSelected ? 1 : 0.4 }}
                         onPress={item.onClick}>

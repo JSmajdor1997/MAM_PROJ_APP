@@ -1,37 +1,66 @@
 import { MMKV } from "react-native-mmkv";
-import API, { GeneralError, SignUpError, LoginError, LogoutError } from "../API";
+import API, { GeneralError, SignUpError, LogoutError } from "../API";
 import type { APIResponse, QueryMap, TypeMap, CreateMap } from "../API";
 import type { WisbEvent, WisbUser, Invitation, WisbWasteland, Message, WastelandCleaningData, WisbDumpster } from "../interfaces";
 import WisbObjectType from "../WisbObjectType";
 import getMockupInvitations from "../generators/getMockupInvitations";
-import getMockupDumpsters from "../generators/mockup_dumpsters";
-import getMockupEvents from "../generators/mockup_events";
-import getMockupUsers from "../generators/mockup_users";
-import getMockupWastelands from "../generators/mockup_wastelands";
+import getMockupDumpsters from "../generators/getMockupDumpsters";
+import getMockupEvents from "../generators/getMockupEvents";
+import getMockupUsers from "../generators/getMockupUsers";
+import getMockupWastelands from "../generators/getMockupWastelands";
 import getMockupMessages from "../generators/getMockupMessages";
 import type Ref from "../Ref";
 import api_endpoint from "./api_endpoint";
 import { CRUD, ObjectCRUDNotification } from "../notifications";
-import { isEvent } from "../type_guards";
+import { isEvent, isWasteland } from "../type_guards";
 import isLatLngInRegion from "../../utils/isLatLngInRegion";
 import MapType from "../../../res/MapType";
 import { faker } from "@faker-js/faker";
 import { LatLng } from "react-native-maps";
 import getSeededImage from "../generators/getSeededImage";
+import scaleRegion from "../../utils/scaleRegion";
+import compareDates from "../../utils/dates/compareDates";
 
 interface DB {
-    users: Map<number, WisbUser>
-    events: Map<number, WisbEvent>
-    wastelands: Map<number, WisbWasteland>
-    dumpsters: Map<number, WisbDumpster>
+    users: Map<string, WisbUser>
+    events: Map<string, WisbEvent>
+    wastelands: Map<string, WisbWasteland>
+    dumpsters: Map<string, WisbDumpster>
 
-    invitations: Map<number, Invitation[]>        //key is user id
+    invitations: Map<string, Invitation[]>        //key is user id
 
     currentUser: WisbUser | null
-    messages: Map<number, Message[]>              //key is event's id
+    messages: Map<string, Message[]>              //key is event's id
 }
 
 export default class MockupAPI extends API {
+    private static StringifyJSON: (key: string, value: any) => any = function (this: any, key, value) {
+        if (value instanceof Map) {
+            return {
+                __type: 'Map',
+                value: Object.fromEntries(value)
+            };
+        } else if (this[key] instanceof Date) {
+            return {
+                value: this[key].toUTCString(),
+                __type: 'Date',
+            }
+        }
+
+        return value;
+    }
+    private static ParseJSON: (key: string, value: any) => any = (key, value) => {
+        if (value != null && typeof value == "object") {
+            if (value.__type === 'Map') {
+                return new Map(Object.entries(value.value));
+            } else if (value.__type === 'Date') {
+                return new Date(value.value)
+            }
+        }
+
+        return value;
+    }
+
     private static readonly MMKV_ID = "mockup_api"
     private static readonly MMKV_KEY = "mockup_api"
     private mmkvStorage = new MMKV({
@@ -42,14 +71,41 @@ export default class MockupAPI extends API {
     readonly db: DB
 
     protected syncToDB() {
-
+        this.mmkvStorage.set(MockupAPI.MMKV_KEY, JSON.stringify(this.db, MockupAPI.StringifyJSON))
     }
+
+    private static readonly DefualtUsers: WisbUser[] = [
+        {
+            id: 99999,
+            email: "abc@abc.com",
+            userName: "DefUser1",
+            password: "123",
+            photoUrl: "https://www.pngall.com/wp-content/uploads/15/Chad-Meme-PNG-Background.png",
+            nrOfClearedWastelands: 123,
+            addedDumpsters: 321,
+            deletedDumpsters: 1,
+        },
+        {
+            id: 999991,
+            email: "cba@cba.com",
+            userName: "DefUser2",
+            password: "123",
+            photoUrl: "https://ih1.redbubble.net/image.3392464379.8767/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
+            nrOfClearedWastelands: 123,
+            addedDumpsters: 321,
+            deletedDumpsters: 1,
+        }
+    ]
 
     constructor() {
         super()
 
         if (!this.mmkvStorage.contains(MockupAPI.MMKV_KEY)) {
             const users = getMockupUsers()
+            for (const defUser of MockupAPI.DefualtUsers) {
+                users.set(defUser.id.toString(), defUser)
+            }
+
             const dumpsters = getMockupDumpsters(users)
             const wastelands = getMockupWastelands(users)
             const events = getMockupEvents(users, wastelands)
@@ -64,41 +120,31 @@ export default class MockupAPI extends API {
                 events,
                 invitations,
                 messages
-            }))
+            }, MockupAPI.StringifyJSON))
         }
 
         const rawDb = this.mmkvStorage.getString(MockupAPI.MMKV_KEY)!
-
-        let { currentUser, dumpsters, wastelands, events, invitations, users, messages } = JSON.parse(rawDb) as DB
+        let {
+            currentUser,
+            dumpsters,
+            wastelands,
+            events,
+            invitations,
+            users,
+            messages
+        } = JSON.parse(rawDb, MockupAPI.ParseJSON) as DB
 
         this.db = {
             messages,
-            wastelands: new Map([...wastelands].map(([id, it]) => [
-                id,
-                {
-                    ...it,
-                    creationDate: new Date(it.creationDate),
-                    afterCleaningData: it.afterCleaningData != null ? {
-                        ...it.afterCleaningData,
-                        date: new Date(it.afterCleaningData?.date)
-                    } : undefined
-                }])),
+            wastelands,
             currentUser,
             dumpsters,
             users,
             invitations,
-            events: new Map([...events].map(([id, it]) => [
-                id,
-                {
-                    ...it,
-                    event: {
-                        ...it,
-                        dateRange: [new Date(it.dateRange[0]), new Date(it.dateRange[1])],
-                    },
-                }]))
+            events
         }
 
-        //return
+        return
         const getRandomNonCurrentUser = (currentUser: WisbUser) => {
             for (const user of [...this.db.users.values()]) {
                 if (user.id != currentUser.id) {
@@ -120,7 +166,7 @@ export default class MockupAPI extends API {
                 if ([...event.members.values()].some(it => it.id == currentUser?.id)) {
                     const randomUser = getRandomNonCurrentUser(currentUser)
 
-                    const messages = this.db.messages.get(event.id) ?? []
+                    const messages = this.db.messages.get(event.id.toString()) ?? []
 
                     const message: Message = {
                         date: new Date(),
@@ -129,7 +175,7 @@ export default class MockupAPI extends API {
                         event: { type: WisbObjectType.Event, id: event.id }
                     }
 
-                    this.db.messages.set(event.id, [
+                    this.db.messages.set(event.id.toString(), [
                         ...messages,
                         message
                     ])
@@ -152,14 +198,14 @@ export default class MockupAPI extends API {
                 if (![...event.members.values()].some(it => it.id == currentUser?.id)) {
                     const randomUser = getRandomNonCurrentUser(currentUser)
 
-                    const invitations = this.db.invitations.get(event.id) ?? []
+                    const invitations = this.db.invitations.get(event.id.toString()) ?? []
                     const invitation = {
                         event: { type: WisbObjectType.Event, id: event.id },
                         user: { type: WisbObjectType.User, id: currentUser.id },
                         asAdmin: faker.datatype.boolean({ probability: 0.2 })
                     } as Invitation
 
-                    this.db.invitations.set(event.id, [
+                    this.db.invitations.set(event.id.toString(), [
                         ...invitations,
                         invitation
                     ])
@@ -192,7 +238,7 @@ export default class MockupAPI extends API {
                 type = WisbObjectType.Wasteland
                 location = randomWasteland.place.coords
 
-                this.db.wastelands.set(randomWasteland.id, randomWasteland)
+                this.db.wastelands.set(randomWasteland.id.toString(), randomWasteland)
 
             } else if (faker.datatype.boolean()) {
                 const randomDumpster = {
@@ -203,7 +249,7 @@ export default class MockupAPI extends API {
                 type = WisbObjectType.Dumpster
                 location = randomDumpster.place.coords
 
-                this.db.dumpsters.set(randomDumpster.id, randomDumpster)
+                this.db.dumpsters.set(randomDumpster.id.toString(), randomDumpster)
             } else {
                 const randomEvent = {
                     ...[...getMockupEvents(this.db.users, this.db.wastelands, 1).values()][0],
@@ -213,7 +259,7 @@ export default class MockupAPI extends API {
                 type = WisbObjectType.Event
                 location = randomEvent.place.coords
 
-                this.db.events.set(randomEvent.id, randomEvent)
+                this.db.events.set(randomEvent.id.toString(), randomEvent)
             }
 
             this.broadcastNotifications({
@@ -251,7 +297,7 @@ export default class MockupAPI extends API {
                 afterCleaningData
             } as WisbWasteland
 
-            this.db.wastelands.set(wasteland.id, wasteland)
+            this.db.wastelands.set(wasteland.id.toString(), wasteland)
 
             this.broadcastNotifications({
                 author: { type: WisbObjectType.User, id: randomUser.id },
@@ -264,7 +310,7 @@ export default class MockupAPI extends API {
 
     @api_endpoint({ checkLogin: true, altersData: true, notification: (_, event) => [{ ref: { type: WisbObjectType.Event, id: event.id }, action: CRUD.Updated, type: WisbObjectType.Event }] })
     async updateMemberType(event: WisbEvent, user: Ref<WisbObjectType.User>, isAdmin: boolean): Promise<APIResponse<GeneralError, {}>> {
-        const actualEvent = this.db.events.get(event.id)
+        const actualEvent = this.db.events.get(event.id.toString())
 
         if (actualEvent == null) {
             return {
@@ -273,7 +319,7 @@ export default class MockupAPI extends API {
             }
         }
 
-        const memberInfo = actualEvent.members.get(user.id)
+        const memberInfo = actualEvent.members.get(user.id.toString())
 
         if (memberInfo == null) {
             return {
@@ -282,7 +328,7 @@ export default class MockupAPI extends API {
             }
         }
 
-        actualEvent.members.set(user.id, { ...memberInfo, isAdmin })
+        actualEvent.members.set(user.id.toString(), { ...memberInfo, isAdmin })
 
         return {
             data: {}
@@ -311,7 +357,7 @@ export default class MockupAPI extends API {
             }
         }[type]
 
-        const newId = Math.max(...collection.keys()) + 1
+        const newId = Math.max(...[...collection.keys()].map(it => parseInt(it))) + 1
 
         const newObject: TypeMap<T> = {
             ...defaultObject,
@@ -319,7 +365,7 @@ export default class MockupAPI extends API {
             id: newId
         } as any
 
-        collection.set(newId, newObject as any)
+        collection.set(newId.toString(), newObject as any)
 
         return {
             data: {
@@ -337,7 +383,7 @@ export default class MockupAPI extends API {
             [WisbObjectType.Wasteland]: this.db.wastelands,
         }
 
-        const item = map[ref.type].get(ref.id)
+        const item = map[ref.type].get(ref.id.toString())
 
         if (item != null) {
             return {
@@ -355,7 +401,7 @@ export default class MockupAPI extends API {
     async getMany<T extends WisbObjectType>(type: T, query: QueryMap<T>, range: [number, number]): Promise<APIResponse<GeneralError, TypeMap<T>[]>> {
         let list: TypeMap<T>[] = []
 
-        if (type == WisbObjectType.User) {
+        if (type === WisbObjectType.User) {
             list = [...this.db.users.values()]
                 .map(it => ({ ...it, password: "", email: "", points: this.calculateUserRank(it) }))
                 .sort((a, b) => b.points - a.points)
@@ -366,7 +412,7 @@ export default class MockupAPI extends API {
 
                     return true
                 }) as any
-        } else if (type == WisbObjectType.Dumpster) {
+        } else if (type === WisbObjectType.Dumpster) {
             const q = query as QueryMap<WisbObjectType.Dumpster>
 
             list = [...this.db.dumpsters.values()]
@@ -381,7 +427,7 @@ export default class MockupAPI extends API {
 
                     return true
                 }) as any
-        } else if (type == WisbObjectType.Wasteland) {
+        } else if (type === WisbObjectType.Wasteland) {
             const q = query as QueryMap<WisbObjectType.Wasteland>
 
             list = [...this.db.wastelands.values()].filter(({ place, description, reportedBy, afterCleaningData }) => {
@@ -389,7 +435,7 @@ export default class MockupAPI extends API {
                     return false
                 }
 
-                if (q.region != null && !isLatLngInRegion(q.region, place.coords)) {
+                if (q.region != null && !isLatLngInRegion(scaleRegion(q.region, 1.1), place.coords)) {
                     return false
                 }
 
@@ -399,7 +445,7 @@ export default class MockupAPI extends API {
 
                 return true
             }) as any
-        } else if (type == WisbObjectType.Event) {
+        } else if (type === WisbObjectType.Event) {
             const q = query as QueryMap<WisbObjectType.Event>
 
             const currentUser = this.getCurrentUser()!
@@ -417,8 +463,13 @@ export default class MockupAPI extends API {
                     return false
                 }
 
-                if (q.activeOnly != null && event.dateRange[1] < new Date()) {
-                    return false
+                if (typeof q.activeOnly == "boolean") {
+                    const result = compareDates(event.dateRange[1], new Date(), {year: true, month: true, date: true})
+
+                    return !(
+                        (q.activeOnly && !result.firstBigger) ||
+                        (!q.activeOnly && result.firstBigger)
+                    )
                 }
 
                 if (q.dateRange != null) {
@@ -432,12 +483,11 @@ export default class MockupAPI extends API {
                 }
 
                 return true
-            })
-                .sort((a, b) => a.dateRange[0] > b.dateRange[1] ? -1 : +1) as any
+            }).sort((a, b) => a.dateRange[0] > b.dateRange[1] ? -1 : +1) as any
         }
 
         return {
-            data: list.slice(range[0], range[1])
+            data: list.slice(range[0], isNaN(range[1]) ? list.length - 1 : range[1])
         }
     }
 
@@ -452,7 +502,7 @@ export default class MockupAPI extends API {
         const currentUser = this.getCurrentUser()!
 
         if (ref.type == WisbObjectType.Dumpster) {
-            const dumpster = this.db.dumpsters.get(ref.id)
+            const dumpster = this.db.dumpsters.get(ref.id.toString())
 
             if (dumpster == null) {
                 return {
@@ -468,7 +518,7 @@ export default class MockupAPI extends API {
                 }
             }
         } else if (ref.type == WisbObjectType.Wasteland) {
-            const wasteland = this.db.wastelands.get(ref.id)
+            const wasteland = this.db.wastelands.get(ref.id.toString())
 
             if (wasteland == null) {
                 return {
@@ -484,7 +534,7 @@ export default class MockupAPI extends API {
                 }
             }
         } else if (ref.type == WisbObjectType.Event) {
-            const event = this.db.events.get(ref.id)
+            const event = this.db.events.get(ref.id.toString())
 
             if (event == null) {
                 return {
@@ -501,7 +551,7 @@ export default class MockupAPI extends API {
             }
         }
 
-        map[ref.type].delete(ref.id)
+        map[ref.type].delete(ref.id.toString())
 
         return {
             data: {}
@@ -513,7 +563,7 @@ export default class MockupAPI extends API {
         const currentUser = this.getCurrentUser()!
 
         if (ref.type == WisbObjectType.Dumpster) {
-            const dumpster = this.db.dumpsters.get(ref.id)
+            const dumpster = this.db.dumpsters.get(ref.id.toString())
 
             if (dumpster == null) {
                 return {
@@ -529,9 +579,9 @@ export default class MockupAPI extends API {
                 }
             }
 
-            this.db.dumpsters.set(ref.id, { ...this.db.dumpsters.get(ref.id)!, ...update })
+            this.db.dumpsters.set(ref.id.toString(), { ...this.db.dumpsters.get(ref.id.toString())!, ...update })
         } else if (ref.type == WisbObjectType.Wasteland) {
-            const wasteland = this.db.wastelands.get(ref.id)
+            const wasteland = this.db.wastelands.get(ref.id.toString())
 
             if (wasteland == null) {
                 return {
@@ -547,9 +597,9 @@ export default class MockupAPI extends API {
                 }
             }
 
-            this.db.wastelands.set(ref.id, { ...this.db.wastelands.get(ref.id)!, ...update })
+            this.db.wastelands.set(ref.id.toString(), { ...this.db.wastelands.get(ref.id.toString())!, ...update })
         } else if (ref.type == WisbObjectType.Event) {
-            const event = this.db.events.get(ref.id)
+            const event = this.db.events.get(ref.id.toString())
 
             if (event == null) {
                 return {
@@ -565,9 +615,9 @@ export default class MockupAPI extends API {
                 }
             }
 
-            this.db.events.set(ref.id, { ...this.db.events.get(ref.id)!, ...update })
+            this.db.events.set(ref.id.toString(), { ...this.db.events.get(ref.id.toString())!, ...update })
         } else if (ref.type == WisbObjectType.User) {
-            const user = this.db.users.get(ref.id)
+            const user = this.db.users.get(ref.id.toString())
 
             if (user == null) {
                 return {
@@ -583,7 +633,9 @@ export default class MockupAPI extends API {
                 }
             }
 
-            this.db.users.set(ref.id, { ...this.db.users.get(ref.id)!, ...update })
+            const newUser = { ...this.db.users.get(ref.id.toString())!, ...update }
+            this.db.currentUser = newUser
+            this.db.users.set(ref.id.toString(), newUser)
         }
 
         return {
@@ -594,19 +646,19 @@ export default class MockupAPI extends API {
     @api_endpoint({ checkLogin: true, altersData: true, notification: (api, event, users) => users.map(({ id, asAdmin }) => ({ invitation: { event: { type: WisbObjectType.Event, id: event.id }, user: { type: WisbObjectType.User, id }, asAdmin } })) })
     async sendEventInvitations(event: WisbEvent, users: (Ref<WisbObjectType.User> & { asAdmin: boolean })[]): Promise<APIResponse<GeneralError, {}>> {
         for (const user of users) {
-            const invitations = this.db.invitations.get(user.id) ?? []
+            const invitations = this.db.invitations.get(user.id.toString()) ?? []
 
             if (invitations.some(it => it.event.id == event.id)) {
                 continue
             }
 
             invitations.push({
-                event: { type: WisbObjectType.Event, id: event.id },
+                event: { type: WisbObjectType.Event, id: event.id, name: event.name },
                 user: { type: WisbObjectType.User, id: user.id },
                 asAdmin: user.asAdmin
             })
 
-            this.db.invitations.set(user.id, invitations)
+            this.db.invitations.set(user.id.toString(), invitations)
         }
 
         return {
@@ -623,8 +675,8 @@ export default class MockupAPI extends API {
         if ((obj as Invitation).asAdmin != undefined) {
             const invitation = obj as Invitation
 
-            const userInvitations = this.db.invitations.get(currentUser.id) ?? []
-            this.db.invitations.set(currentUser.id, userInvitations.filter(it => it.event.id != invitation.event.id))
+            const userInvitations = this.db.invitations.get(currentUser.id.toString()) ?? []
+            this.db.invitations.set(currentUser.id.toString(), userInvitations.filter(it => it.event.id != invitation.event.id))
 
             eventId = invitation.event.id
             asAdmin = invitation.asAdmin
@@ -635,8 +687,8 @@ export default class MockupAPI extends API {
             asAdmin = false
         }
 
-        const event = this.db.events.get(eventId)!
-        event.members.set(currentUser.id, { type: WisbObjectType.User, id: currentUser.id, isAdmin: asAdmin })
+        const event = this.db.events.get(eventId.toString())!
+        event.members.set(currentUser.id.toString(), { type: WisbObjectType.User, id: currentUser.id, isAdmin: asAdmin })
 
         return {
             data: {
@@ -649,8 +701,8 @@ export default class MockupAPI extends API {
     async leaveEvent(event: WisbEvent): Promise<APIResponse<GeneralError, {}>> {
         const currentUser = this.getCurrentUser()!
 
-        const currentEvent = this.db.events.get(event.id)!
-        currentEvent.members.delete(currentUser.id)
+        const currentEvent = this.db.events.get(event.id.toString())!
+        currentEvent.members.delete(currentUser.id.toString())
 
         return {
             data: {}
@@ -661,7 +713,8 @@ export default class MockupAPI extends API {
     async removeInvitation(invitation: Invitation): Promise<APIResponse<GeneralError, {}>> {
         const user = this.getCurrentUser()!
 
-        this.db.invitations.delete(user.id)
+        const invitations = this.db.invitations.get(user.id.toString())?.filter(it => it.user.id != user.id) ?? []
+        this.db.invitations.set(user.id.toString(), invitations)
 
         return {
             data: {}
@@ -671,14 +724,14 @@ export default class MockupAPI extends API {
     @api_endpoint({ checkLogin: true })
     async getEventWastelands(event: WisbEvent): Promise<APIResponse<GeneralError, WisbWasteland[]>> {
         return {
-            data: [...event.wastelands.values()].map(it => this.db.wastelands.get(it.id)!)
+            data: [...event.wastelands.values()].map(it => this.db.wastelands.get(it.id.toString())!)
         }
     }
 
     @api_endpoint({ checkLogin: true })
     async getEventMembers(event: WisbEvent): Promise<APIResponse<GeneralError, WisbUser[]>> {
         return {
-            data: [...event.members.values()].map(it => this.db.users.get(it.id)!)
+            data: [...event.members.values()].map(it => this.db.users.get(it.id.toString())!)
         }
     }
 
@@ -687,16 +740,16 @@ export default class MockupAPI extends API {
         const currentUser = this.getCurrentUser()!
 
         return {
-            data: this.db.invitations.get(currentUser.id) ?? []
+            data: this.db.invitations.get(currentUser.id.toString()) ?? []
         }
     }
 
     @api_endpoint({ checkLogin: true, altersData: true, notification: (api, message) => [{ message }] })
     async sendEventMessage(message: Omit<Message, "date" | "sender">): Promise<APIResponse<GeneralError, {}>> {
         const currentUser = this.getCurrentUser()!
-        const messages = this.db.messages.get(message.event.id) ?? []
+        const messages = this.db.messages.get(message.event.id.toString()) ?? []
 
-        this.db.messages.set(message.event.id, [
+        this.db.messages.set(message.event.id.toString(), [
             ...messages,
             {
                 ...message,
@@ -712,7 +765,7 @@ export default class MockupAPI extends API {
 
     @api_endpoint({ checkLogin: true })
     async getEventMessages(event: WisbEvent, query: { phrase?: string | undefined }, indices: [number, number]): Promise<APIResponse<{}, Message[]>> {
-        const messages = this.db.messages.get(event.id)?.filter(message => {
+        const messages = this.db.messages.get(event.id.toString())?.filter(message => {
             if (query.phrase != null && message.content.toLocaleLowerCase().includes(query.phrase.toLocaleLowerCase())) {
                 return true
             }
@@ -727,8 +780,8 @@ export default class MockupAPI extends API {
 
     @api_endpoint({ checkLogin: true, altersData: true, notification: (api, { id }) => [{ action: CRUD.Updated, ref: { type: WisbObjectType.Wasteland, id }, updatedFields: "afterCleaningData" }] })
     async clearWasteland(wasteland: WisbWasteland, cleaningData: WastelandCleaningData): Promise<APIResponse<GeneralError, {}>> {
-        const currentWasteland = this.db.wastelands.get(wasteland.id)!
-        this.db.wastelands.set(wasteland.id, {
+        const currentWasteland = this.db.wastelands.get(wasteland.id.toString())!
+        this.db.wastelands.set(wasteland.id.toString(), {
             ...currentWasteland,
             afterCleaningData: cleaningData
         })
@@ -743,19 +796,13 @@ export default class MockupAPI extends API {
     }
 
 
-    @api_endpoint({ checkLogin: true, altersData: true })
-    async login(email: string, password: string): Promise<APIResponse<LoginError, WisbUser>> {
-        const fittingUser = [...this.db.users.values()].find(it => it.email == email)
+    @api_endpoint({ altersData: true })
+    async login(email: string, password: string): Promise<APIResponse<GeneralError, WisbUser>> {
+        const fittingUser = [...this.db.users.values()].find(it => it.email == email && it.password == password)
 
         if (fittingUser == null) {
             return {
-                error: LoginError.UserDoesNotExist
-            }
-        }
-
-        if (fittingUser.password != password) {
-            return {
-                error: LoginError.InvalidPassword
+                error: GeneralError.InvalidDataProvided
             }
         }
 
@@ -797,7 +844,7 @@ export default class MockupAPI extends API {
 
         const newId = Math.max(...usersList.map(user => user.id)) + 1
 
-        this.db.users.set(newId, {
+        this.db.users.set(newId.toString(), {
             ...user,
             id: newId,
             nrOfClearedWastelands: 0,

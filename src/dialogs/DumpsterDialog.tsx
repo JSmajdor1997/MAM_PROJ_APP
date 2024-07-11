@@ -1,15 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
-import { faGripLines, faMapPin, faTrash, faPerson, faShare, faEdit, faImage } from "@fortawesome/free-solid-svg-icons";
-import { Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { faGripLines, faMapPin, faTrash, faEdit, faImage } from "@fortawesome/free-solid-svg-icons";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import { LatLng } from "react-native-maps";
 import IconType from "../components/WisbIcon/IconType";
-import WisbIcon from "../components/WisbIcon/WisbIcon";
 import ImagesGallery from "../components/ImagesGallery";
 import React from "react";
-import QRCode from "react-native-qrcode-svg";
 import Spinner from "react-native-spinkit";
 import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";

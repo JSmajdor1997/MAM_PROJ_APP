@@ -63,11 +63,6 @@ export type CreateMap<ItemType extends WisbObjectType> = (
     {}
 )
 
-export enum LoginError {
-    UserDoesNotExist,
-    InvalidPassword
-}
-
 export enum LogoutError {
     UserNotAuthorized
 }
@@ -127,7 +122,7 @@ export default abstract class API {
 
     abstract updateMemberType(event: WisbEvent, user: Ref<WisbObjectType.User>, isAdmin: boolean): Promise<APIResponse<GeneralError, {}>>;
 
-    abstract login(email: string, password: string): Promise<APIResponse<LoginError, WisbUser>>
+    abstract login(email: string, password: string): Promise<APIResponse<GeneralError, WisbUser>>
     abstract logout(): Promise<APIResponse<LogoutError, {}>>
     abstract signUp(user: Pick<WisbUser, "email" | "userName" | "photoUrl" | "password">): Promise<APIResponse<SignUpError, {}>>
     abstract resetPassword(email: string): Promise<APIResponse<GeneralError, {}>>

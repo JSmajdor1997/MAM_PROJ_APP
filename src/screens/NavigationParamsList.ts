@@ -3,7 +3,7 @@ import WisbScreens from "./WisbScreens"
 
 type NavigationParamsList = {
     [WisbScreens.ChatScreen]: {
-        event: Event
+        event: WisbEvent
     },
     [WisbScreens.LeaderBoardScreen]: {},
     [WisbScreens.LoginScreen]: {

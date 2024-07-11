@@ -13,7 +13,6 @@ import FastImage from 'react-native-fast-image';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import WisbIcon from './WisbIcon/WisbIcon';
 import { faCalendar, faCalendarAlt, faCrown, faEdit, faMapPin, faMobileRetro, faUnlock } from '@fortawesome/free-solid-svg-icons';
-import { faMessage } from '@fortawesome/free-regular-svg-icons';
 import Resources from '../../res/Resources';
 import IconType from './WisbIcon/IconType';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';

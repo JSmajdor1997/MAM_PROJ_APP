@@ -1,15 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import {
   View,
   TouchableOpacity,
   Text,
-  Alert,
-  StatusBar,
   StyleSheet,
   Dimensions,
 } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCalendarAlt, faMessage } from '@fortawesome/free-regular-svg-icons';
 import Resources from '../../res/Resources';
 import { GoogleStaticMapNext } from 'react-native-google-static-map-next';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';

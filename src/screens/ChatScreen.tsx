@@ -36,6 +36,7 @@ interface State {
 }
 
 export default function ChatScreen({ navigation, route: { params: { event } } }: Props) {
+  return null
   const [inputMessage, setInputMessage] = React.useState("")
 
   const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)

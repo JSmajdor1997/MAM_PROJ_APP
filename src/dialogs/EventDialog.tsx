@@ -20,11 +20,12 @@ import ImageInput from "../components/ImageInput";
 import ObjectsList from "../components/ObjectsList";
 import { isUser, isWasteland } from "../API/type_guards";
 import Share from 'react-native-share';
-import getMockupEvents from "../API/generators/mockup_events";
+import getMockupEvents from "../API/generators/getMockupEvents";
 import getAPI from "../API/getAPI";
 import Spinner from "react-native-spinkit";
 import { WisbEvent, WisbUser } from "../API/interfaces";
 import WisbObjectType from "../API/WisbObjectType";
+import Ref from "../API/Ref";
 
 enum Sections {
     BasicInfo,
@@ -208,7 +209,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         )
                     },
                     [Sections.Wastelands]: {
-                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.size > 0 && addingPhase != AddingPhases.Added,
+                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0 && addingPhase != AddingPhases.Added,
                         icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, minHeight: 50 }}>
                                 <Text>Co sprzątamy?</Text>
@@ -226,10 +227,10 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                     }}
                                     type={WisbObjectType.Wasteland}
                                     multi={true}
-                                    selectedItemsIds={workingEvent.wastelands?.map(it => it.id) ?? []}
+                                    selectedItemsIds={([...workingEvent.wastelands?.values()?? []]).map(it => it.id)}
                                     onSelected={selectedItem => {
                                         if (isWasteland(selectedItem)) {
-                                            if (workingEvent.wastelands != null && workingEvent.wastelands.some(it => it.id == selectedItem.id)) {
+                                            if (workingEvent.wastelands != null && (workingEvent.wastelands ?? []).some(it => it.id == selectedItem.id)) {
                                                 setWorkingEvent({
                                                     ...workingEvent,
                                                     wastelands: workingEvent.wastelands.filter(it => it.id != selectedItem.id)
@@ -238,8 +239,8 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                                 setWorkingEvent({
                                                     ...workingEvent,
                                                     wastelands: [
-                                                        ...workingEvent.wastelands ?? [],
-                                                        selectedItem
+                                                        ...(workingEvent.wastelands ?? []).map(({id}) => ({type: WisbObjectType.Wasteland, id} satisfies Ref<WisbObjectType.Wasteland>)),
+                                                        {type: WisbObjectType.Wasteland, id: selectedItem.id}
                                                     ]
                                                 })
                                             }
@@ -300,9 +301,12 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                         <View>
                                             <TouchableOpacity onPress={() => {
                                                 setAddingPhase(AddingPhases.Adding)
-                                                api.createOne(WisbObjectType.Event, workingEvent as WisbEvent).then(() => {
-                                                    setAddingPhase(AddingPhases.Added)
-                                                })
+           
+                                                if(workingEvent.name != null && workingEvent.dateRange != null && workingEvent.iconUrl != null && workingEvent.place && workingEvent.description && workingEvent.members != null && workingEvent.wastelands != null) {
+                                                    api.createOne(WisbObjectType.Event, workingEvent as Omit<WisbEvent, "id">).then(() => {
+                                                        setAddingPhase(AddingPhases.Added)
+                                                    })
+                                                }
                                             }}>
                                                 <Text>DODAJ</Text>
                                             </TouchableOpacity>

@@ -15,7 +15,7 @@ export interface Message {
 }
 
 export interface Invitation {
-    event: Ref<WisbObjectType.Event>
+    event: Ref<WisbObjectType.Event> & { name: string }
     user: Ref<WisbObjectType.User>
     asAdmin: boolean
 }
@@ -34,12 +34,12 @@ export interface WisbUser {
 export interface WisbEvent {
     readonly id: number
     readonly name: string
-    readonly iconUrl?: string
+    readonly iconUrl: string
     readonly dateRange: [Date, Date]
     readonly place: SimplePlace
     readonly description: string
-    readonly members: Map<number, Ref<WisbObjectType.User> & { isAdmin: boolean }>
-    readonly wastelands: Map<number, Ref<WisbObjectType.Wasteland>>
+    readonly members: Map<string, Ref<WisbObjectType.User> & { isAdmin: boolean }>
+    readonly wastelands: Ref<WisbObjectType.Wasteland>[]
 }
 
 export interface WisbDumpster {
@@ -62,6 +62,6 @@ export interface WisbWasteland {
     readonly photos: string[]
     readonly description: string
     readonly creationDate: Date
-    readonly reportedBy: Ref<WisbObjectType.User>
+    readonly reportedBy: Ref<WisbObjectType.User> & { userName: string }
     readonly afterCleaningData?: WastelandCleaningData
 }

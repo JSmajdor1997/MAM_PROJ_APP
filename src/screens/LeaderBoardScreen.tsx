@@ -26,12 +26,11 @@ import Resources from '../../res/Resources';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import IconType from '../components/WisbIcon/IconType';
 import getAPI from '../API/getAPI';
-import User from '../API/data_types/User';
 import UserItem from '../components/UserItem';
 import InvitationsDialog from '../dialogs/InvitationsDialog';
 import ObjectsList from '../components/ObjectsList';
-import { Type } from '../API/helpers';
 import WisbObjectType from '../API/WisbObjectType';
+import { WisbUser } from '../API/interfaces';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
@@ -49,28 +48,32 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
   const [isInvitationDialogVisible, setIsInvitationDialogVisible] = React.useState(false)
 
-  const [user, setUser] = React.useState<User | null>(null)
+  const [user, setUser] = React.useState<WisbUser | null>(api.getCurrentUser())
 
-  const [leadership, setLeadership] = React.useState<User[]>([])
+  const [leadership, setLeadership] = React.useState<WisbUser[]>([])
 
   const [updatedSelfData, setUpdatedSelfData] = React.useState<{ userName: string } | null>()
 
   React.useEffect(() => {
-    Promise.all([
-      api.getCurrentUser().then(result => setUser(result.data ?? null)),
-      api.getUsers({}, [index, index + RecordsPerPage]).then(result => setLeadership(result.data?.items ?? []))
-    ]).then(() => setIsLoading(false))
+    setIsLoading(true)
+
+    api.getMany(WisbObjectType.User, {}, [index, index + RecordsPerPage]).then(result => {
+      setLeadership(result.data ?? [])
+
+      setIsLoading(true)
+    })
   }, [])
 
   React.useEffect(() => {
     setIsLoading(true)
-    api.getUsers({}, [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage])
+    api.getMany(WisbObjectType.User, {}, [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage])
       .then(result => {
-        const users = result.data?.items ?? []
+        const users = result.data ?? []
         setLeadership(users)
         setHasMore(users.length > 0)
+
+        setIsLoading(false)
       })
-    setIsLoading(false)
   }, [index])
 
   if (user == null) {
@@ -117,7 +120,12 @@ export default function LeaderboardScreen({ navigation }: Props) {
               letterSpacing: 1,
               fontWeight: 'bold',
               marginTop: 10,
-              textAlign: "center"
+              textAlign: "center",
+              backgroundColor: Resources.get().getColors().DarkBeige,
+              borderRadius: 10,
+              paddingVertical: 3,
+              paddingHorizontal: 8,
+              color: "white"
             }}>
             {updatedSelfData?.userName ?? user.userName}
           </TextInput>
@@ -237,7 +245,10 @@ export default function LeaderboardScreen({ navigation }: Props) {
         onPress={()=>{
           api.updateOne({type: WisbObjectType.User, id: api.getCurrentUser()!.id}, {userName: updatedSelfData.userName}).then(result=>{
             if(result.data != null) {
-              setUser(updatedSelfData.userName)
+              setUser({
+                ...user,
+                ...updatedSelfData
+              })
             } else {
               Toast.show(`Unexpected Error!`, Toast.SHORT);
             }

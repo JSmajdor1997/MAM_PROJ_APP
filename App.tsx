@@ -20,29 +20,24 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import MyEventsScreen from './src/screens/MyEventsScreen';
 import NavigationParamsList from './src/screens/NavigationParamsList';
 import WisbIcon from './src/components/WisbIcon/WisbIcon';
-import Wasteland from './src/API/data_types/Wasteland';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 import DumpsterDialog from './src/dialogs/DumpsterDialog';
 import EventDialog from './src/dialogs/EventDialog';
 import WastelandDialog from './src/dialogs/WastelandDialog';
-import DateTimePickerModal from "react-native-modal-datetime-picker"
 import { Mode } from './src/dialogs/WisbDialog';
 import { PortalProvider } from '@gorhom/portal';
 import { ClickOutsideProvider } from 'react-native-click-outside';
-import { LatLng } from 'react-native-maps';
-import Dumpster from './src/API/data_types/Dumpster';
-import Event from './src/API/data_types/Event';
 import { isDumpster, isEvent, isWasteland } from './src/API/type_guards';
 import { LogBox } from 'react-native';
 import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
 import QRCodeDialog from './src/components/QRCodeDialog';
-import { Type } from './src/API/helpers';
 import getAPI from './src/API/getAPI';
-import User from './src/API/data_types/User';
-import Spinner from 'react-native-spinkit';
-import { NewEventInvitationNotification, NewMessageNotification, NewObjectNotification, NotificationType, ObjectDeletionNotification, ObjectUpdatedNotification, WastelandClearedNotification, switchNotification } from './src/API/data_types/notifications';
+import WisbObjectType from './src/API/WisbObjectType';
+import { NotificationType } from './src/API/ListenersManager';
+import { WisbEvent, WisbDumpster, WisbWasteland, WisbUser } from './src/API/interfaces';
+import { NewMessageNotification } from './src/API/notifications';
 
 LogBox.ignoreAllLogs();
 
@@ -87,9 +82,9 @@ type DialogDataItem<T> = {
 }
 
 type DialogData = {
-  [Type.Event]?: DialogDataItem<Event>
-  [Type.Dumpster]?: DialogDataItem<Dumpster>
-  [Type.Wasteland]?: DialogDataItem<Wasteland>
+  [WisbObjectType.Event]?: DialogDataItem<WisbEvent>
+  [WisbObjectType.Dumpster]?: DialogDataItem<WisbDumpster>
+  [WisbObjectType.Wasteland]?: DialogDataItem<WisbWasteland>
 }
 
 const navigationRef = createNavigationContainerRef<NavigationParamsList>()
@@ -105,75 +100,79 @@ export default function App() {
 
   const [userLocation, setUserLocation] = React.useState(Resources.get().getLastLocation())
 
-  const [currentUser, setCurrentUser] = React.useState<User | null>()
+  const [currentUser, setCurrentUser] = React.useState<WisbUser | null>()
 
-  const onUserLoggedIn = (user: User) => {
+  const onUserLoggedIn = (user: WisbUser) => {
     Resources.get().registerUserLocationListener(newLocation => {
       setUserLocation(newLocation)
-      api.updateListener(apiListenerId, { location: newLocation })
     })
 
     setCurrentUser(user)
+
+      navigationRef.navigate(WisbScreens.MapScreen, {
+        onItemSelected,
+        getCurrentUser: ()=>api.getCurrentUser()!
+      })
   }
 
   let apiListenerId = -1
 
   const onLogout = () => {
-    navigationRef.navigate(WisbScreens.LoginScreen, {
-      onUserLoggedIn
-    })
+    // navigationRef.navigate(WisbScreens.LoginScreen, {
+    //   onUserLoggedIn
+    // })
   }
 
   React.useEffect(() => {
-    api.registerListener({ location: userLocation }, (e) => {
-      switchNotification(e, {
-        [NotificationType.NewObjectNotification]: (item: NewObjectNotification) => {
-          if (isEvent(item.newItem)) {
-            Toast.show(`New event in your area ${item.newItem.name}`, Toast.SHORT);
-          }
-        },
-        [NotificationType.NewMessageNotification]: (item: NewMessageNotification) => {
-          Toast.show(`You've got new message in event ${item.event.name}`, Toast.SHORT);
-        },
-        [NotificationType.NewEventInvitationNotification]: (item: NewEventInvitationNotification) => {
-          Toast.show("You've got new invitation to event!", Toast.SHORT);
-        },
-      })
-    }).then(result => {
-      if (result.data != null) {
-        apiListenerId = result.data.listenerId
-      }
-    })
+    // api.registerListener({ location: userLocation }, (e) => {
+    //   switchNotification(e, {
+    //     [NotificationType.NewObjectNotification]: (item: NewObjectNotification) => {
+    //       if (isEvent(item.newItem)) {
+    //         Toast.show(`New event in your area ${item.newItem.name}`, Toast.SHORT);
+    //       }
+    //     },
+    //     [NotificationType.NewMessageNotification]: (item: NewMessageNotification) => {
+    //       Toast.show(`You've got new message in event ${item.event.name}`, Toast.SHORT);
+    //     },
+    //     [NotificationType.NewEventInvitationNotification]: (item: NewEventInvitationNotification) => {
+    //       Toast.show("You've got new invitation to event!", Toast.SHORT);
+    //     },
+    //   })
+    // }).then(result => {
+    //   if (result.data != null) {
+    //     apiListenerId = result.data.listenerId
+    //   }
+    // })
 
-    api.addOnLogoutListener(onLogout)
+    // api.addOnLogoutListener(onLogout)
 
-    return () => {
-      api.removeOnLogoutListener(onLogout)
+    // return () => {
+    //   api.removeOnLogoutListener(onLogout)
 
-      if (apiListenerId != -1) {
-        api.removeListener(apiListenerId)
-      }
-    }
+    //   if (apiListenerId != -1) {
+    //     api.removeListener(apiListenerId)
+    //   }
+    // }
   }, [])
 
-  const onItemSelected = (item: Event | Wasteland | Dumpster) => {
+  const onItemSelected = (item: WisbEvent | WisbWasteland | WisbDumpster) => {
     if (isDumpster(item)) {
       setDialogData({
-        [Type.Dumpster]: {
+        [WisbObjectType.Dumpster]: {
           mode: Mode.Viewing,
           item: item
         }
       })
     } else if (isEvent(item)) {
       setDialogData({
-        [Type.Event]: {
+        [WisbObjectType.Event]: {
           mode: Mode.Viewing,
           item: item
         }
       })
     } else if (isWasteland(item)) {
       setDialogData({
-        [Type.Wasteland]: {
+        [WisbObjectType.Wasteland]: {
           mode: Mode.Viewing,
           item: item
         }
@@ -182,15 +181,13 @@ export default function App() {
   }
 
   React.useEffect(() => {
-    if (currentUser != null) {
-      navigationRef.navigate(WisbScreens.MapScreen, {
-        onItemSelected,
-        getCurrentUser
-      })
-    }
+    // if (currentUser != null) {
+    //   navigationRef.navigate(WisbScreens.MapScreen, {
+    //     onItemSelected,
+    //     getCurrentUser: api.getCurrentUser()!
+    //   })
+    // }
   }, [currentUser])
-
-  const getCurrentUser = () => currentUser as User
 
   return (
     <ClickOutsideProvider>
@@ -208,20 +205,20 @@ export default function App() {
             <Stack.Navigator
               initialRouteName={currentScreen}
               screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500, gestureEnabled: false }}>
-              <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
+              {/* <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} /> */}
               <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} initialParams={{
                 onUserLoggedIn
               }} />
               <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
-                getCurrentUser
+                getCurrentUser: () => api.getCurrentUser()!
               }} />
+              <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} />
               <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
                 onItemSelected,
-                getCurrentUser
+                getCurrentUser: () => api.getCurrentUser()!
               }} />
-              <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
               <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
-              <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} />
+              <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
             </Stack.Navigator>
           </NavigationContainer>
 
@@ -233,7 +230,7 @@ export default function App() {
               {
                 render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MyEventsScreen, { getCurrentUser })
+                  navigationRef.navigate(WisbScreens.MyEventsScreen, { getCurrentUser: ()=>api.getCurrentUser()! })
                 },
                 bubbles: [
                   {
@@ -245,7 +242,7 @@ export default function App() {
               {
                 render: () => <WisbIcon icon={IconType.Earth} size={30} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected, getCurrentUser })
+                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected, getCurrentUser: ()=>api.getCurrentUser()! })
                 },
                 bubbles: [
                   {
@@ -254,7 +251,7 @@ export default function App() {
                     ),
                     onPress: () => {
                       setDialogData({
-                        [Type.Event]: {
+                        [WisbObjectType.Event]: {
                           mode: Mode.Adding,
                         }
                       })
@@ -266,7 +263,7 @@ export default function App() {
                     ),
                     onPress: () => {
                       setDialogData({
-                        [Type.Dumpster]: {
+                        [WisbObjectType.Dumpster]: {
                           mode: Mode.Adding,
                         }
                       })
@@ -278,7 +275,7 @@ export default function App() {
                     ),
                     onPress: () => {
                       setDialogData({
-                        [Type.Wasteland]: {
+                        [WisbObjectType.Wasteland]: {
                           mode: Mode.Adding,
                         }
                       })
@@ -297,11 +294,11 @@ export default function App() {
           {
             currentUser == null ? null : (
               <>
-                {dialogData[Type.Event] != null ? <EventDialog
-                  visible={dialogData[Type.Event] != null}
+                {dialogData[WisbObjectType.Event] != null ? <EventDialog
+                  visible={dialogData[WisbObjectType.Event] != null}
                   googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
-                  event={dialogData[Type.Event]?.item}
-                  mode={dialogData[Type.Event]?.mode ?? Mode.Viewing}
+                  event={dialogData[WisbObjectType.Event]?.item}
+                  mode={dialogData[WisbObjectType.Event]?.mode ?? Mode.Viewing}
                   userLocation={userLocation}
                   currentUser={currentUser}
                   onDismiss={() => setDialogData({})}
@@ -309,18 +306,18 @@ export default function App() {
                     navigationRef.navigate(WisbScreens.ChatScreen, { event })
                     setDialogData({})
                   }} /> : null}
-                {dialogData[Type.Wasteland] != null ? <WastelandDialog
-                  visible={dialogData[Type.Wasteland] != null}
-                  wasteland={dialogData[Type.Wasteland]?.item}
-                  mode={dialogData[Type.Wasteland]?.mode ?? Mode.Viewing}
+                {dialogData[WisbObjectType.Wasteland] != null ? <WastelandDialog
+                  visible={dialogData[WisbObjectType.Wasteland] != null}
+                  wasteland={dialogData[WisbObjectType.Wasteland]?.item}
+                  mode={dialogData[WisbObjectType.Wasteland]?.mode ?? Mode.Viewing}
                   userLocation={userLocation}
                   currentUser={currentUser}
                   onDismiss={() => setDialogData({})} /> : null}
-                {dialogData[Type.Dumpster] != null ? <DumpsterDialog
+                {dialogData[WisbObjectType.Dumpster] != null ? <DumpsterDialog
                   currentUser={currentUser}
-                  visible={dialogData[Type.Dumpster] != null}
-                  dumpster={dialogData[Type.Dumpster]?.item}
-                  mode={dialogData[Type.Dumpster]?.mode ?? Mode.Viewing}
+                  visible={dialogData[WisbObjectType.Dumpster] != null}
+                  dumpster={dialogData[WisbObjectType.Dumpster]?.item}
+                  mode={dialogData[WisbObjectType.Dumpster]?.mode ?? Mode.Viewing}
                   userLocation={userLocation}
                   onDismiss={() => setDialogData({})} /> : null}
               </>
@@ -333,7 +330,7 @@ export default function App() {
             onEvent={event => {
               setIsQrCodeDialogVisible(false)
               setDialogData({
-                [Type.Event]: {
+                [WisbObjectType.Event]: {
                   mode: Mode.Viewing,
                   item: event
                 }

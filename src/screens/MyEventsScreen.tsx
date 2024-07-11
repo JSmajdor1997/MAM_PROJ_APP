@@ -89,11 +89,8 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
           }
         }}
         multi={false}
-        onPressed={(item: Event) => {
-          
-        }}
         phrase={phrase}
-        googleMapsApiKey={""}
+        googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
       />
 
       <View style={{

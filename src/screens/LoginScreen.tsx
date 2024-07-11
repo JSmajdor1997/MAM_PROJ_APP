@@ -20,7 +20,7 @@ import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons';
 import BambooImage from "../../res/images/bamboo.svg"
 import LeavesImage from "../../res/images/leaves_on_stick.svg"
-import { LoginError, SignUpError } from '../API/API';
+import { GeneralError, SignUpError } from '../API/API';
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LoginScreen> { }
 
@@ -28,6 +28,8 @@ enum Mode {
   Login,
   SignUp
 }
+
+const api = getAPI()
 
 export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: Props) {
   const [mode, setMode] = React.useState(Mode.Login)
@@ -41,6 +43,14 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
   const toast = (message: string) => {
     Toast.showWithGravityAndOffset(message, Toast.SHORT, Toast.CENTER, 0, 10)
   }
+
+  React.useEffect(()=>{
+    const currentUser = api.getCurrentUser()
+
+    if(currentUser != null) {
+      onUserLoggedIn(currentUser)
+    }
+  })
 
   return (
     <View
@@ -109,17 +119,13 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
           <TouchableOpacity
             onPress={() => {
               if (mode == Mode.Login) {
-                getAPI().login(email, password).then(result => {
-                  if (result.error == LoginError.InvalidPassword) {
+                getAPI().login("abc@abc.com", "123").then(result => {
+                  if (result.error == GeneralError.InvalidDataProvided) {
                     toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
-                  } else if (result.error == LoginError.UserDoesNotExist) {
-                    toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorUserDoesntExistMessage);
                   } else if(result.data!=null){
                     setEmail("")
                     setPassword("")
                     onUserLoggedIn(result.data)
-                  } else {
-                    toast("Unknown error occurred!!!");
                   }
                 })
               } else {
@@ -172,13 +178,6 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
             onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
             <Text style={styles.login}>{mode == Mode.SignUp ? Resources.get().getStrings().Screens.LoginScreen.LoginExclamation : Resources.get().getStrings().Screens.LoginScreen.SignUpExclamation}</Text>
           </TouchableOpacity>
-        </View>
-
-        <Text style={{ color: Resources.get().getColors().Beige }}>{Resources.get().getStrings().Screens.LoginScreen.Or}</Text>
-
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-          <FontAwesomeIcon icon={faFacebookF} style={{ marginRight: 10 }} color={Resources.get().getColors().Blue} />
-          <FontAwesomeIcon icon={faGoogle} style={{ marginLeft: 10 }} color={Resources.get().getColors().Blue} />
         </View>
       </View>
     </View>
