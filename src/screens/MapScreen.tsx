@@ -33,7 +33,11 @@ import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import MapType from '../../res/MapType';
 import WisbObjectType from '../API/WisbObjectType';
 import { WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
+import { Notification } from '../API/notifications';
 const map_style = require('../../res/map_style.json');
+
+const api = getAPI()
+const res = Resources.get()
 
 const TrackingIconRadius = 150
 const TrackingIconSize = 35
@@ -47,7 +51,7 @@ interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens
 }
 
 const InitialRegion = {
-  ...Resources.get().getLastLocation(),
+  ...res.getLastLocation(),
   latitudeDelta: 0.1,
   longitudeDelta: 0.1,
 }
@@ -64,25 +68,37 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
   const [isReverseGeocoding, setIsReverseGeocoding] = React.useState(true)
   const [currentLocationAsText, setCurrentLocationAsText] = React.useState<string | null>(null)
-
   const [query, setQuery] = React.useState<Query>({ phrase: "", type: WisbObjectType.Event })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
-
   const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
-
   const [userPosition, setUserPosition] = React.useState<LatLng>(InitialRegion)
 
   const setCurrentRegionName = (region: Region) => {
     setIsReverseGeocoding(true)
-    reverseGeoCode(Resources.get().getEnv().GOOGLE_MAPS_API_KEY, region).then(formattedAddress => {
+    reverseGeoCode(res.getEnv().GOOGLE_MAPS_API_KEY, region).then(formattedAddress => {
       setCurrentLocationAsText(formattedAddress ?? "??")
       setIsReverseGeocoding(false)
     })
   }
 
+  const onNewNotification = (n: Notification) => {
+
+  }
+
   React.useEffect(() => {
+    api.notifications.registerListener(onNewNotification, {location: InitialRegion})
+
     setCurrentRegionName(InitialRegion)
-    return Resources.get().registerUserLocationListener(setUserPosition)
+
+    const unregister = res.registerUserLocationListener(newLocation => {
+      setUserPosition(newLocation)
+      api.notifications.updateListener(onNewNotification, {location: newLocation})
+    })
+
+    return ()=>{
+      unregister()
+      updateMapObjects(InitialRegion)
+    }
   }, [])
 
   const getTrackingIconPosition = (region: Region) => {
@@ -127,16 +143,14 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   })
 
   const updateMapObjects = (region: Region) => {
-    const api = getAPI()
-
       Promise.all([
         api.getMany(WisbObjectType.Wasteland, {region, activeOnly: true}, [0, NaN]),
         api.getMany(WisbObjectType.Dumpster, {region}, [0, NaN]),
         api.getMany(WisbObjectType.Event, {region, activeOnly: true}, [0, NaN])
       ]).then(result => ({
-        [WisbObjectType.Wasteland]: result[0].data!,
-        [WisbObjectType.Dumpster]: result[1].data!,
-        [WisbObjectType.Event]: result[2].data!
+        [WisbObjectType.Wasteland]: result[0].data!.items,
+        [WisbObjectType.Dumpster]: result[1].data!.items,
+        [WisbObjectType.Event]: result[2].data!.items
       })).then(result =>  {
         setMapObjects(mapObjects => ({...mapObjects, ...result}))
       })
@@ -147,7 +161,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
       style={styles.root}>
       <MapView
         ref={mapRef}
-        mapType={Resources.get().getSettings().mapType == MapType.Default ? "standard" : "hybrid"}
+        mapType={res.getSettings().mapType == MapType.Default ? "standard" : "hybrid"}
         initialRegion={InitialRegion}
         onRegionChangeComplete={newRegion => {
           if (!doesRegionInclude(mapObjects.region, newRegion) && calcRegionAreaInMeters(newRegion) < 100000) {
@@ -193,7 +207,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             null :
             <Marker
               id={UserMarkerId}
-              title={Resources.get().getStrings().Screens.MapScreen.UserPositionMarkerFlyoutContent}
+              title={res.getStrings().Screens.MapScreen.UserPositionMarkerFlyoutContent}
               coordinate={userPosition}>
               <WisbIcon size={25}
                 icon={IconType.MapPin} />
@@ -251,7 +265,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
               }
             }}
             style={styles.trackingIconSubContainer}>
-            <FontAwesomeIcon icon={faArrowUp} color={Resources.get().getColors().Primary} style={styles.trackingIconChild} />
+            <FontAwesomeIcon icon={faArrowUp} color={res.getColors().Primary} style={styles.trackingIconChild} />
           </TouchableOpacity>
         </View>
       </View>
@@ -263,7 +277,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
         }}>
         <QueryInput
           loading={!isSearchDialogVisible && query.phrase.length == 0 && isReverseGeocoding}
-          placeholder={Resources.get().getStrings().Components.MapQueryInput.Placeholder}
+          placeholder={res.getStrings().Components.MapQueryInput.Placeholder}
           onPress={() => setIsSearchDialogVisible(true)}
           onPhraseChanged={phrase => setQuery({ ...query, phrase })}
           isFocused={isSearchDialogVisible}
@@ -326,7 +340,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
 
       <ListDialog
         currentUser={getCurrentUser()}
-        googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+        googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
         onPlaceSelected={selectedPlace => {
           setIsSearchDialogVisible(false)
           setSearchedPlace(selectedPlace)
@@ -353,7 +367,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mapQueryInputContainer: {
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -362,7 +376,7 @@ const styles = StyleSheet.create({
     shadowRadius: 13.16,
 
     elevation: 20,
-    backgroundColor: Resources.get().getColors().White,
+    backgroundColor: res.getColors().White,
     borderRadius: 10,
     marginHorizontal: 10,
     flexDirection: 'row',
@@ -371,13 +385,13 @@ const styles = StyleSheet.create({
   },
   trackingIconSubContainer: {
     position: "absolute",
-    backgroundColor: Resources.get().getColors().White,
+    backgroundColor: res.getColors().White,
     borderRadius: 100,
     justifyContent: "center",
     alignItems: "center",
     height: TrackingIconSize,
     width: TrackingIconSize,
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 10,
@@ -410,12 +424,12 @@ const styles = StyleSheet.create({
   },
   searchedPlaceMarkerLabel: {
     marginBottom: 5,
-    backgroundColor: Resources.get().getColors().Primary,
-    color: Resources.get().getColors().White,
+    backgroundColor: res.getColors().Primary,
+    color: res.getColors().White,
     padding: 5,
     borderRadius: 5,
     overflow: "hidden",
-    borderColor: Resources.get().getColors().White,
+    borderColor: res.getColors().White,
     borderWidth: 2,
     fontWeight: "500",
     letterSpacing: 1,

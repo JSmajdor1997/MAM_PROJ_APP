@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faAd, faAdd, faClose, faPen } from "@fortawesome/free-solid-svg-icons";
 import ImageInput from "./ImageInput";
 
+const res = Resources.get()
+
 export interface Props {
     images: string[]
     onAddRequest?: () => void
@@ -79,7 +81,7 @@ interface ImageComponentProps {
 function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageComponentProps) {
     return (
         <View style={{
-            padding: margin, shadowColor: Resources.get().getColors().Black,
+            padding: margin, shadowColor: res.getColors().Black,
             shadowOffset: {
                 width: 0,
                 height: 2,
@@ -93,13 +95,13 @@ function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageCompo
                 position: "absolute",
                 right: 14,
                 top: 10,
-                backgroundColor: Resources.get().getColors().White,
+                backgroundColor: res.getColors().White,
                 borderRadius: 100,
                 width: 20,
                 height: 20,
                 justifyContent: "center",
                 alignItems: "center",
-                shadowColor: Resources.get().getColors().White,
+                shadowColor: res.getColors().White,
                 shadowOffset: {
                     width: 0,
                     height: 5,
@@ -107,7 +109,7 @@ function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageCompo
                 shadowOpacity: 0.5,
                 shadowRadius: 4,
             }}>
-                <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Red} size={15} />
+                <FontAwesomeIcon icon={faClose} color={res.getColors().Red} size={15} />
             </TouchableOpacity>
             }
         </View>

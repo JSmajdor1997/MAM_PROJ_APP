@@ -2,6 +2,8 @@ import React, { Fragment } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Animated, ViewStyle, Pressable, Easing } from "react-native";
 import Resources from "../../res/Resources";
 
+const res = Resources.get()
+
 export interface Option {
     icon: React.ReactNode;
     color: string;
@@ -122,7 +124,7 @@ const styles = StyleSheet.create({
         width: "100%", height: 100, justifyContent: "space-between", flexDirection: "row"
     },
     optionContainer: {
-        flex: 1, backgroundColor: Resources.get().getColors().Black
+        flex: 1, backgroundColor: res.getColors().Black
     },
     optionPressable: {
         alignItems: "center"

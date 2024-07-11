@@ -18,6 +18,8 @@ import IconType from './WisbIcon/IconType';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 import { WisbEvent } from '../API/interfaces';
 
+const res = Resources.get()
+
 interface Props {
   item: WisbEvent;
   onOpen: (item: WisbEvent) => void
@@ -65,8 +67,8 @@ function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
 
           {isAdmin ? (
             <View style={{ position: "absolute", borderRadius: 15, padding: 3, flexDirection: "row", top: 10, right: 10, backgroundColor: "white", alignItems: "center" }}>
-              <FontAwesomeIcon icon={faUnlock} size={10} color={Resources.get().getColors().Red} />
-              <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 900, letterSpacing: 1, color: Resources.get().getColors().Red }}>jesteś administratorem</Text>
+              <FontAwesomeIcon icon={faUnlock} size={10} color={res.getColors().Red} />
+              <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 900, letterSpacing: 1, color: res.getColors().Red }}>jesteś administratorem</Text>
             </View>
           ) : null}
         </View>
@@ -75,8 +77,8 @@ function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
           <Text style={{ letterSpacing: 1, flex: 1, fontWeight: "400", fontSize: 14, textTransform: "capitalize" }} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
 
           <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 5 }}>
-            <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.dateRange[0].toLocaleDateString(Resources.get().getLocale(), { year: "numeric", month: "long", day: "2-digit" })}</Text>
-            <FontAwesomeIcon icon={faCalendarAlt} size={10} color={Resources.get().getColors().DarkBeige} />
+            <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.dateRange[0].toLocaleDateString(res.getLocale(), { year: "numeric", month: "long", day: "2-digit" })}</Text>
+            <FontAwesomeIcon icon={faCalendarAlt} size={10} color={res.getColors().DarkBeige} />
           </View>
         </View>
       </Neomorph>
@@ -93,7 +95,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'space-between',
 
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 1,

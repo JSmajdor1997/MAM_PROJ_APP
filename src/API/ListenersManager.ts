@@ -54,7 +54,7 @@ export default class ListenersManager {
                         return
                     }
 
-                    if (event.members.has(currentUser.id)) {
+                    if (event.members.has(currentUser.id.toString())) {
                         [...this.listeners].forEach(it => {
                             listener(notification)
                         })

@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import getRandomDateRangeInRange from './getRandomDateRange';
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
 import getSeededImage from './getSeededImage';
-import { Message, WisbEvent, WisbUser, WisbWasteland } from '../interfaces';
+import { WisbMessage, WisbEvent, WisbUser, WisbWasteland } from '../interfaces';
 import WisbObjectType from '../WisbObjectType';
 import Ref from '../Ref';
 

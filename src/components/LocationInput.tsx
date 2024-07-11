@@ -17,6 +17,7 @@ import IconType from "./WisbIcon/IconType";
 import WisbIcon from "./WisbIcon/WisbIcon";
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
+const res = Resources.get()
 
 export interface Props {
     style?: ViewStyle
@@ -55,7 +56,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
         }
 
         searchPlacesTimeoutId.current = setTimeout(() => {
-            searchPlaces(apiKey, phrase, Resources.get().getSettings().languageCode, userLocation).then(setPlaces)
+            searchPlaces(apiKey, phrase, res.getSettings().languageCode, userLocation).then(setPlaces)
         }, 200)
     }, [phrase])
 
@@ -91,7 +92,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
     }, [location.coords])
 
     return (
-        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: Resources.get().getColors().DarkBeige }} onLayout={e => {
+        <View ref={outsideClickRef} style={{ ...styles.root, ...style, backgroundColor: res.getColors().DarkBeige }} onLayout={e => {
             const newHeight = e.nativeEvent.layout.height
 
             if (newHeight != containerHeight) {
@@ -113,8 +114,8 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                             />
 
                             {showNavigateButton == undefined || showNavigateButton ? <FAB
-                                color={Resources.get().getColors().White}
-                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={iconColor ?? Resources.get().getColors().Black} />}
+                                color={res.getColors().White}
+                                icon={<FontAwesomeIcon icon={faLocationArrow} size={20} color={iconColor ?? res.getColors().Black} />}
                                 style={{
                                     position: "absolute",
                                     right: 10,
@@ -129,8 +130,8 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                 ref={mapViewRef}
                                 onRegionChangeComplete={newRegion => {
                                     previousCoords.current = newRegion
-                                    reverseGeoCode(Resources.get().getEnv().GOOGLE_MAPS_API_KEY, newRegion).then(formattedAddress => {
-                                        onLocationChanged?.(newRegion, formattedAddress ?? Resources.get().getStrings().Components.LocationInput.UnknownPlaceMessage)
+                                    reverseGeoCode(res.getEnv().GOOGLE_MAPS_API_KEY, newRegion).then(formattedAddress => {
+                                        onLocationChanged?.(newRegion, formattedAddress ?? res.getStrings().Components.LocationInput.UnknownPlaceMessage)
                                     })
                                 }}
                                 showsScale={false}
@@ -160,7 +161,7 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                     setPhrase("")
                     setIsDropdownVisible(true)
                 }}
-                leftIcon={<FontAwesomeIcon icon={faEarth} color={iconColor ?? Resources.get().getColors().Black} size={16} />}
+                leftIcon={<FontAwesomeIcon icon={faEarth} color={iconColor ?? res.getColors().Black} size={16} />}
                 onPhraseChanged={setPhrase}
                 phrase={isDropdownVisible ? phrase : location.asText}
                 readonly={readonly}
@@ -171,13 +172,13 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                 }}
                 rightIcon={readonly ? undefined : (
                     <TouchableOpacity onPress={() => isDropdownVisible ? setIsDropdownVisible(false) : setIsDropdownVisible(true)}>
-                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={iconColor ?? Resources.get().getColors().Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={iconColor ?? Resources.get().getColors().Black} size={16} />}
+                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={iconColor ?? res.getColors().Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={iconColor ?? res.getColors().Black} size={16} />}
                     </TouchableOpacity>
                 )}
-                placeholder={Resources.get().getStrings().Components.LocationInput.EnterPlaceMessage} />
+                placeholder={res.getStrings().Components.LocationInput.EnterPlaceMessage} />
 
             {readonly ? null : <Animated.FlatList
-                style={{ width: "100%", backgroundColor: Resources.get().getColors().DarkBeige, maxHeight: heightAnim, height: "100%" }}
+                style={{ width: "100%", backgroundColor: res.getColors().DarkBeige, maxHeight: heightAnim, height: "100%" }}
                 data={places}
                 ItemSeparatorComponent={Separator}
                 keyExtractor={place => place.id}

@@ -17,6 +17,8 @@ import WisbObjectType from "../API/WisbObjectType";
 import { QueryMap, TypeMap } from "../API/API";
 import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces";
 
+const res = Resources.get()
+
 export type Multiple<MultiSelect extends boolean, T> = MultiSelect extends true ? T[] : T;
 
 export type DataType<MultiSelect extends boolean, ItemType extends WisbObjectType> = Multiple<MultiSelect, TypeMap<ItemType>>;
@@ -63,28 +65,40 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     const flatListRef = useRef<FlatList>(null);
 
     const [isLoading, setIsLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [items, setItems] = useState<(WisbWasteland | WisbEvent | WisbDumpster | WisbUser)[]>([]);
+    const [data, setData] = useState<{
+        items: (WisbWasteland | WisbEvent | WisbDumpster | WisbUser)[],
+        hasMore: boolean
+    }>({
+        items: [],
+        hasMore: true
+    });
     const [places, setPlaces] = useState<Place[]>([]);
     const [_, setPageIndex] = useState(0);
 
     const updateItems = async (append: boolean, index: number) => {
-        if (isLoading || (!hasMore && append)) {
+        if (isLoading || (!data.hasMore && append)) {
             return;
         }
 
         setIsLoading(true);
 
-        const result = await api.getMany(type, { phrase, ...filter?.[type] as QueryMap<ItemType> }, [index * PageSize, (index + 1) * PageSize]);
+        const range: [number, number] = [index * PageSize, (index + 1) * PageSize]
+
+        const result = await api.getMany(type, { phrase, ...filter?.[type] as QueryMap<ItemType> }, range);
         if (result.error != null) {
             Toast.showWithGravityAndOffset("Unknown error", Toast.SHORT, Toast.CENTER, 0, 10);
             setIsLoading(false);
             return;
         }
 
-        setHasMore(result.data.length > 0);
+        setData(data => append ? {
+            items: [...data.items, ...result.data.items],
+            hasMore: range[1] < result.data.totalLength
+        } : {
+            items: result.data.items,
+            hasMore: range[1] < result.data.totalLength
+        });
 
-        setItems(current => append ? [...current, ...result.data] : result.data);
         setIsLoading(false);
 
         if (!append) {
@@ -109,7 +123,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
 
         const searchPlacesTimeoutId = setTimeout(() => {
             setIsLoading(true);
-            searchPlaces(googleMapsApiKey, phrase ?? "", Resources.get().getSettings().languageCode, placesConfig.userLocation, 1).then(places => {
+            searchPlaces(googleMapsApiKey, phrase ?? "", res.getSettings().languageCode, placesConfig.userLocation, 1).then(places => {
                 setPlaces(places ?? []);
                 setIsLoading(false);
             });
@@ -122,15 +136,15 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
         if (isLoading) {
             return (
                 <View style={{ width: "100%", height: 50, justifyContent: "center", alignItems: "center" }}>
-                    <Spinner type="FadingCircle" color={Resources.get().getColors().Primary} />
+                    <Spinner type="FadingCircle" color={res.getColors().Primary} />
                 </View>
             );
         }
 
-        if (!hasMore) {
+        if (!data.hasMore) {
             return (
                 <View>
-                    <Text>{Resources.get().getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
+                    <Text>{res.getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
                 </View>
             );
         }
@@ -161,7 +175,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
             <FlatList
                 ref={flatListRef}
                 onEndReached={() => {
-                    if (hasMore) {
+                    if (data.hasMore) {
                         setPageIndex(prev => {
                             const nextIndex = prev + 1;
                             updateItems(true, nextIndex);
@@ -172,7 +186,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 onEndReachedThreshold={0.5}
                 initialNumToRender={PageSize}
                 maxToRenderPerBatch={PageSize}
-                extraData={items}
+                extraData={data.items}
                 removeClippedSubviews
                 ListHeaderComponent={placesConfig != null && places.length > 0 ? (
                     <View>
@@ -188,10 +202,10 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={<View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}><Text>Brak wyników</Text></View>}
                 ListFooterComponent={renderFooter}
-                data={items}
+                data={data.items}
             />
             {isLoading && <View style={{ backgroundColor: "#00000055", ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
-                <Spinner type="FadingCircle" color={Resources.get().getColors().Primary} size={80} />
+                <Spinner type="FadingCircle" color={res.getColors().Primary} size={80} />
             </View>}
         </View>
     );

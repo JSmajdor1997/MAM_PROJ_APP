@@ -10,6 +10,8 @@ import {
 import FastImage from 'react-native-fast-image';
 import Resources from '../../res/Resources';
 
+const res = Resources.get()
+
 interface Props {
   size: number;
   fontSize: number;
@@ -85,7 +87,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 3,
@@ -96,7 +98,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   initialsText: {
-    color: Resources.get().getColors().White,
+    color: res.getColors().White,
     fontWeight: 'bold',
   },
   image: {

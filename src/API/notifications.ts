@@ -1,6 +1,6 @@
 import { LatLng } from "react-native-maps"
 import Ref from "./Ref"
-import { Invitation, Message, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "./interfaces"
+import { Invitation, WisbMessage, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "./interfaces"
 import WisbObjectType from "./WisbObjectType"
 import type { TypeMap } from "./API"
 
@@ -35,7 +35,7 @@ export type ObjectCRUDNotification<T extends WisbObjectType> = {
 
 export interface NewMessageNotification {
     author: Ref<WisbObjectType.User>
-    message: Message
+    message: WisbMessage
 }
 
 export interface NewInvitationNotification {

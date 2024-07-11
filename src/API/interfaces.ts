@@ -7,11 +7,11 @@ export interface SimplePlace {
     asText: string
 }
 
-export interface Message {
+export interface WisbMessage {
     event: Ref<WisbObjectType.Event>
     content: string
     date: Date
-    sender: Ref<WisbObjectType.User>
+    sender: Ref<WisbObjectType.User>&{userName: string, photoUrl?: string}
 }
 
 export interface Invitation {

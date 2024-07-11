@@ -7,6 +7,8 @@ import IconType from "./WisbIcon/IconType"
 import WisbIcon from "./WisbIcon/WisbIcon"
 import { Neomorph } from "react-native-neomorph-shadows-fixes"
 
+const res = Resources.get()
+
 export interface Props {
     onPress: () => void
     userLocation: LatLng
@@ -26,7 +28,7 @@ export default function LocationItem({ onPress, userLocation, location }: Props)
                 style={{
                     shadowRadius: 10,
                     borderRadius: 15,
-                    backgroundColor: Resources.get().getColors().Beige,
+                    backgroundColor: res.getColors().Beige,
                     width: Dimensions.get("window").width * 0.9,
                     height: 50,
                     overflow: "hidden",
@@ -37,7 +39,7 @@ export default function LocationItem({ onPress, userLocation, location }: Props)
                     <Text style={styles.name}>{location.asText}</Text>
                 </View>
 
-                <Text style={styles.distanceInfo}>{Resources.get().getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {Resources.get().getStrings().Components.LocationItem.FromYouMessage}</Text>
+                <Text style={styles.distanceInfo}>{res.getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {res.getStrings().Components.LocationItem.FromYouMessage}</Text>
             </Neomorph>
         </TouchableOpacity>
     )
@@ -54,6 +56,6 @@ const styles = StyleSheet.create({
         color: "blue", fontWeight: "bold", letterSpacing: 1, textAlign: "center"
     },
     distanceInfo: {
-        color: Resources.get().getColors().Black, textAlign: "center", fontSize: 10
+        color: res.getColors().Black, textAlign: "center", fontSize: 10
     }
 })

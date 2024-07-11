@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import Resources from '../../res/Resources';
 
+const res = Resources.get()
+
 export enum Position {
     Center,
     Left,
@@ -106,7 +108,7 @@ export default function Dialog({
 
 const styles = StyleSheet.create({
     backdrop: {
-        backgroundColor: Resources.get().getColors().BackdropBlack,
+        backgroundColor: res.getColors().BackdropBlack,
         position: "absolute",
         width: "100%",
         height: "100%",
@@ -115,8 +117,8 @@ const styles = StyleSheet.create({
         position: "absolute",
         borderRadius: 15,
         flexDirection: "column",
-        backgroundColor: Resources.get().getColors().White,
-        shadowColor: Resources.get().getColors().Black,
+        backgroundColor: res.getColors().White,
+        shadowColor: res.getColors().Black,
         shadowOpacity: 0.2,
         shadowRadius: 2,
         shadowOffset: {

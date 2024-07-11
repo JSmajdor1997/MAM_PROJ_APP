@@ -4,6 +4,8 @@ import { View, Text } from "react-native";
 import Ripple from 'react-native-material-ripple';
 import Resources from "../../res/Resources";
 
+const res = Resources.get()
+
 export interface Props {
     style?: ViewStyle
     icon: React.ReactNode
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
 
-        shadowColor: Resources.get().getColors().Black,
+        shadowColor: res.getColors().Black,
         shadowOffset: {
             width: 0,
             height: 1,
@@ -60,13 +62,13 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     labelContainer: {
-        backgroundColor: Resources.get().getColors().White,
+        backgroundColor: res.getColors().White,
         paddingHorizontal: 5,
         paddingVertical: 3,
         borderRadius: 5,
         marginTop: 8,
 
-        shadowColor: Resources.get().getColors().Black,
+        shadowColor: res.getColors().Black,
         shadowOffset: {
             width: 0,
             height: 5,

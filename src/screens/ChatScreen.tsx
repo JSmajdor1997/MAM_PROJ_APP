@@ -1,297 +1,263 @@
-import React, { Component, ReactElement } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  Platform,
   TextInput,
-  ScrollView,
 } from 'react-native';
-import { Avatar, GiftedChat, IMessage, Message, MessageProps } from 'react-native-gifted-chat';
-import { Menu, MenuItem } from 'react-native-material-menu';
-import emojiUtils from 'emoji-utils';
-import LoadingImage from "../components/LoadingImage"
+import { GiftedChat, IMessage, Message, MessageProps } from 'react-native-gifted-chat';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import Resources from '../../res/Resources';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
-import { faArrowLeft, faCamera, faEllipsisV, faGripVertical, faMessage, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import Swiper from 'react-native-swiper';
-import ImagesGallery from '../components/ImagesGallery';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { faArrowLeft, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import Spinner from 'react-native-spinkit';
 import getAPI from '../API/getAPI';
+import { WisbMessage } from '../API/interfaces';
+import Avatar from '../components/Avatar';
+import WisbObjectType from '../API/WisbObjectType';
+import NavigationParamsList from './NavigationParamsList';
 
-const api = getAPI()
+const res = Resources.get();
 
-interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> {
-}
+const api = getAPI();
 
-interface State {
-  messages: Array<any>;
-  isImagePickerVisible: boolean;
-  images: Array<string>;
-}
+interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> {}
 
-export default function ChatScreen({ navigation, route: { params: { event } } }: Props) {
-  return null
-  const [inputMessage, setInputMessage] = React.useState("")
+const PageSize = 25;
 
-  const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
-  const [isMultimediaListVisible, setIsMultimediaListVisible] = React.useState(false)
+export default function ChatScreen({ route: { params: { event, navigate } } }: Props) {
+  const currentUser = api.getCurrentUser();
 
-  const [state, setState] = React.useState<State>({
-    isImagePickerVisible: false,
-    messages: event.messages.map(it => ({
-      _id: it.date.getTime(),
-      text: it.content,
-      createdAt: it.date,
-      user: {
-        id: it.sender.id,
-        name: it.sender.userName,
-        avatar: it.sender.photoUrl,
-      },
-    })),
-    images: []
-  })
-
-  const renderInputBar = () => {
-    return (
-      <View
-        style={{
-          backgroundColor: Resources.get().getColors().White,
-          alignItems: 'center',
-          width: '96%',
-          marginBottom: 30,
-          alignSelf: 'center',
-          paddingVertical: 8,
-          paddingHorizontal: 8,
-          justifyContent: 'space-between',
-          borderRadius: 20,
-          flexDirection: 'row',
-
-          shadowColor: Resources.get().getColors().Black,
-          shadowOffset: {
-            width: 0,
-            height: 0,
-          },
-          shadowOpacity: 0.41,
-          shadowRadius: 9.11,
-
-          elevation: 10,
-        }}>
-        <TouchableOpacity
-          // onPress={() => setState({ isImagePickerVisible: true })}
-          style={{
-            justifyContent: 'center',
-            alignContent: 'center',
-            padding: 4,
-          }}>
-          <FontAwesomeIcon icon={faCamera} color={Resources.get().getColors().Primary} size={18} />
-        </TouchableOpacity>
-
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: Resources.get().getColors().Beige,
-            borderRadius: 20,
-            paddingStart: 10,
-            marginStart: 4,
-            marginEnd: 4,
-          }}>
-          <TextInput
-            value={inputMessage}
-            onChange={e=>setInputMessage(e.nativeEvent.text)}
-            placeholder="Wpisz wiadomość..."
-            placeholderTextColor={Resources.get().getColors().DarkBeige}
-            style={{ flex: 1, padding: 0 }}
-          />
-        </View>
-        <TouchableOpacity
-          style={{
-            justifyContent: 'center',
-            alignContent: 'center',
-            padding: 4,
-          }}
-          onPress={()=>{
-            // api.sendEventMessage(event, {
-            //   content: inputMessage,
-            //   photosUrls: [],
-            // })
-            setInputMessage("")
-          }}>
-          <FontAwesomeIcon icon={faPaperPlane} color={Resources.get().getColors().Primary} size={20} />
-        </TouchableOpacity>
-      </View>
-    );
+  if (currentUser == null) {
+    return null;
   }
+
+  const [inputMessage, setInputMessage] = useState("");
+  const [index, setPageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<{
+    items: WisbMessage[],
+    hasMore: boolean
+  }>({
+    items: [],
+    hasMore: true
+  });
 
   const renderMessage = (props: Readonly<MessageProps<IMessage>>) => {
-    const {
-      currentMessage: { text: currText },
-    } = props;
+    return <Message {...props} />;
+  }
 
-    let messageTextStyle;
+  const updateMessages = useCallback(async (index: number) => {
+    setIsLoading(true);
 
-    // Make "pure emoji" messages much bigger than plain text.
-    if (currText && emojiUtils.isPureEmojiString(currText)) {
-      messageTextStyle = {
-        fontSize: 28,
-        // Emoji get clipped if lineHeight isn't increased; make it consistent across platforms.
-        lineHeight: Platform.OS === 'android' ? 34 : 30,
-      };
+    const range: [number, number] = [index * PageSize, (index + 1) * PageSize];
+    const result = await api.getEventMessages(event, {}, range);
+
+    if (result.data != null) {
+      setData(prevData => ({
+        hasMore: result.data.totalLength > range[1],
+        items: index === 0 ? result.data.items : [...prevData.items, ...result.data.items]
+      }));
     }
 
-    return <Message {...props} renderAvatar={avatar => <Avatar {...avatar} />} messageTextStyle={messageTextStyle} />;
-  }
+    setIsLoading(false);
+  }, [event]);
 
-  const renderTopBar = () => {
-    return (
-      <View
-        style={{
-          width: '100%',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingBottom: 6,
-          padding: 10,
-          paddingTop: 45,
-          backgroundColor: Resources.get().getColors().White,
-          borderBottomLeftRadius: 15,
-          borderBottomRightRadius: 15,
-
-          shadowColor: Resources.get().getColors().Black,
-          shadowOffset: {
-            width: 0,
-            height: 7,
-          },
-          shadowOpacity: 0.41,
-          shadowRadius: 9.11,
-
-          elevation: 14,
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ marginLeft: 8 }}>
-            <FontAwesomeIcon
-              color={Resources.get().getColors().Primary}
-              icon={faArrowLeft}
-            />
-          </TouchableOpacity>
-          <LoadingImage
-            style={{
-              height: 36,
-              width: 36,
-              borderRadius: 50,
-              borderWidth: 1.6,
-              marginLeft: 14,
-            }}
-            image={
-              state.images && state.images[0]
-                ? state.images[0]
-                : ''
-            }
-            isLoading={state.images == null}
-          />
-          <Text
-            style={{
-              marginLeft: 10,
-              fontSize: 16.5,
-              fontWeight: 'bold',
-              color: Resources.get().getColors().Primary,
-            }}>
-            {event.name}
-          </Text>
-        </View>
-        <Menu
-          visible={isMoreMenuVisible}
-          style={{
-            top: (StatusBar.currentHeight ? StatusBar.currentHeight : 20) + 10,
-          }}
-          anchor={
-            <TouchableOpacity
-              style={{ alignSelf: 'flex-end', marginRight: 2 }}
-              onPress={() => setIsMoreMenuVisible(true)}>
-              <FontAwesomeIcon color={Resources.get().getColors().Primary} icon={faEllipsisV} />
-            </TouchableOpacity>
-          }>
-          <MenuItem>
-            Szukaj
-          </MenuItem>
-          <MenuItem>
-            Wycisz
-          </MenuItem>
-          <MenuItem onPress={() => setIsMultimediaListVisible(true)}>
-            Pokaż multimedia
-          </MenuItem>
-        </Menu>
-      </View>
-    );
-  }
+  useEffect(() => {
+    updateMessages(0);
+  }, [updateMessages]);
 
   return (
-    <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps
-      onTouchStart={() => {
-        if (isMoreMenuVisible) {
-          setIsMoreMenuVisible(false)
-        }
-      }}
-      style={{
-        ...StyleSheet.absoluteFillObject,
-        paddingBottom: 8,
-      }}>
+    <View style={{ ...StyleSheet.absoluteFillObject, paddingBottom: 8 }}>
       <StatusBar
-        backgroundColor={Resources.get().getColors().Transparent}
+        backgroundColor={res.getColors().Transparent}
         barStyle="light-content"
         translucent
       />
-      <Swiper
-        index={isMultimediaListVisible ? 1 : 0}
-        showsButtons={false}
-        showsPagination={false}
-        scrollEnabled={false}
-        loop={false}>
-        <View style={{ flex: 1 }}>
-          {renderTopBar()}
-          <GiftedChat
-            messages={state.messages}
-            renderMessage={renderMessage}
-            renderInputToolbar={() => null}
-            user={{
-              _id: 1,
+      <View style={{ minHeight: "100%" }}>
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: 6,
+            padding: 10,
+            paddingTop: 20,
+            backgroundColor: res.getColors().White,
+            borderBottomLeftRadius: 15,
+            borderBottomRightRadius: 15,
+            shadowColor: res.getColors().Black,
+            shadowOffset: { width: 0, height: 7 },
+            shadowOpacity: 0.41,
+            shadowRadius: 9.11,
+            elevation: 14,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
-          />
-          {renderInputBar()}
-        </View>
-
-        <SafeAreaView style={{ flex: 1 }}>
-          <View>
-            <TouchableOpacity onPress={() => setIsMultimediaListVisible(false)}>
-              <FontAwesomeIcon icon={faArrowLeft} size={20} />
+          >
+            <TouchableOpacity
+              onPress={() => navigate.goBack()}
+              style={{ marginLeft: 8 }}
+            >
+              <FontAwesomeIcon
+                color={res.getColors().Primary}
+                icon={faArrowLeft}
+              />
             </TouchableOpacity>
+            <Avatar
+              image={event.iconUrl}
+              username={event.name}
+              size={40}
+              style={{
+                height: 50,
+                width: 50,
+                borderRadius: 50,
+                borderWidth: 1.6,
+                marginLeft: 14,
+              }}
+              fontSize={10}
+              colors={["black"]}
+            />
+            <Text
+              style={{
+                marginLeft: 10,
+                fontSize: 16.5,
+                fontWeight: 'bold',
+                color: res.getColors().Primary,
+              }}
+            >
+              {event.name}
+            </Text>
           </View>
-
-          <Text>Multimedia czatu</Text>
-
-          <ImagesGallery
-            style={{ flex: 1 }}
-            images={[event.iconUrl!]}
-            nrOfImagesPerRow={4}
-            interImagesSpace={10} />
-        </SafeAreaView>
-      </Swiper>
-    </ScrollView>
+        </View>
+        <GiftedChat
+          loadEarlier={true}
+          renderLoadEarlier={(e) => (
+            data.hasMore ? (
+              <TouchableOpacity
+                onPress={e.onLoadEarlier}
+                style={{
+                  marginTop: 20,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  alignSelf: "center",
+                  padding: 10,
+                  backgroundColor: res.getColors().DarkBeige,
+                  borderRadius: 15
+                }}
+              >
+                <Text
+                  style={{
+                    color: res.getColors().White,
+                    letterSpacing: 2,
+                    fontWeight: '500',
+                    marginLeft: 20,
+                    shadowColor: res.getColors().Black,
+                    shadowOffset: { width: 0, height: 10 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 13.16,
+                    elevation: 8,
+                  }}
+                >
+                  Pokaż wcześniejsze wiadomości
+                </Text>
+                <Spinner
+                  style={{ marginLeft: 5, marginTop: -5, opacity: e.isLoadingEarlier ? 1 : 0, width: 20 }}
+                  size={16}
+                  type="Circle"
+                  color={res.getColors().Primary}
+                />
+              </TouchableOpacity>
+            ) : null
+          )}
+          onLoadEarlier={() => {
+            if (data.hasMore) {
+              const nextPageIndex = index + 1;
+              setPageIndex(nextPageIndex);
+              updateMessages(nextPageIndex);
+            }
+          }}
+          isLoadingEarlier={isLoading}
+          messages={data.items.map(it => ({
+            _id: it.date.getTime(),
+            text: it.content,
+            createdAt: it.date,
+            user: {
+              _id: it.sender.id,
+              name: it.sender.userName,
+              avatar: it.sender.photoUrl
+            }
+          }))}
+          messagesContainerStyle={{ height: "100%" }}
+          renderMessage={renderMessage}
+          renderInputToolbar={() => null}
+          user={{ _id: currentUser.id }}
+        />
+        <View
+          style={{
+            backgroundColor: res.getColors().White,
+            alignItems: 'center',
+            width: '96%',
+            marginBottom: 15,
+            alignSelf: 'center',
+            paddingVertical: 8,
+            paddingHorizontal: 8,
+            justifyContent: 'space-between',
+            borderRadius: 20,
+            flexDirection: 'row',
+            shadowColor: res.getColors().Black,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.41,
+            shadowRadius: 9.11,
+            elevation: 10,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: res.getColors().Beige,
+              borderRadius: 20,
+              paddingStart: 10,
+              marginStart: 4,
+              marginEnd: 4,
+            }}
+          >
+            <TextInput
+              value={inputMessage}
+              onChange={e => setInputMessage(e.nativeEvent.text)}
+              placeholder="Wpisz wiadomość..."
+              placeholderTextColor={res.getColors().DarkBeige}
+              style={{ flex: 1, padding: 0 }}
+            />
+          </View>
+          <TouchableOpacity
+            style={{ justifyContent: 'center', alignContent: 'center', padding: 4 }}
+            disabled={inputMessage.length == 0}
+            onPress={async () => {
+              await api.sendEventMessage({
+                event: { type: WisbObjectType.Event, id: event.id },
+                content: inputMessage,
+              });
+              setInputMessage("");
+              setPageIndex(0);
+              updateMessages(0);
+            }}
+          >
+            <FontAwesomeIcon icon={faPaperPlane} color={res.getColors().Primary} size={20} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-
-})
+const styles = StyleSheet.create({});

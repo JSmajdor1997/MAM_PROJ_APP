@@ -2,6 +2,8 @@ import React from "react";
 import { View, StyleSheet, Text } from "react-native";
 import Resources from "../../res/Resources";
 
+const res = Resources.get()
+
 export interface Props {
     withMotto: boolean
 }
@@ -21,12 +23,12 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     text: {
-        fontFamily: Resources.get().getFonts().Primary,
-        color: Resources.get().getColors().White,
+        fontFamily: res.getFonts().Primary,
+        color: res.getColors().White,
         fontSize: 80
     },
     motto: {
-        fontFamily: Resources.get().getFonts().Primary,
-        color: Resources.get().getColors().White,
+        fontFamily: res.getFonts().Primary,
+        color: res.getColors().White,
     }
 })

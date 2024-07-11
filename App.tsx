@@ -18,7 +18,7 @@ import WisbScreens from './src/screens/WisbScreens';
 import LeaderboardScreen from './src/screens/LeaderBoardScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import MyEventsScreen from './src/screens/MyEventsScreen';
-import NavigationParamsList from './src/screens/NavigationParamsList';
+import NavigationParamsList, { WisbNavigateFunction } from './src/screens/NavigationParamsList';
 import WisbIcon from './src/components/WisbIcon/WisbIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
@@ -37,7 +37,8 @@ import getAPI from './src/API/getAPI';
 import WisbObjectType from './src/API/WisbObjectType';
 import { NotificationType } from './src/API/ListenersManager';
 import { WisbEvent, WisbDumpster, WisbWasteland, WisbUser } from './src/API/interfaces';
-import { NewMessageNotification } from './src/API/notifications';
+import { CRUD, NewMessageNotification, Notification, isNewInvitationNotification, isNewMessageNotification, isObjectCRUDNotification } from './src/API/notifications';
+import Snackbar from 'react-native-snackbar';
 
 LogBox.ignoreAllLogs();
 
@@ -91,39 +92,108 @@ const navigationRef = createNavigationContainerRef<NavigationParamsList>()
 
 const Stack = createNativeStackNavigator<NavigationParamsList>();
 
+const res = Resources.get()
+
 export default function App() {
   const [dialogData, setDialogData] = React.useState<DialogData>({})
-
   const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.LoginScreen)
-
   const [isQrCodeDialogVisible, setIsQrCodeDialogVisible] = React.useState(false)
-
-  const [userLocation, setUserLocation] = React.useState(Resources.get().getLastLocation())
-
+  const [userLocation, setUserLocation] = React.useState(res.getLastLocation())
   const [currentUser, setCurrentUser] = React.useState<WisbUser | null>()
 
+  const onNotification = async (n: Notification) => {    
+    if(![WisbScreens.MapScreen, WisbScreens.MyEventsScreen].includes(currentScreen)) {
+      return
+    }
+
+    if(
+      dialogData[WisbObjectType.Dumpster] != null || 
+      dialogData[WisbObjectType.Wasteland] != null || 
+      dialogData[WisbObjectType.Event] != null
+    ) {
+      return
+    }
+
+    if(isObjectCRUDNotification(n) && n.action == CRUD.Created) {
+      Snackbar.show({
+        text: (
+          n.type == WisbObjectType.Dumpster ? "Nowy śmietnik w twojej okolicy" :
+          n.type == WisbObjectType.Event ? "Nowe wydarzenie w twojej okolicy" :
+          n.type == WisbObjectType.Wasteland ? "Nowe wysypisko w twojej okolicy" : 
+          ""
+        ),
+        duration: Snackbar.LENGTH_SHORT,
+        backgroundColor: res.getColors().Blue,
+        textColor: res.getColors().Primary,
+        marginBottom: 180,
+        action: {
+          text: 'POKAŻ',
+          textColor: res.getColors().Primary,
+          onPress: async () => {
+            setDialogData({
+              [n.type]: {
+                mode: Mode.Viewing,
+                item: (await api.getOne(n.ref!)).data! as any
+              }
+            })
+          },
+        },
+      });
+    } else if(isNewMessageNotification(n)) {
+      Snackbar.show({
+        text: `Nowa wiadomość w wydarzeniu: ${n.message.content}`,
+        duration: Snackbar.LENGTH_SHORT,
+        backgroundColor: res.getColors().Beige,
+        textColor: res.getColors().Primary,
+        marginBottom: 180,
+        action: {
+          text: 'POKAŻ',
+          textColor: res.getColors().Primary,
+          onPress: async () => {
+            navigate(WisbScreens.ChatScreen, {event: (await api.getOne(n.message.event)).data!})
+          },
+        },
+      });
+    } else if(isNewInvitationNotification(n)) {
+      Snackbar.show({
+        text: `Otrzymałeś zaproszenie do wydarzenia: ${n.invitation.event.name}`,
+        duration: Snackbar.LENGTH_SHORT,
+        backgroundColor: res.getColors().Yellow,
+        textColor: res.getColors().Primary,
+        marginBottom: 180,
+        action: {
+          text: 'POKAŻ',
+          textColor: res.getColors().Primary,
+          onPress: async () => {
+            setDialogData({
+              [WisbObjectType.Event]: {
+                mode: Mode.Viewing,
+                item: (await api.getOne(n.invitation.event)).data!
+              }
+            })
+          },
+        },
+      });
+    }
+  }
+
   const onUserLoggedIn = (user: WisbUser) => {
-    Resources.get().registerUserLocationListener(newLocation => {
+    res.registerUserLocationListener(newLocation => {
       setUserLocation(newLocation)
+      api.notifications.updateListener(onNotification, {location: newLocation})
     })
 
     setCurrentUser(user)
 
-      navigationRef.navigate(WisbScreens.MapScreen, {
-        onItemSelected,
-        getCurrentUser: ()=>api.getCurrentUser()!
-      })
-  }
-
-  let apiListenerId = -1
-
-  const onLogout = () => {
-    // navigationRef.navigate(WisbScreens.LoginScreen, {
-    //   onUserLoggedIn
-    // })
+    navigate(WisbScreens.MapScreen, {})
   }
 
   React.useEffect(() => {
+    api.notifications.registerListener(onNotification, {location: userLocation})
+
+    return () => {
+      api.notifications.unregisterListener(onNotification)
+    }
     // api.registerListener({ location: userLocation }, (e) => {
     //   switchNotification(e, {
     //     [NotificationType.NewObjectNotification]: (item: NewObjectNotification) => {
@@ -180,14 +250,26 @@ export default function App() {
     }
   }
 
-  React.useEffect(() => {
-    // if (currentUser != null) {
-    //   navigationRef.navigate(WisbScreens.MapScreen, {
-    //     onItemSelected,
-    //     getCurrentUser: api.getCurrentUser()!
-    //   })
-    // }
-  }, [currentUser])
+  const goBack = () => {
+      if(navigationRef.canGoBack()) {
+        navigationRef.goBack()
+      } else {
+        navigationRef.navigate(WisbScreens.MapScreen, {onItemSelected, getCurrentUser: ()=>api.getCurrentUser()!, navigate: {go: navigate, goBack}})
+      }
+  }
+
+  const navigate: WisbNavigateFunction<WisbScreens> = function<T extends WisbScreens>(screen: T, data: T extends WisbScreens.ChatScreen ? {event: WisbEvent} : {}) {
+    navigationRef.navigate(screen as WisbScreens, 
+        screen == WisbScreens.ChatScreen ? {...data, navigate: {go: navigate, goBack}} :
+        screen == WisbScreens.LeaderBoardScreen ? {navigate: {go: navigate, goBack}} :
+        screen == WisbScreens.LoginScreen ? {onUserLoggedIn, navigate: {go: navigate, goBack}} :
+        screen == WisbScreens.MyEventsScreen ? {getCurrentUser: ()=>api.getCurrentUser()!, navigate: {go: navigate, goBack}} :
+        screen == WisbScreens.SettingsScreen ? {navigate: {go: navigate, goBack}} :
+        screen == WisbScreens.MapScreen ? {onItemSelected, getCurrentUser: ()=>api.getCurrentUser()!, navigate: {go: navigate, goBack}} :
+        screen == WisbScreens.SplashScreen ? {navigate: {go: navigate, goBack}} : 
+        {} as any
+    )
+  }
 
   return (
     <ClickOutsideProvider>
@@ -205,7 +287,7 @@ export default function App() {
             <Stack.Navigator
               initialRouteName={currentScreen}
               screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500, gestureEnabled: false }}>
-              {/* <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} /> */}
+              <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
               <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} initialParams={{
                 onUserLoggedIn
               }} />
@@ -230,7 +312,7 @@ export default function App() {
               {
                 render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MyEventsScreen, { getCurrentUser: ()=>api.getCurrentUser()! })
+                  navigate(WisbScreens.MyEventsScreen, {})
                 },
                 bubbles: [
                   {
@@ -242,7 +324,7 @@ export default function App() {
               {
                 render: () => <WisbIcon icon={IconType.Earth} size={30} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected, getCurrentUser: ()=>api.getCurrentUser()! })
+                  navigate(WisbScreens.MapScreen, {})
                 },
                 bubbles: [
                   {
@@ -286,7 +368,7 @@ export default function App() {
               {
                 render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
                 onPress: () => {
-                  navigationRef.navigate(WisbScreens.LeaderBoardScreen, { onItemSelected })
+                  navigate(WisbScreens.LeaderBoardScreen, {})
                 },
               },
             ]} />
@@ -296,14 +378,14 @@ export default function App() {
               <>
                 {dialogData[WisbObjectType.Event] != null ? <EventDialog
                   visible={dialogData[WisbObjectType.Event] != null}
-                  googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+                  googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                   event={dialogData[WisbObjectType.Event]?.item}
                   mode={dialogData[WisbObjectType.Event]?.mode ?? Mode.Viewing}
                   userLocation={userLocation}
                   currentUser={currentUser}
                   onDismiss={() => setDialogData({})}
                   onOpenChat={event => {
-                    navigationRef.navigate(WisbScreens.ChatScreen, { event })
+                    navigate(WisbScreens.ChatScreen, {event})
                     setDialogData({})
                   }} /> : null}
                 {dialogData[WisbObjectType.Wasteland] != null ? <WastelandDialog
@@ -345,7 +427,7 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Resources.get().getColors().Primary,
+    backgroundColor: res.getColors().Primary,
     flexDirection: "column",
     justifyContent: "space-between"
   },

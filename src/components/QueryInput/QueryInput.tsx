@@ -15,6 +15,8 @@ import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-ic
 import Resources from '../../../res/Resources';
 import SearchBar from '../SearchBar';
 
+const res = Resources.get()
+
 interface Props {
     onPress: () => void
     style?: ViewStyle
@@ -63,13 +65,13 @@ export default function QueryInput({ style, onPress, phrase, onPhraseChanged, it
             <SearchBar
                 loading={loading}
                 focused={isFocused}
-                leftIcon={<FontAwesomeIcon icon={faSearch} color={Resources.get().getColors().Black} size={16} />}
+                leftIcon={<FontAwesomeIcon icon={faSearch} color={res.getColors().Black} size={16} />}
                 rightIcon={(
                     isFocused ?
                         <TouchableOpacity onPress={onClear}>
-                            <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().Black} size={16} />
+                            <FontAwesomeIcon icon={faClose} color={res.getColors().Black} size={16} />
                         </TouchableOpacity> :
-                        <FontAwesomeIcon icon={faChevronDown} color={Resources.get().getColors().Black} size={16} />
+                        <FontAwesomeIcon icon={faChevronDown} color={res.getColors().Black} size={16} />
                 )}
                 placeholder={placeholder}
                 onPress={onPress}

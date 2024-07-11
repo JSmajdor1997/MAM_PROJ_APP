@@ -22,14 +22,15 @@ import BambooImage from "../../res/images/bamboo.svg"
 import LeavesImage from "../../res/images/leaves_on_stick.svg"
 import { GeneralError, SignUpError } from '../API/API';
 
+const api = getAPI()
+const res = Resources.get()
+
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LoginScreen> { }
 
 enum Mode {
   Login,
   SignUp
 }
-
-const api = getAPI()
 
 export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: Props) {
   const [mode, setMode] = React.useState(Mode.Login)
@@ -45,11 +46,13 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
   }
 
   React.useEffect(()=>{
-    const currentUser = api.getCurrentUser()
+    setTimeout(()=>{
+      const currentUser = api.getCurrentUser()
 
-    if(currentUser != null) {
-      onUserLoggedIn(currentUser)
-    }
+      if(currentUser != null) {
+        onUserLoggedIn(currentUser)
+      }
+    }, 200)
   })
 
   return (
@@ -63,27 +66,27 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
         <View
           style={styles.headerContainer}>
           <Text style={styles.header}>
-            {mode == Mode.Login ? Resources.get().getStrings().Screens.LoginScreen.LoginHeader : Resources.get().getStrings().Screens.LoginScreen.SignUpHeader}
+            {mode == Mode.Login ? res.getStrings().Screens.LoginScreen.LoginHeader : res.getStrings().Screens.LoginScreen.SignUpHeader}
           </Text>
         </View>
 
         <View
           style={styles.inputsContainer}>
           <TextInput
-            placeholder={Resources.get().getStrings().Screens.LoginScreen.EmailLabel}
+            placeholder={res.getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
             keyboardType="email-address"
-            placeholderTextColor={Resources.get().getColors().DarkBeige}
+            placeholderTextColor={res.getColors().DarkBeige}
             autoCapitalize="none"
             onChangeText={value => {
               setEmail(value)
             }}
           />
           <TextInput
-            placeholder={Resources.get().getStrings().Screens.LoginScreen.PasswordLabel}
+            placeholder={res.getStrings().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
-            placeholderTextColor={Resources.get().getColors().DarkBeige}
+            placeholderTextColor={res.getColors().DarkBeige}
             autoCapitalize="none"
             onChangeText={value => {
               setPassword(value)
@@ -93,10 +96,10 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
           {mode == Mode.SignUp ? (
             <Fragment>
               <TextInput
-                placeholder={Resources.get().getStrings().Screens.LoginScreen.UserNameLabel}
+                placeholder={res.getStrings().Screens.LoginScreen.UserNameLabel}
                 style={styles.input}
                 secureTextEntry
-                placeholderTextColor={Resources.get().getColors().DarkBeige}
+                placeholderTextColor={res.getColors().DarkBeige}
                 autoCapitalize="none"
                 onChangeText={value => {
                   setUserName(value)
@@ -104,10 +107,10 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
               />
 
               <TextInput
-                placeholder={Resources.get().getStrings().Screens.LoginScreen.PhotoLabel}
+                placeholder={res.getStrings().Screens.LoginScreen.PhotoLabel}
                 style={styles.input}
                 secureTextEntry
-                placeholderTextColor={Resources.get().getColors().DarkBeige}
+                placeholderTextColor={res.getColors().DarkBeige}
                 autoCapitalize="none"
                 onChangeText={value => {
                   setPhoto(value)
@@ -119,9 +122,9 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
           <TouchableOpacity
             onPress={() => {
               if (mode == Mode.Login) {
-                getAPI().login("abc@abc.com", "123").then(result => {
+                api.login("abc@abc.com", "123").then(result => {
                   if (result.error == GeneralError.InvalidDataProvided) {
-                    toast(Resources.get().getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
+                    toast(res.getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
                   } else if(result.data!=null){
                     setEmail("")
                     setPassword("")
@@ -129,15 +132,15 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
                   }
                 })
               } else {
-                getAPI().signUp({ email, password, userName }).then(result => {
+                api.signUp({ email, password, userName }).then(result => {
                   if (result.error != null) {
                     if (result.error == SignUpError.InvalidDataProvided) {
-                      toast(Resources.get().getStrings().Screens.LoginScreen.SignUpErrorInvalidDataProvidedMessage);
+                      toast(res.getStrings().Screens.LoginScreen.SignUpErrorInvalidDataProvidedMessage);
                     } else if (result.error == SignUpError.UserAlreadyRegistered) {
-                      toast(Resources.get().getStrings().Screens.LoginScreen.SignUpErrorUserAlreadyRegisteredMessage);
+                      toast(res.getStrings().Screens.LoginScreen.SignUpErrorUserAlreadyRegisteredMessage);
                     }
                   } else {
-                    toast(Resources.get().getStrings().Screens.LoginScreen.SignUpSuccessMessage);
+                    toast(res.getStrings().Screens.LoginScreen.SignUpSuccessMessage);
                     setMode(Mode.Login)
                   }
                 })
@@ -145,7 +148,7 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
             }}
             style={{
               borderRadius: 50,
-              backgroundColor: Resources.get().getColors().White,
+              backgroundColor: res.getColors().White,
               aspectRatio: 1,
               height: 54,
               position: 'absolute',
@@ -155,7 +158,7 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
               top: 0,
               elevation: 20,
             }}>
-            <FontAwesomeIcon icon={faArrowRight} color={Resources.get().getColors().Primary} />
+            <FontAwesomeIcon icon={faArrowRight} color={res.getColors().Primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -173,10 +176,10 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
           position: 'absolute',
         }}>
         <View style={{ flexDirection: "row" }}>
-          <Text style={{ color: Resources.get().getColors().Beige }}>{mode == Mode.SignUp ? Resources.get().getStrings().Screens.LoginScreen.AlreadyHaveAccountQuestion : Resources.get().getStrings().Screens.LoginScreen.DontYouHaveAccountQuestion}</Text>
+          <Text style={{ color: res.getColors().Beige }}>{mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.AlreadyHaveAccountQuestion : res.getStrings().Screens.LoginScreen.DontYouHaveAccountQuestion}</Text>
           <TouchableOpacity
             onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
-            <Text style={styles.login}>{mode == Mode.SignUp ? Resources.get().getStrings().Screens.LoginScreen.LoginExclamation : Resources.get().getStrings().Screens.LoginScreen.SignUpExclamation}</Text>
+            <Text style={styles.login}>{mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.LoginExclamation : res.getStrings().Screens.LoginScreen.SignUpExclamation}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -187,11 +190,11 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Resources.get().getColors().Primary,
+    backgroundColor: res.getColors().Primary,
     justifyContent: 'center',
   },
   header: {
-    color: Resources.get().getColors().White, fontSize: 40, fontFamily: Resources.get().getFonts().Primary
+    color: res.getColors().White, fontSize: 40, fontFamily: res.getFonts().Primary
   },
   leavesImage: {
     height: 190,
@@ -213,16 +216,16 @@ const styles = StyleSheet.create({
     width: 350,
     borderTopRightRadius: 80,
     borderBottomRightRadius: 80,
-    backgroundColor: Resources.get().getColors().Beige,
+    backgroundColor: res.getColors().Beige,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     elevation: 2,
   },
   container: {
     flex: 1,
-    backgroundColor: Resources.get().getColors().Beige,
+    backgroundColor: res.getColors().Beige,
   },
   headerContainer: {
     alignItems: 'center',
@@ -238,11 +241,11 @@ const styles = StyleSheet.create({
     marginTop: 100,
     borderTopRightRadius: 80,
     borderBottomRightRadius: 80,
-    backgroundColor: Resources.get().getColors().Beige,
+    backgroundColor: res.getColors().Beige,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     elevation: 2,
   },
   submitWrapper: {
@@ -252,19 +255,19 @@ const styles = StyleSheet.create({
     top: 460,
     left: 320,
     // alignSelf: 'center',
-    backgroundColor: Resources.get().getColors().Primary,
+    backgroundColor: res.getColors().Primary,
     borderRadius: 50,
     height: 60,
     width: 60,
     shadowOffset: { width: 5, height: 0 },
     shadowRadius: 10,
     shadowOpacity: 0.4,
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     elevation: 2,
   },
   loginWrapper: {},
   login: {
     marginLeft: 8,
-    color: Resources.get().getColors().White,
+    color: res.getColors().White,
   }
 });

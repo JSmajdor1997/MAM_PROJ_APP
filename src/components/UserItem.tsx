@@ -5,6 +5,8 @@ import { Neomorph } from "react-native-neomorph-shadows-fixes";
 import getAPI from "../API/getAPI";
 import { WisbUser } from "../API/interfaces";
 
+const res = Resources.get()
+
 export interface Props {
   item: WisbUser
   position?: number
@@ -48,7 +50,7 @@ export default function UserItem({ item, position, style, onPress, widthCoeff }:
             alignItems: 'center',
           }}>
           <Avatar
-            colors={Resources.get().getColors().AvatarColors}
+            colors={res.getColors().AvatarColors}
             image={item.photoUrl}
             size={30}
             fontSize={12}
@@ -81,13 +83,13 @@ const styles = StyleSheet.create({
   placeText: {
     fontSize: 15,
     fontWeight: '300',
-    color: Resources.get().getColors().DarkBeige,
+    color: res.getColors().DarkBeige,
   },
   avatar: {
     height: 30,
     width: 30,
     borderRadius: 30 / 2,
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 5,

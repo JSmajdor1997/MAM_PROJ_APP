@@ -13,6 +13,8 @@ import WisbObjectType from '../API/WisbObjectType';
 import { WisbWasteland, WisbEvent, WisbDumpster, WisbUser } from '../API/interfaces';
 import { isUser } from '../API/type_guards';
 
+const res = Resources.get()
+
 export interface Query {
   type: WisbObjectType
   phrase: string
@@ -63,7 +65,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
 
 const styles = StyleSheet.create({
   dialogStyle: {
-    borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: Resources.get().getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
+    borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: res.getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
   },
   dismissButton: {
     marginBottom: 5

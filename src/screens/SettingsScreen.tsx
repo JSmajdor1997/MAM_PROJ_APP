@@ -14,72 +14,79 @@ import Separator from '../components/Separator';
 import MapType from '../../res/MapType';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 
+const res = Resources.get()
+
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.SettingsScreen> { }
 
-export default function SettingsScreen({ navigation }: Props) {
-  const [userPosiition, setUserPosiition] = React.useState(Resources.get().getLastLocation())
+export default function SettingsScreen({ route: {params: {navigate}}  }: Props) {
+  const [userPosiition, setUserPosiition] = React.useState(res.getLastLocation())
 
   React.useEffect(() => {
-    return Resources.get().registerUserLocationListener(setUserPosiition)
+    return res.registerUserLocationListener(setUserPosiition)
   }, [])
 
   return (
-    <SafeAreaView style={{ backgroundColor: Resources.get().getColors().LightBeige, width: "100%", height: "100%" }}>
+    <SafeAreaView style={{ backgroundColor: res.getColors().LightBeige, width: "100%", height: "100%" }}>
       <View style={{ height: 50, flexDirection: "row", alignItems: "center", paddingLeft: 15, paddingRight: 15, justifyContent: "space-between" }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <FontAwesomeIcon icon={faChevronLeft} color={Resources.get().getColors().Primary} />
+        <TouchableOpacity onPress={() => navigate.goBack()}>
+          <FontAwesomeIcon icon={faChevronLeft} color={res.getColors().Primary} />
         </TouchableOpacity>
 
-        <FontAwesomeIcon icon={faCog} color={Resources.get().getColors().Primary}/>
+        <FontAwesomeIcon icon={faCog} color={res.getColors().Primary}/>
       </View>
 
-      <View style={{ width: "100%", height: 0, borderColor: Resources.get().getColors().Primary, borderWidth: 2, borderStyle: "dashed" }} />
+      <View style={{ width: "100%", height: 0, borderColor: res.getColors().Primary, borderWidth: 2, borderStyle: "dashed" }} />
 
-      <ScrollView style={{ backgroundColor: Resources.get().getColors().LightBeige, flex: 1 }}>
+      <ScrollView style={{ backgroundColor: res.getColors().LightBeige, flex: 1 }}>
         <DropDownItem
           label='Typ mapy'
-          icon={<FontAwesomeIcon icon={faMap} size={20} color={Resources.get().getColors().Blue} />}
+          icon={<FontAwesomeIcon icon={faMap} size={20} color={res.getColors().Blue} />}
           data={[
             { label: "Domyślna", value: MapType.Default },
             { label: "Satelitarna", value: MapType.Satellite },
           ]}
-          selectedValue={Resources.get().getSettings().mapType}
-          onSelected={value => Resources.get().setSettings({languageCode: value.value})} />
+          selectedValue={res.getSettings().mapType}
+          onSelected={value => res.setSettings({languageCode: value.value})} />
         <DropDownItem
           label='Język'
-          selectedValue={Resources.get().getSettings().languageCode}
-          onSelected={item => Resources.get().setSettings({languageCode: item.value})}
-          data={Resources.get().getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text>{language.flagEmoji}</Text>, value: language.code }))}
-          icon={<FontAwesomeIcon icon={faLanguage} size={20} color={Resources.get().getColors().Green} />} />
-        <BooleanItem label='Reklamy' icon={<FontAwesomeIcon icon={faSmile} size={20} color={Resources.get().getColors().Primary} />} value={Resources.get().getSettings().showAdds} onValueChanged={item => Resources.get().setSettings({showAdds: item})} />
-        <BooleanItem label='Pokazuj śmietniki na mapie' icon={<FontAwesomeIcon icon={faDumpster} size={20} color={Resources.get().getColors().Yellow} />} value={Resources.get().getSettings().showDumpstersOnMap} onValueChanged={item => Resources.get().setSettings({showDumpstersOnMap: item})} />
+          selectedValue={res.getSettings().languageCode}
+          onSelected={item => res.setSettings({languageCode: item.value})}
+          data={res.getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text>{language.flagEmoji}</Text>, value: language.code }))}
+          icon={<FontAwesomeIcon icon={faLanguage} size={20} color={res.getColors().Green} />} />
+        <BooleanItem label='Reklamy' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
+        <BooleanItem label='Powiadomienia o nowych wydarzeniach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
+        <BooleanItem label='Powiadomienia o nowych śmietnikach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
+        <BooleanItem label='Powiadomienia o nowych wysypiskach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
+        <BooleanItem label='Powiadomienia o zaproszeniach do wydarzeń' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
+        <BooleanItem label='Powiadomienia o nowych wiadomościach' icon={<FontAwesomeIcon icon={faSmile} size={20} color={res.getColors().Primary} />} value={res.getSettings().showAdds} onValueChanged={item => res.setSettings({showAdds: item})} />
+        <BooleanItem label='Pokazuj śmietniki na mapie' icon={<FontAwesomeIcon icon={faDumpster} size={20} color={res.getColors().Yellow} />} value={res.getSettings().showDumpstersOnMap} onValueChanged={item => res.setSettings({showDumpstersOnMap: item})} />
 
-        <ItemTemplate icon={<FontAwesomeIcon icon={faLocationDot} color={Resources.get().getColors().Red} />} label='GPS'>
+        <ItemTemplate icon={<FontAwesomeIcon icon={faLocationDot} color={res.getColors().Red} />} label='GPS'>
           <View style={{ flexDirection: "column" }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 4 }}>
               <Switch
-                value={Resources.get().getSettings().defaultLocation == null}
-                onValueChange={item => Resources.get().setSettings({})}
+                value={res.getSettings().defaultLocation == null}
+                onValueChange={item => res.setSettings({})}
                 circleSize={20}
                 barHeight={24}
                 circleBorderWidth={0}
                 activeText=''
                 inActiveText=''
-                backgroundActive={Resources.get().getColors().Primary}
-                backgroundInactive={Resources.get().getColors().DarkBeige}
-                circleActiveColor={Resources.get().getColors().White}
-                circleInActiveColor={Resources.get().getColors().Primary}
+                backgroundActive={res.getColors().Primary}
+                backgroundInactive={res.getColors().DarkBeige}
+                circleActiveColor={res.getColors().White}
+                circleInActiveColor={res.getColors().Primary}
                 switchLeftPx={2}
                 switchRightPx={2}
                 switchWidthMultiplier={2.2}
                 switchBorderRadius={40}
               />
 
-              <Text>{Resources.get().getSettings().defaultLocation == null ? "Lokalizacja automatyczna (GPS)" : "Domyślak lokalizacja"}</Text>
+              <Text>{res.getSettings().defaultLocation == null ? "Lokalizacja automatyczna (GPS)" : "Domyślak lokalizacja"}</Text>
             </View>
 
             <LocationInput
-              readonly={Resources.get().getSettings().defaultLocation == null}
+              readonly={res.getSettings().defaultLocation == null}
               userLocation={userPosiition}
               showNavigateButton={false}
               location={{
@@ -89,7 +96,7 @@ export default function SettingsScreen({ navigation }: Props) {
                 },
                 asText: ''
               }}
-              apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY} />
+              apiKey={res.getEnv().GOOGLE_MAPS_API_KEY} />
           </View>
         </ItemTemplate>
       </ScrollView>
@@ -102,7 +109,7 @@ function ItemTemplate({ children, icon, label }: { children: React.ReactNode, ic
     <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10, backgroundColor: "white", margin: 10, borderRadius: 15, overflow: "hidden", minHeight: 50 }}>
       <View style={{ flexDirection: "row", alignItems: 'center' }}>
         {icon}
-        <Text style={{ marginLeft: 10, maxWidth: 100, fontWeight: "800", fontFamily: "Avenir", letterSpacing: 0.5, fontSize: 13, color: Resources.get().getColors().DarkBeige }}>{label}</Text>
+        <Text style={{ marginLeft: 10, maxWidth: 100, fontWeight: "800", fontFamily: "Avenir", letterSpacing: 0.5, fontSize: 13, color: res.getColors().DarkBeige }}>{label}</Text>
       </View>
 
       {children}
@@ -123,10 +130,10 @@ function BooleanItem({ icon, label, onValueChanged, value }: { icon: React.React
         inActiveText=''
         barHeight={24}
         circleBorderWidth={0}
-        backgroundActive={Resources.get().getColors().Primary}
-        backgroundInactive={Resources.get().getColors().DarkBeige}
-        circleActiveColor={Resources.get().getColors().White}
-        circleInActiveColor={Resources.get().getColors().Primary}
+        backgroundActive={res.getColors().Primary}
+        backgroundInactive={res.getColors().DarkBeige}
+        circleActiveColor={res.getColors().White}
+        circleInActiveColor={res.getColors().Primary}
         switchLeftPx={2}
         switchRightPx={2}
         switchWidthMultiplier={2.2}

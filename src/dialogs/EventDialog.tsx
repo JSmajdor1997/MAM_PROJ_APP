@@ -27,6 +27,8 @@ import { WisbEvent, WisbUser } from "../API/interfaces";
 import WisbObjectType from "../API/WisbObjectType";
 import Ref from "../API/Ref";
 
+const res = Resources.get()
+
 enum Sections {
     BasicInfo,
     MeetPlace,
@@ -65,41 +67,41 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                 mode={mode}
                 moreActions={[
                     {
-                        label: Resources.get().getStrings().Dialogs.EventDialog.DeleteAction,
+                        label: res.getStrings().Dialogs.EventDialog.DeleteAction,
                         icon: <FontAwesomeIcon icon={faTrash} />,
-                        color: Resources.get().getColors().Red,
+                        color: res.getColors().Red,
                         onPress: () => { }
                     },
                     {
-                        label: Resources.get().getStrings().Dialogs.EventDialog.EditAction,
+                        label: res.getStrings().Dialogs.EventDialog.EditAction,
                         icon: <FontAwesomeIcon icon={faEdit} />,
-                        color: Resources.get().getColors().White,
+                        color: res.getColors().White,
                         onPress: () => { }
                     }
                 ]}
                 actions={[
                     {
-                        label: Resources.get().getStrings().Dialogs.EventDialog.JoinAction,
+                        label: res.getStrings().Dialogs.EventDialog.JoinAction,
                         icon: <FontAwesomeIcon icon={faAdd} />,
-                        color: Resources.get().getColors().Yellow,
+                        color: res.getColors().Yellow,
                         onPress: () => { },
                     },
                     {
-                        label: Resources.get().getStrings().Dialogs.EventDialog.ShareAction,
+                        label: res.getStrings().Dialogs.EventDialog.ShareAction,
                         icon: <FontAwesomeIcon icon={faShare} />,
-                        color: Resources.get().getColors().Blue,
+                        color: res.getColors().Blue,
                         onPress: () => { },
                     },
                     {
-                        label: Resources.get().getStrings().Dialogs.EventDialog.LeaveAction,
+                        label: res.getStrings().Dialogs.EventDialog.LeaveAction,
                         icon: <FontAwesomeIcon icon={faClose} />,
-                        color: Resources.get().getColors().Lime,
+                        color: res.getColors().Lime,
                         onPress: () => { },
                     },
                     {
-                        label: Resources.get().getStrings().Dialogs.EventDialog.OpenChatAction,
+                        label: res.getStrings().Dialogs.EventDialog.OpenChatAction,
                         icon: <FontAwesomeIcon icon={faMessage} />,
-                        color: Resources.get().getColors().Primary,
+                        color: res.getColors().Primary,
                         onPress: () => onOpenChat(event!),
                     }
                 ]}
@@ -108,7 +110,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                 sections={{
                     [Sections.BasicInfo]: {
                         enabled: () => workingEvent.name != null && workingEvent.iconUrl != null && workingEvent.dateRange != null && workingEvent.description != null && workingEvent.description.length != null && addingPhase != AddingPhases.Added,
-                        icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: "Podstawowe informacje", renderPage: (props, index) => (
+                        icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: "Podstawowe informacje", renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 10 }}>
                                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 120 }}>
                                     <ImageInput
@@ -127,7 +129,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                             readOnly={mode == Mode.Viewing}
                                             placeholder="Nazwa"
                                             placeholderTextColor={"white"}
-                                            style={{ fontSize: 20, padding: 2, textAlign: "center", fontWeight: "500", letterSpacing: 1, fontStyle: "italic", fontFamily: "Avenir", backgroundColor: Resources.get().getColors().DarkBeige, width: "100%", marginLeft: 4, borderRadius: 15 }}
+                                            style={{ fontSize: 20, padding: 2, textAlign: "center", fontWeight: "500", letterSpacing: 1, fontStyle: "italic", fontFamily: "Avenir", backgroundColor: res.getColors().DarkBeige, width: "100%", marginLeft: 4, borderRadius: 15 }}
                                             onChange={e => setWorkingEvent({ ...workingEvent, name: e.nativeEvent.text })}>
                                             {workingEvent.name}
                                         </TextInput>
@@ -138,7 +140,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
 
                                 <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
                                     <View style={{ justifyContent: "space-around", flexDirection: "row", alignItems: "center" }}>
-                                        <FontAwesomeIcon icon={faClock} color={Resources.get().getColors().DarkBeige} style={{ flex: 1 }} />
+                                        <FontAwesomeIcon icon={faClock} color={res.getColors().DarkBeige} style={{ flex: 1 }} />
 
                                         <Text style={{ fontSize: 12, fontFamily: "Avenir", marginTop: 3, marginLeft: 10 }}>OD</Text>
                                     </View>
@@ -159,7 +161,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
 
                                 <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
                                     <View style={{ justifyContent: "space-around", flexDirection: "row", alignItems: "center" }}>
-                                        <FontAwesomeIcon icon={faClock} color={Resources.get().getColors().DarkBeige} style={{ flex: 1 }} />
+                                        <FontAwesomeIcon icon={faClock} color={res.getColors().DarkBeige} style={{ flex: 1 }} />
 
                                         <Text style={{ fontSize: 12, fontFamily: "Avenir", marginTop: 3, marginLeft: 10 }}>OD</Text>
                                     </View>
@@ -184,7 +186,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                     readOnly={mode == Mode.Viewing}
                                     onChange={e => setWorkingEvent({ ...workingEvent, description: e.nativeEvent.text })}
                                     placeholder="Opis"
-                                    placeholderTextColor={Resources.get().getColors().Black}>
+                                    placeholderTextColor={res.getColors().Black}>
                                     {workingEvent.description ?? ""}
                                 </TextInput>
                             </View>
@@ -192,14 +194,14 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                     },
                     [Sections.MeetPlace]: {
                         enabled: () => workingEvent.place != null && addingPhase != AddingPhases.Added,
-                        icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: (props, index) => (
+                        icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Lime, name: res.getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 15 }}>
                                 <LocationInput
                                     readonly={mode == Mode.Viewing}
-                                    iconColor={Resources.get().getColors().DarkBeige}
+                                    iconColor={res.getColors().DarkBeige}
                                     style={{ width: "100%", height: "100%" }}
                                     userLocation={userLocation}
-                                    apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+                                    apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                     onLocationChanged={(latLng, asText) => setWorkingEvent({ ...workingEvent, place: { coords: latLng, asText } })}
                                     location={workingEvent.place ?? {
                                         coords: userLocation,
@@ -210,7 +212,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                     },
                     [Sections.Wastelands]: {
                         enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0 && addingPhase != AddingPhases.Added,
-                        icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
+                        icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().DarkBeige, name: res.getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, minHeight: 50 }}>
                                 <Text>Co sprzątamy?</Text>
 
@@ -254,7 +256,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                     },
                     [Sections.Members]: {
                         enabled: () => addingPhase != AddingPhases.Added,
-                        icon: <FontAwesomeIcon icon={faPerson} />, color: Resources.get().getColors().Purple, name: Resources.get().getStrings().Dialogs.EventDialog.MembersLabel, renderPage: (props, index) => (
+                        icon: <FontAwesomeIcon icon={faPerson} />, color: res.getColors().Purple, name: res.getStrings().Dialogs.EventDialog.MembersLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1 }}>
                                 <Text>Zaproś uczestników</Text>
 
@@ -288,7 +290,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                     [Sections.Sharing]: {
                         enabled: () => true,
                         icon: <FontAwesomeIcon icon={faAdd} />,
-                        color: Resources.get().getColors().Primary,
+                        color: res.getColors().Primary,
                         name: "Dodaj",
                         renderPage: (props, index) => {
                             if (mode == Mode.Adding) {
@@ -326,15 +328,15 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
 
                             return (
                                 <View key={index} style={{ flex: 1 }}>
-                                    <Text>{Resources.get().getStrings().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
+                                    <Text>{res.getStrings().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
 
                                     <View style={{ justifyContent: "center", alignItems: "center", flex: 2 }}>
-                                        <QRCode color={Resources.get().getColors().Blue} value="AAA123" />
+                                        <QRCode color={res.getColors().Blue} value="AAA123" />
                                     </View>
 
                                     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
                                         <TouchableOpacity
-                                            style={{ backgroundColor: Resources.get().getColors().DarkBeige, padding: 20, borderRadius: 15 }}
+                                            style={{ backgroundColor: res.getColors().DarkBeige, padding: 20, borderRadius: 15 }}
                                             onPress={() => {
                                                 Share.open({
                                                     title: "Share",
@@ -362,6 +364,6 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
 const styles = StyleSheet.create({
     textField: {
         overflow: "hidden",
-        marginTop: 10, backgroundColor: Resources.get().getColors().Beige, padding: 5, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2
+        marginTop: 10, backgroundColor: res.getColors().Beige, padding: 5, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2
     }
 })

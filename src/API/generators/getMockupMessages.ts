@@ -1,16 +1,28 @@
 import { faker } from "@faker-js/faker";
 import Ref from "../Ref";
 import WisbObjectType from "../WisbObjectType";
-import { Message, WisbEvent, WisbUser } from "../interfaces";
+import { WisbMessage, WisbEvent, WisbUser } from "../interfaces";
 
-export default function getMockupMessages(events: Map<string, WisbEvent>, users: Map<string, WisbUser>): Map<string, Message[]> {
-    return Array.from(events.keys()).map(id => ({
-        messages: Array.from({ length: faker.number.int({ min: 1, max: 20 }) }, () => ({
-            event: { type: WisbObjectType.Event, id: parseInt(id) } as Ref<WisbObjectType.Event>,
-            content: faker.word.sample(),
-            date: faker.date.recent(),
-            sender: { type: WisbObjectType.User, id: faker.helpers.arrayElement([...events.get(id)!.members.values()]).id }
-        } satisfies Message)),
-        id
-    })).reduce((map, { id, messages }) => map.set(id, messages), new Map<string, Message[]>())
+export default function getMockupMessages(events: Map<string, WisbEvent>, users: Map<string, WisbUser>): Map<string, WisbMessage[]> {
+    //kazdy event, każdy członek
+
+    const map = new Map<string, WisbMessage[]>()
+    for(const event of events.values()) {
+        const messages: WisbMessage[] = []
+
+        for(const userId of event.members.values()) {
+            const user = users.get(userId.id.toString())!
+
+            messages.push({
+                event: { type: WisbObjectType.Event, id: event.id },
+                content: faker.lorem.paragraph(),
+                date: faker.date.recent(),
+                sender: { type: WisbObjectType.User, id: user.id, userName: user.userName }
+            })
+        }
+
+        map.set(event.id.toString(), messages)
+    }
+
+    return map
 }

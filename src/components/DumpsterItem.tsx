@@ -13,6 +13,8 @@ import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 import { faMapPin } from '@fortawesome/free-solid-svg-icons';
 import { WisbDumpster } from '../API/interfaces';
 
+const res = Resources.get()
+
 interface Props {
   item: WisbDumpster;
   onOpen: (item: WisbDumpster) => void
@@ -30,7 +32,7 @@ function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
         style={{
           shadowRadius: 10,
           borderRadius: 15,
-          backgroundColor: Resources.get().getColors().Primary,
+          backgroundColor: res.getColors().Primary,
           width: Dimensions.get("window").width * widthCoeff,
           height: 150,
           overflow: "hidden",
@@ -57,7 +59,7 @@ function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
 
           <View style={{flexDirection: "row", justifyContent: "space-between"}}>
             <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.place.asText}</Text>
-            <FontAwesomeIcon icon={faMapPin} size={10} color={Resources.get().getColors().Red} />
+            <FontAwesomeIcon icon={faMapPin} size={10} color={res.getColors().Red} />
           </View>
         </View>
       </Neomorph>
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'space-between',
 
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 1,

@@ -1,5 +1,5 @@
 import { Region } from "react-native-maps";
-import { WisbDumpster, WisbWasteland, WisbUser, WisbEvent, WastelandCleaningData, SimplePlace, Invitation, Message } from "./interfaces";
+import { WisbDumpster, WisbWasteland, WisbUser, WisbEvent, WastelandCleaningData, SimplePlace, Invitation, WisbMessage } from "./interfaces";
 import WisbObjectType from "./WisbObjectType";
 import Ref from "./Ref";
 import { Notification } from "./notifications";
@@ -93,7 +93,7 @@ export default abstract class API {
     private static readonly WisbEventQrCodePrefix = "Wisb-Event"
 
     abstract getOne<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland>(ref: Ref<T>): Promise<APIResponse<GeneralError, TypeMap<T>>>
-    abstract getMany<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.User | WisbObjectType.Wasteland>(type: T, query: QueryMap<T>, range: [number, number]): Promise<APIResponse<GeneralError, TypeMap<T>[]>>
+    abstract getMany<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.User | WisbObjectType.Wasteland>(type: T, query: QueryMap<T>, range: [number, number]): Promise<APIResponse<GeneralError, {items: TypeMap<T>[], totalLength: number}>>
     abstract deleteOne<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland>(ref: Ref<T>): Promise<APIResponse<GeneralError, {}>>
     abstract createOne<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland>(type: T, update: CreateMap<T>): Promise<APIResponse<GeneralError, Ref<T>>>
     abstract updateOne<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland | WisbObjectType.User>(ref: Ref<T>, update: Partial<CreateMap<T>>): Promise<APIResponse<GeneralError, {}>>
@@ -112,9 +112,9 @@ export default abstract class API {
 
     abstract getMyInvitations(): Promise<APIResponse<GeneralError, Invitation[]>>
 
-    abstract sendEventMessage(message: Omit<Message, "date" | "sender">): Promise<APIResponse<GeneralError, {}>>
+    abstract sendEventMessage(message: Omit<WisbMessage, "date" | "sender">): Promise<APIResponse<GeneralError, {}>>
 
-    abstract getEventMessages(event: WisbEvent, query: { phrase?: string }, indices: [number, number]): Promise<APIResponse<{}, Message[]>>
+    abstract getEventMessages(event: WisbEvent, query: { phrase?: string }, indices: [number, number]): Promise<APIResponse<{}, {items: WisbMessage[], totalLength: number}>>
 
     abstract clearWasteland(wasteland: WisbWasteland, cleaningData: WastelandCleaningData): Promise<APIResponse<GeneralError, {}>>
 

@@ -26,6 +26,8 @@ import WisbScreens from '../screens/WisbScreens';
 import IconType from '../components/WisbIcon/IconType';
 import ModificatorType from '../components/WisbIcon/ModificatorType';
 
+const res = Resources.get()
+
 export enum AddingPhases {
     None,
     Adding,
@@ -121,7 +123,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
             <Pressable
                 style={{ height: "100%", display: "flex", ...style }}
                 onPress={onDismiss} >
-                <View style={{ backgroundColor: Resources.get().getColors().BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
+                <View style={{ backgroundColor: res.getColors().BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
                     <Animated.View
                         onStartShouldSetResponder={(event) => true}
                         onTouchEnd={(e) => {
@@ -139,7 +141,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
-                                backgroundColor: Resources.get().getColors().White,
+                                backgroundColor: res.getColors().White,
                                 borderTopLeftRadius: 15,
                                 borderTopRightRadius: 15,
                                 overflow: "hidden",
@@ -152,13 +154,13 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                             paddingLeft: 15,
                             paddingRight: 15,
                             alignItems: "center",
-                            width: "100%", backgroundColor: Resources.get().getColors().Primary, padding: 5, shadowColor: Resources.get().getColors().Black, shadowOffset: { height: 1, width: 1 }, shadowOpacity: shadowAnim.interpolate({
+                            width: "100%", backgroundColor: res.getColors().Primary, padding: 5, shadowColor: res.getColors().Black, shadowOffset: { height: 1, width: 1 }, shadowOpacity: shadowAnim.interpolate({
                                 inputRange: [0, 10],
                                 outputRange: [0, 1],
                             }), shadowRadius: 5,
                         }}>
                             <TouchableOpacity onPress={onDismiss}>
-                                <FontAwesomeIcon icon={faClose} color={Resources.get().getColors().White} size={20} />
+                                <FontAwesomeIcon icon={faClose} color={res.getColors().White} size={20} />
                             </TouchableOpacity>
 
                             <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : undefined} />
@@ -170,7 +172,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                         onRequestClose={() => setIsMoreMenuVisible(false)}
                                         anchor={
                                             <TouchableOpacity style={{ position: "absolute", right: 0, top: -9 }} onPress={() => setIsMoreMenuVisible(true)}>
-                                                <FontAwesomeIcon icon={faEllipsisV} size={20} color={Resources.get().getColors().White} />
+                                                <FontAwesomeIcon icon={faEllipsisV} size={20} color={res.getColors().White} />
                                             </TouchableOpacity>
                                         }>
                                         {moreActions.map((action, index) => (
@@ -203,10 +205,10 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                         {
                             mode == Mode.Adding ?
                                 <Animated.View style={{
-                                    width: "100%", paddingBottom: 5, paddingTop: 5, flexDirection: "column", alignItems: "center", shadowColor: Resources.get().getColors().Black, shadowOffset: { height: -1, width: 0 }, shadowOpacity: shadowAnim.interpolate({
+                                    width: "100%", paddingBottom: 5, paddingTop: 5, flexDirection: "column", alignItems: "center", shadowColor: res.getColors().Black, shadowOffset: { height: -1, width: 0 }, shadowOpacity: shadowAnim.interpolate({
                                         inputRange: [0, 10],
                                         outputRange: [0, 1],
-                                    }), shadowRadius: 5, backgroundColor: Resources.get().getColors().White
+                                    }), shadowRadius: 5, backgroundColor: res.getColors().White
                                 }}>
                                     <Text style={{ fontWeight: "bold", fontStyle: "italic" }}>{sections[currentIndex].name}</Text>
                                     <ProgressInput

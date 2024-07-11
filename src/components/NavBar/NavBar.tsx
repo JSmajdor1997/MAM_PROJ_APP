@@ -14,6 +14,8 @@ import Ripple from 'react-native-material-ripple';
 import Resources from '../../../res/Resources';
 import BubbleItem from './BubbleItem';
 
+const res = Resources.get()
+
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -270,7 +272,7 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
           </View>
           <Svg
             style={{
-              shadowColor: Resources.get().getColors().Black,
+              shadowColor: res.getColors().Black,
               shadowOffset: {
                 width: 0,
                 height: 11,
@@ -282,12 +284,12 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
             width="100%"
             height="100"
             viewBox="0 0 1092 260">
-            <AnimatedPath fill={Resources.get().getColors().LightBeige} stroke={Resources.get().getColors().LightBeige} d={d} />
+            <AnimatedPath fill={res.getColors().LightBeige} stroke={res.getColors().LightBeige} d={d} />
             {enabled && (
               <AnimatedCircle
                 ref={circleRef}
-                fill={Resources.get().getColors().LightBeige}
-                stroke={Resources.get().getColors().LightBeige}
+                fill={res.getColors().LightBeige}
+                stroke={res.getColors().LightBeige}
                 cx="546"
                 cy="100"
                 r="100"
@@ -309,9 +311,9 @@ const styles = StyleSheet.create({
     bottom: 5,
     alignSelf: 'center',
     position: 'absolute',
-    zIndex: Resources.get().getZIndices().NavBarContainer,
+    zIndex: res.getZIndices().NavBarContainer,
 
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 10,

@@ -12,6 +12,8 @@ import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-ic
 import Resources from '../../res/Resources';
 import Spinner from 'react-native-spinkit';
 
+const res = Resources.get()
+
 interface Props {
     style?: ViewStyle
     inputStyle?: ViewStyle
@@ -64,8 +66,8 @@ export default function SearchBar({ focused, style, inputStyle, inputContainerSt
                 {leftIcon}
                 {loading ? (
                     <TouchableOpacity onPress={onPress} style={{ justifyContent: "center", alignItems: "center", width: 30, aspectRatio: 1 }}>
-                        <Spinner type="Circle" size={15} color={Resources.get().getColors().DarkBeige} style={{ left: 6, top: 6, position: "absolute" }} />
-                        <Spinner type="Pulse" size={12} color={Resources.get().getColors().DarkBeige} style={{ left: 9, top: 10, position: "absolute" }} />
+                        <Spinner type="Circle" size={15} color={res.getColors().DarkBeige} style={{ left: 6, top: 6, position: "absolute" }} />
+                        <Spinner type="Pulse" size={12} color={res.getColors().DarkBeige} style={{ left: 9, top: 10, position: "absolute" }} />
                     </TouchableOpacity>
                 ) : <TextInput
                     ref={inputRef}
@@ -73,7 +75,7 @@ export default function SearchBar({ focused, style, inputStyle, inputContainerSt
                     numberOfLines={1}
                     autoCapitalize="none"
                     value={phrase}
-                    placeholderTextColor={Resources.get().getColors().DarkBeige}
+                    placeholderTextColor={res.getColors().DarkBeige}
                     placeholder={placeholder}
                     onChangeText={text => onPhraseChanged?.(text)}
                     onPress={onPress}
@@ -98,7 +100,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         width: '100%',
         height: 35,
-        backgroundColor: Resources.get().getColors().Beige,
+        backgroundColor: res.getColors().Beige,
         borderRadius: 10,
         padding: 10,
         flexDirection: 'row',
@@ -106,7 +108,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     input: {
-        color: Resources.get().getColors().DarkBeige,
+        color: res.getColors().DarkBeige,
         fontSize: 16,
         letterSpacing: 1,
         fontWeight: "600",

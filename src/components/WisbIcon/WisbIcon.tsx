@@ -17,6 +17,8 @@ import ModificatorType from "./ModificatorType";
 import IconType from "./IconType";
 import Modificator from "./Modificator";
 
+const res = Resources.get()
+
 export interface Props {
     style?: ViewStyle
     icon: IconType

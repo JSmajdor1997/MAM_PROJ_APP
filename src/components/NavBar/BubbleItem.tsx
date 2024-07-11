@@ -2,6 +2,8 @@ import React from "react";
 import { ViewStyle, Animated, TouchableOpacity, StyleSheet } from "react-native";
 import Resources from "../../../res/Resources";
 
+const res = Resources.get()
+
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function BubbleItem({ style, onPress, component, bubbleAnim }: { onPress: () => void, style: ViewStyle, component: React.ReactNode, bubbleAnim: Animated.Value }) {
@@ -23,7 +25,7 @@ export default function BubbleItem({ style, onPress, component, bubbleAnim }: { 
 
 const styles = StyleSheet.create({
   root: {
-    backgroundColor: Resources.get().getColors().White,
+    backgroundColor: res.getColors().White,
     width: 40,
     aspectRatio: 1,
     borderRadius: 50,
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
 
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 10,

@@ -4,6 +4,9 @@ import {View, StyleSheet} from 'react-native';
 
 import {Avatar, Day, utils} from 'react-native-gifted-chat';
 import Bubble from './Bubble';
+import Resources from '../../../res/Resources';
+
+const res = Resources.get()
 
 const {isSameUser, isSameDay} = utils;
 

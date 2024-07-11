@@ -11,6 +11,8 @@ import BlurryView from "./BlurryView";
 import useShaky from "../hooks/useShaky";
 import { WisbEvent } from "../API/interfaces";
 
+const res = Resources.get()
+
 export interface Props {
     visible: boolean
     onEvent: (event: WisbEvent) => void
@@ -32,7 +34,7 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
             visible={visible}
             onDismiss={onDismiss}>
             <Pressable
-                style={{ height: "100%", display: "flex", backgroundColor: Resources.get().getColors().BackdropBlack, justifyContent: "center", alignItems: "center" }}
+                style={{ height: "100%", display: "flex", backgroundColor: res.getColors().BackdropBlack, justifyContent: "center", alignItems: "center" }}
                 onPress={onDismiss} >
                 <Animated.View style={{ borderRadius: 15, width: "90%", height: "90%", backgroundColor: "white", alignItems: "center", flexDirection: "column", transform: [{ translateX: translationX }] }}>
                     <View style={{ justifyContent: "center", padding: 15 }}>
@@ -61,7 +63,7 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
                             flashMode={RNCamera.Constants.FlashMode.auto}
                         />
 
-                        {isLoading ? <Spinner type="Circle" style={{ position: "absolute" }} color={Resources.get().getColors().Primary} /> : null}
+                        {isLoading ? <Spinner type="Circle" style={{ position: "absolute" }} color={res.getColors().Primary} /> : null}
                     </View>
 
                     <View style={{ flex: 1 }} />

@@ -8,11 +8,14 @@ import WisbScreens from './WisbScreens';
 import Logo from '../components/Logo';
 import getAPI from '../API/getAPI';
 
+const res = Resources.get()
+const api = getAPI()
+
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.SplashScreen> {
 
 }
 
-export default function SplashScreen({ navigation }: Props) {
+export default function SplashScreen({ route: {params: {navigate}} }: Props) {
   const [isBlurred, setIsBlurred] = React.useState(false)
 
   React.useEffect(() => {
@@ -20,10 +23,10 @@ export default function SplashScreen({ navigation }: Props) {
       setIsBlurred(true)
 
       setTimeout(() => {
-        if (getAPI().getCurrentUser != null) {
-          navigation.push(WisbScreens.MapScreen, {} as any)
+        if (api.getCurrentUser != null) {
+          navigate.go(WisbScreens.MapScreen, {})
         } else {
-          navigation.push(WisbScreens.LoginScreen, {})
+          navigate.go(WisbScreens.MapScreen, {})
         }
       }, 1000)
     }, 500)
@@ -33,7 +36,7 @@ export default function SplashScreen({ navigation }: Props) {
     <BlurryView
       isBlurred={isBlurred}
       style={styles.root}>
-      <StatusBar backgroundColor={Resources.get().getColors().Transparent} translucent />
+      <StatusBar backgroundColor={res.getColors().Transparent} translucent />
       <View
         style={styles.logoContainer}>
         <Logo withMotto />
@@ -53,7 +56,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     height: '100%',
     width: '100%',
-    backgroundColor: Resources.get().getColors().Primary,
+    backgroundColor: res.getColors().Primary,
     justifyContent: 'center',
     alignItems: 'center',
   }

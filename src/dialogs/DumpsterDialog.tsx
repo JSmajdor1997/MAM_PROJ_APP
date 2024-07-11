@@ -13,6 +13,8 @@ import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";
 import WisbObjectType from "../API/WisbObjectType";
 
+const res = Resources.get()
+
 enum Sections {
     BasicInfo,
     Location,
@@ -45,27 +47,27 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
             sectionsOrder={[Sections.Location, Sections.BasicInfo, Sections.Photos]}
             moreActions={[
                 {
-                    label: Resources.get().getStrings().Dialogs.DumpsterDialog.DeleteAction,
+                    label: res.getStrings().Dialogs.DumpsterDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
-                    color: Resources.get().getColors().Red,
+                    color: res.getColors().Red,
                     onPress: () => { }
                 },
                 {
-                    label: Resources.get().getStrings().Dialogs.DumpsterDialog.EditAction,
+                    label: res.getStrings().Dialogs.DumpsterDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
-                    color: Resources.get().getColors().White,
+                    color: res.getColors().White,
                     onPress: () => { }
                 }
             ]}
             sections={{
                 [Sections.Location]: {
                     enabled: () => workingDumpster.place != null,
-                    icon: <FontAwesomeIcon icon={faMapPin} />, color: Resources.get().getColors().Green, name: Resources.get().getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Green, name: res.getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 15 }}>
                             <LocationInput
                                 readonly={mode == Mode.Viewing}
                                 style={{ flex: 1, height: 300 }}
-                                apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+                                apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
                                 onLocationChanged={(latLng, asText) => setWorkingDumpster({ ...workingDumpster, place: { coords: latLng, asText } })}
                                 location={workingDumpster.place ?? {
@@ -77,7 +79,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                 },
                 [Sections.BasicInfo]: {
                     enabled: () => workingDumpster.description != null && workingDumpster.description.length > 0,
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 10 }}>
                             <View>
                                 <Text style={{ fontWeight: "bold" }}>Opis</Text>
@@ -88,7 +90,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                                     readOnly={mode == Mode.Viewing}
                                     onChange={e => setWorkingDumpster({ ...workingDumpster, description: e.nativeEvent.text })}
                                     value={workingDumpster.description ?? ""}
-                                    style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
+                                    style={{ backgroundColor: res.getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
                             </View>
 
                             <View style={{ marginTop: 10, flexDirection: "row", justifyContent: "space-between" }}>
@@ -101,7 +103,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                 [Sections.Photos]: {
                     enabled: () => workingDumpster.photos != null && workingDumpster.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faImage} />,
-                    color: Resources.get().getColors().Yellow,
+                    color: res.getColors().Yellow,
                     name: "Zdjęcia",
                     renderPage: (props, index) => {
                         if (mode == Mode.Adding) {

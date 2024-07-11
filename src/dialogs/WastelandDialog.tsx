@@ -10,6 +10,8 @@ import IconType from "../components/WisbIcon/IconType";
 import React from "react";
 import { WisbWasteland, WisbUser } from "../API/interfaces";
 
+const res = Resources.get()
+
 enum Sections {
     BasicInfo,
     BeforeCleaningPhotos,
@@ -39,29 +41,29 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
             onDismiss={onDismiss}
             moreActions={[
                 {
-                    label: Resources.get().getStrings().Dialogs.WastelandDialog.EditAction,
+                    label: res.getStrings().Dialogs.WastelandDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
-                    color: Resources.get().getColors().White,
+                    color: res.getColors().White,
                     onPress: () => { }
                 }
             ]}
             actions={[
                 {
-                    label: Resources.get().getStrings().Dialogs.WastelandDialog.CleanAction,
+                    label: res.getStrings().Dialogs.WastelandDialog.CleanAction,
                     icon: <FontAwesomeIcon icon={faBroom} />,
-                    color: Resources.get().getColors().Primary,
+                    color: res.getColors().Primary,
                     onPress: (startConfetti) => { startConfetti() },
                 },
                 {
-                    label: Resources.get().getStrings().Dialogs.WastelandDialog.ShareAction,
+                    label: res.getStrings().Dialogs.WastelandDialog.ShareAction,
                     icon: <FontAwesomeIcon icon={faShare} />,
-                    color: Resources.get().getColors().Blue,
+                    color: res.getColors().Blue,
                     onPress: () => { },
                 },
                 {
-                    label: Resources.get().getStrings().Dialogs.WastelandDialog.CreateEventAction,
+                    label: res.getStrings().Dialogs.WastelandDialog.CreateEventAction,
                     icon: <FontAwesomeIcon icon={faCalendar} />,
-                    color: Resources.get().getColors().Lime,
+                    color: res.getColors().Lime,
                     onPress: () => { },
                 }
             ]}
@@ -69,13 +71,13 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
             sections={{
                 [Sections.BasicInfo]: {
                     enabled: () => workingWasteland.place != null && workingWasteland.description != null && workingWasteland.description.length > 0,
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: Resources.get().getColors().Yellow, name: Resources.get().getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, margin: 5 }}>
                             <View style={{ flex: 1, padding: 10 }}>
                                 <LocationInput
                                     readonly={mode == Mode.Viewing}
                                     style={{ width: "100%", height: 200 }}
-                                    apiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+                                    apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                     userLocation={userLocation}
                                     onLocationChanged={(latLng, asText) => setWorkingWasteland({ ...workingWasteland, place: { coords: latLng, asText } })}
                                     location={workingWasteland.place ?? {
@@ -87,9 +89,9 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                             <View style={{ flexDirection: "row", padding: 10, justifyContent: "space-between" }}>
                                 <FontAwesomeIcon icon={faCalendar} size={15} />
                                 <View style={{ flexDirection: "row" }}>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>{Resources.get().getStrings().Dialogs.WastelandDialog.ReportedLabel}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{(workingWasteland.creationDate ?? new Date()).toLocaleDateString(Resources.get().getLocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5 }}>{Resources.get().getStrings().Dialogs.WastelandDialog.ByLabel}</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>{res.getStrings().Dialogs.WastelandDialog.ReportedLabel}</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{(workingWasteland.creationDate ?? new Date()).toLocaleDateString(res.getLocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</Text>
+                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5 }}>{res.getStrings().Dialogs.WastelandDialog.ByLabel}</Text>
                                     <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{workingWasteland.reportedBy?.userName ?? currentUser.userName}</Text>
                                 </View>
                             </View>
@@ -105,14 +107,14 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                                         description: e.nativeEvent.text
                                     })}
                                     multiline
-                                    style={{ backgroundColor: Resources.get().getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
+                                    style={{ backgroundColor: res.getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
                             </View>
                         </View>
                     )
                 },
                 [Sections.BeforeCleaningPhotos]: {
                     enabled: () => workingWasteland.photos != null && workingWasteland.photos.length > 0,
-                    icon: <FontAwesomeIcon icon={faTrash} />, color: Resources.get().getColors().Lime, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().Lime, name: res.getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 15 }}>
                             <Text style={{ fontWeight: "bold" }}>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
@@ -129,13 +131,13 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                 },
                 [Sections.AfterCleaningPhotos]: {
                     enabled: () => workingWasteland.afterCleaningData != null && workingWasteland.afterCleaningData.photos.length > 0,
-                    icon: <FontAwesomeIcon icon={faBroom} />, color: Resources.get().getColors().DarkBeige, name: Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }, index) => (
+                    icon: <FontAwesomeIcon icon={faBroom} />, color: res.getColors().DarkBeige, name: res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }, index) => (
                         <View key={index} style={{ flex: 1 }}>
                             <View style={{
                                 width: "100%",
                                 marginTop: 40
                             }}>
-                                <Text style={{ fontWeight: "bold" }}>{Resources.get().getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
+                                <Text style={{ fontWeight: "bold" }}>{res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
                                 <ImagesGallery
                                     images={workingWasteland.afterCleaningData?.photos ?? []}
                                     nrOfImagesPerRow={3}

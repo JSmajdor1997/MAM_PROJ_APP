@@ -14,6 +14,8 @@ import Toast from 'react-native-simple-toast';
 import getAPI from '../API/getAPI';
 import { Invitation } from '../API/interfaces';
 
+const res = Resources.get()
+
 export interface Props {
   visible: boolean;
   onDismiss: () => void;
@@ -48,7 +50,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
             <Text>{invitation.event.name}</Text>
 
             <TouchableOpacity 
-              style={{ backgroundColor: Resources.get().getColors().DarkBeige }}
+              style={{ backgroundColor: res.getColors().DarkBeige }}
               onPress={()=>{
                 api.joinEvent(invitation).then(()=>{
                   Toast.show(`Dołączono do wydarzenia ${invitation.event.name}!`, Toast.SHORT)
@@ -65,7 +67,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
 
 const styles = StyleSheet.create({
   dialogStyle: {
-    borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: Resources.get().getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
+    borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: res.getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
   },
   dismissButton: {
     marginBottom: 5

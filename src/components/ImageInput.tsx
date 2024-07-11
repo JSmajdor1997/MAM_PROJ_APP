@@ -5,6 +5,8 @@ import FastImage from "react-native-fast-image"
 import Resources from "../../res/Resources"
 import { faker } from "@faker-js/faker"
 
+const res = Resources.get()
+
 export interface Props {
     style?: ViewStyle
     image?: string
@@ -14,7 +16,7 @@ export interface Props {
 
 export default function ImageInput({ style, image, onImageSelected, readonly }: Props) {
     return (
-        <View style={[style, { backgroundColor: Resources.get().getColors().DarkBeige, borderRadius: 15, overflow: "hidden" }]}>
+        <View style={[style, { backgroundColor: res.getColors().DarkBeige, borderRadius: 15, overflow: "hidden" }]}>
             <FastImage source={{ uri: image }} style={{ flex: 1 }} />
 
             {image == null && !readonly ? (

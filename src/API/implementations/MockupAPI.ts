@@ -1,7 +1,7 @@
 import { MMKV } from "react-native-mmkv";
 import API, { GeneralError, SignUpError, LogoutError } from "../API";
 import type { APIResponse, QueryMap, TypeMap, CreateMap } from "../API";
-import type { WisbEvent, WisbUser, Invitation, WisbWasteland, Message, WastelandCleaningData, WisbDumpster } from "../interfaces";
+import type { WisbEvent, WisbUser, Invitation, WisbWasteland, WisbMessage, WastelandCleaningData, WisbDumpster } from "../interfaces";
 import WisbObjectType from "../WisbObjectType";
 import getMockupInvitations from "../generators/getMockupInvitations";
 import getMockupDumpsters from "../generators/getMockupDumpsters";
@@ -20,6 +20,7 @@ import { LatLng } from "react-native-maps";
 import getSeededImage from "../generators/getSeededImage";
 import scaleRegion from "../../utils/scaleRegion";
 import compareDates from "../../utils/dates/compareDates";
+import Snackbar from 'react-native-snackbar';
 
 interface DB {
     users: Map<string, WisbUser>
@@ -30,7 +31,7 @@ interface DB {
     invitations: Map<string, Invitation[]>        //key is user id
 
     currentUser: WisbUser | null
-    messages: Map<string, Message[]>              //key is event's id
+    messages: Map<string, WisbMessage[]>              //key is event's id
 }
 
 export default class MockupAPI extends API {
@@ -144,15 +145,15 @@ export default class MockupAPI extends API {
             events
         }
 
-        return
         const getRandomNonCurrentUser = (currentUser: WisbUser) => {
-            for (const user of [...this.db.users.values()]) {
-                if (user.id != currentUser.id) {
-                    return currentUser
+            const usersList = [...this.db.users.values()]
+            while (true) {
+                const randomUser = usersList[faker.number.int({ min: 0, max: usersList.length - 1 })]
+
+                if (randomUser.id != currentUser.id) {
+                    return randomUser
                 }
             }
-
-            throw new Error("Internal API error")
         }
 
         //send message
@@ -168,10 +169,10 @@ export default class MockupAPI extends API {
 
                     const messages = this.db.messages.get(event.id.toString()) ?? []
 
-                    const message: Message = {
+                    const message: WisbMessage = {
                         date: new Date(),
                         content: faker.word.sample(),
-                        sender: { type: WisbObjectType.User, id: randomUser.id },
+                        sender: { type: WisbObjectType.User, id: randomUser.id, userName: randomUser.userName, photoUrl: randomUser.photoUrl },
                         event: { type: WisbObjectType.Event, id: event.id }
                     }
 
@@ -185,7 +186,7 @@ export default class MockupAPI extends API {
                     return
                 }
             }
-        }, 1000 * 5)
+        }, 10 * 1000)
 
         //send invitation
         setInterval(() => {
@@ -200,7 +201,7 @@ export default class MockupAPI extends API {
 
                     const invitations = this.db.invitations.get(event.id.toString()) ?? []
                     const invitation = {
-                        event: { type: WisbObjectType.Event, id: event.id },
+                        event: { type: WisbObjectType.Event, id: event.id, name: event.name },
                         user: { type: WisbObjectType.User, id: currentUser.id },
                         asAdmin: faker.datatype.boolean({ probability: 0.2 })
                     } as Invitation
@@ -215,7 +216,7 @@ export default class MockupAPI extends API {
                     return
                 }
             }
-        }, 1000 * 5 + 10 * 1000)
+        }, 20 * 1000)
 
         //add random object (Wasteland, Event, Dumpster)
         setInterval(() => {
@@ -268,7 +269,7 @@ export default class MockupAPI extends API {
                 action: CRUD.Created,
                 location
             })
-        }, 2000 * 5 + 10 * 1000)
+        }, 30 * 1000)
 
         //clear wasteland
         setInterval(() => {
@@ -398,7 +399,7 @@ export default class MockupAPI extends API {
     }
 
     @api_endpoint({ checkLogin: true })
-    async getMany<T extends WisbObjectType>(type: T, query: QueryMap<T>, range: [number, number]): Promise<APIResponse<GeneralError, TypeMap<T>[]>> {
+    async getMany<T extends WisbObjectType>(type: T, query: QueryMap<T>, range: [number, number]): Promise<APIResponse<GeneralError, { items: TypeMap<T>[], totalLength: number }>> {
         let list: TypeMap<T>[] = []
 
         if (type === WisbObjectType.User) {
@@ -464,7 +465,7 @@ export default class MockupAPI extends API {
                 }
 
                 if (typeof q.activeOnly == "boolean") {
-                    const result = compareDates(event.dateRange[1], new Date(), {year: true, month: true, date: true})
+                    const result = compareDates(event.dateRange[1], new Date(), { year: true, month: true, date: true })
 
                     return !(
                         (q.activeOnly && !result.firstBigger) ||
@@ -487,7 +488,10 @@ export default class MockupAPI extends API {
         }
 
         return {
-            data: list.slice(range[0], isNaN(range[1]) ? list.length - 1 : range[1])
+            data: {
+                totalLength: list.length,
+                items: list.slice(range[0], isNaN(range[1]) ? list.length - 1 : range[1])
+            }
         }
     }
 
@@ -745,15 +749,31 @@ export default class MockupAPI extends API {
     }
 
     @api_endpoint({ checkLogin: true, altersData: true, notification: (api, message) => [{ message }] })
-    async sendEventMessage(message: Omit<Message, "date" | "sender">): Promise<APIResponse<GeneralError, {}>> {
+    async sendEventMessage(message: Omit<WisbMessage, "date" | "sender">): Promise<APIResponse<GeneralError, {}>> {
         const currentUser = this.getCurrentUser()!
+
+        const event = this.db.events.get(message.event.id.toString())
+        if(event == null) {
+            return {
+                error: GeneralError.InvalidDataProvided,
+                description: "Event of provided id does not exist"
+            }
+        }
+
+        if(!event.members.has(currentUser.id.toString())) {
+            return {
+                error: GeneralError.UserNotAuthorized,
+                description: "User must be member of event to send a message"
+            }
+        }
+
         const messages = this.db.messages.get(message.event.id.toString()) ?? []
 
         this.db.messages.set(message.event.id.toString(), [
             ...messages,
             {
                 ...message,
-                sender: { type: WisbObjectType.User, id: currentUser.id },
+                sender: { type: WisbObjectType.User, id: currentUser.id, userName: currentUser.userName, photoUrl: currentUser.photoUrl },
                 date: new Date()
             }
         ])
@@ -764,17 +784,22 @@ export default class MockupAPI extends API {
     }
 
     @api_endpoint({ checkLogin: true })
-    async getEventMessages(event: WisbEvent, query: { phrase?: string | undefined }, indices: [number, number]): Promise<APIResponse<{}, Message[]>> {
-        const messages = this.db.messages.get(event.id.toString())?.filter(message => {
-            if (query.phrase != null && message.content.toLocaleLowerCase().includes(query.phrase.toLocaleLowerCase())) {
-                return true
+    async getEventMessages(event: WisbEvent, query: { phrase?: string }, indices: [number, number]): Promise<APIResponse<{}, { items: WisbMessage[], totalLength: number }>> {
+        const messages = this.db.messages.get(event.id.toString())?.sort((a, b) => b.date.getTime() - a.date.getTime()).filter(message => {
+            if (query.phrase != null && !message.content.toLocaleLowerCase().includes(query.phrase.toLocaleLowerCase())) {
+                return false
             }
 
             return true
         })
 
+        console.log(indices)
+
         return {
-            data: messages?.slice(indices[0], indices[1]) ?? []
+            data: {
+                items: messages?.slice(indices[0], indices[1]) ?? [],
+                totalLength: messages?.length ?? 0
+            }
         }
     }
 

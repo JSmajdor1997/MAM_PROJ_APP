@@ -32,17 +32,18 @@ import ObjectsList from '../components/ObjectsList';
 import WisbObjectType from '../API/WisbObjectType';
 import { WisbUser } from '../API/interfaces';
 
+const res = Resources.get()
+
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.LeaderBoardScreen> { }
 
 const api = getAPI()
 
 const RecordsPerPage = 20
 
-export default function LeaderboardScreen({ navigation }: Props) {
+export default function LeaderboardScreen({ route: {params: {navigate}}  }: Props) {
   const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
 
   const avatarSectionSize = React.useRef(new Animated.Value(200)).current;
-  const [hasMore, setHasMore] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(true)
   const [index, setIndex] = React.useState(0)
 
@@ -50,15 +51,25 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
   const [user, setUser] = React.useState<WisbUser | null>(api.getCurrentUser())
 
-  const [leadership, setLeadership] = React.useState<WisbUser[]>([])
+  const [data, setData] = React.useState<{ items: WisbUser[], hasMore: boolean }>({
+    items: [],
+    hasMore: true
+  })
 
   const [updatedSelfData, setUpdatedSelfData] = React.useState<{ userName: string } | null>()
 
   React.useEffect(() => {
     setIsLoading(true)
 
-    api.getMany(WisbObjectType.User, {}, [index, index + RecordsPerPage]).then(result => {
-      setLeadership(result.data ?? [])
+    const range: [number, number] = [index, index + RecordsPerPage]
+
+    api.getMany(WisbObjectType.User, {}, range).then(result => {
+      if (result.data != null) {
+        setData({
+          items: result.data.items,
+          hasMore: range[1] < result.data.totalLength
+        })
+      }
 
       setIsLoading(true)
     })
@@ -66,11 +77,17 @@ export default function LeaderboardScreen({ navigation }: Props) {
 
   React.useEffect(() => {
     setIsLoading(true)
-    api.getMany(WisbObjectType.User, {}, [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage])
+
+    const range: [number, number] = [index * RecordsPerPage, index * RecordsPerPage + RecordsPerPage]
+
+    api.getMany(WisbObjectType.User, {}, range)
       .then(result => {
-        const users = result.data ?? []
-        setLeadership(users)
-        setHasMore(users.length > 0)
+        if (result.data != null) {
+          setData({
+            items: result.data.items,
+            hasMore: range[1] < result.data.totalLength
+          })
+        }
 
         setIsLoading(false)
       })
@@ -93,14 +110,14 @@ export default function LeaderboardScreen({ navigation }: Props) {
           })
         }}>
         <View style={{ flex: 1 }} >
-          <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => navigate.goBack()}>
             <FontAwesomeIcon icon={faArrowLeft} size={20} />
           </TouchableOpacity>
         </View>
         <View
           style={{ justifyContent: 'center', alignItems: 'center' }}>
           <Avatar
-            colors={Resources.get().getColors().AvatarColors}
+            colors={res.getColors().AvatarColors}
             size={70}
             fontSize={52}
             username={user.userName}
@@ -121,7 +138,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
               fontWeight: 'bold',
               marginTop: 10,
               textAlign: "center",
-              backgroundColor: Resources.get().getColors().DarkBeige,
+              backgroundColor: res.getColors().DarkBeige,
               borderRadius: 10,
               paddingVertical: 3,
               paddingHorizontal: 8,
@@ -151,11 +168,12 @@ export default function LeaderboardScreen({ navigation }: Props) {
             <MenuItem onPress={() => {
               setIsMoreMenuVisible(false)
               api.logout()
+              navigate.go(WisbScreens.LoginScreen, {})
             }}>Wyloguj</MenuItem>
             <MenuItem onPress={() => {
-              navigation.push(WisbScreens.SettingsScreen, {})
+              navigate.go(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
-            }}>{Resources.get().getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
+            }}>{res.getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
             <MenuItem onPress={() => {
               setIsInvitationDialogVisible(true)
               setIsMoreMenuVisible(false)
@@ -201,7 +219,7 @@ export default function LeaderboardScreen({ navigation }: Props) {
         </View>
       </View>
 
-      <View style={{ flex: 1, justifyContent: leadership.length == 0 ? "center" : undefined, alignItems: leadership.length == 0 ? "center" : undefined }}>
+      <View style={{ flex: 1, justifyContent: data.items.length == 0 ? "center" : undefined, alignItems: data.items.length == 0 ? "center" : undefined }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10, width: "100%" }}>
           <TouchableOpacity onPress={() => setIndex(index => index - 1)} style={{ opacity: index > 0 ? 1 : 0.5, pointerEvents: index > 0 ? "auto" : "none" }}>
             <FontAwesomeIcon icon={faArrowLeft} size={20} />
@@ -211,20 +229,20 @@ export default function LeaderboardScreen({ navigation }: Props) {
             <Text>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
           </View>
 
-          <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={{ opacity: hasMore ? 1 : 0.5, pointerEvents: hasMore ? "auto" : "none" }}>
+          <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={{ opacity: data.hasMore ? 1 : 0.5, pointerEvents: data.hasMore ? "auto" : "none" }}>
             <FontAwesomeIcon icon={faArrowRight} size={20} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
           <View style={{ alignItems: "center" }}>
-            {leadership.map((item, i) => <UserItem widthCoeff={0.9} style={{ marginTop: 10 }} item={item} position={index * RecordsPerPage + i + 1} />)}
+            {data.items.map((item, i) => <UserItem widthCoeff={0.9} style={{ marginTop: 10 }} item={item} position={index * RecordsPerPage + i + 1} />)}
 
             {isLoading ? (
               <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
                 <Spinner
                   isVisible={true}
-                  color={Resources.get().getColors().Primary}
+                  color={res.getColors().Primary}
                   type="ChasingDots"
                   size={50}
                 />
@@ -235,41 +253,58 @@ export default function LeaderboardScreen({ navigation }: Props) {
           <View style={{ height: 50 }} />
         </ScrollView>
 
-        {leadership.length == 0 ? <Text>Brak wpisów</Text> : null}
+        {data.items.length == 0 ? <Text>Brak wpisów</Text> : null}
       </View>
 
       <InvitationsDialog visible={isInvitationDialogVisible} onDismiss={() => setIsInvitationDialogVisible(false)} />
 
-      {updatedSelfData == null ? null : (
-        <TouchableOpacity
-        onPress={()=>{
-          api.updateOne({type: WisbObjectType.User, id: api.getCurrentUser()!.id}, {userName: updatedSelfData.userName}).then(result=>{
-            if(result.data != null) {
-              setUser({
-                ...user,
-                ...updatedSelfData
+      {updatedSelfData != null && updatedSelfData.userName != user.userName ? (
+        <View
+          style={{
+            position: "absolute", right: 145, bottom: 200,
+          }}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => {
+              api.updateOne({ type: WisbObjectType.User, id: api.getCurrentUser()!.id }, { userName: updatedSelfData.userName }).then(result => {
+                if (result.data != null) {
+                  setUser({
+                    ...user,
+                    ...updatedSelfData
+                  })
+                } else {
+                  Toast.show(`Unexpected Error!`, Toast.SHORT);
+                }
               })
-            } else {
-              Toast.show(`Unexpected Error!`, Toast.SHORT);
-            }
-          })
-          setUpdatedSelfData(null)
-        }} 
-        style={{
-          position: "absolute", right: 145, bottom: 200, backgroundColor: Resources.get().getColors().Primary, padding: 10, borderRadius: 10,
-          shadowColor: Resources.get().getColors().Black,
-          shadowOffset: {
-            width: 0,
-            height: 3,
-          },
-          shadowOpacity: 0.34,
-          shadowRadius: 3,
-  
-          elevation: 10,
-        }}>
-          <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Zapisz</Text>
-        </TouchableOpacity>
-      )}
+              setUpdatedSelfData(null)
+            }} >
+            <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Zapisz</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.editButton, {backgroundColor: res.getColors().Red}]}
+            onPress={() => setUpdatedSelfData(null)}>
+            <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Anuluj</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  editButton: {
+    backgroundColor: res.getColors().Primary,
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: res.getColors().Black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 3, 
+    marginTop: 10,
+
+    elevation: 10,
+  }
+})

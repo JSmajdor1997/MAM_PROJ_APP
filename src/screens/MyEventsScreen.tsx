@@ -21,6 +21,8 @@ import ObjectsList from '../components/ObjectsList';
 import { isEvent } from '../API/type_guards';
 import WisbObjectType from '../API/WisbObjectType';
 
+const res = Resources.get()
+
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
 export default function EventsScreen({ route: { params: { getCurrentUser } } }: Props) {
@@ -37,7 +39,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
           : 20,
       }}>
       <StatusBar
-        backgroundColor={Resources.get().getColors().Transparent}
+        backgroundColor={res.getColors().Transparent}
         translucent
         barStyle="dark-content"
       />
@@ -90,7 +92,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
         }}
         multi={false}
         phrase={phrase}
-        googleMapsApiKey={Resources.get().getEnv().GOOGLE_MAPS_API_KEY}
+        googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
       />
 
       <View style={{
@@ -112,7 +114,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Resources.get().getColors().White,
+    backgroundColor: res.getColors().White,
   },
   flatList: {
     marginTop: 14,
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   mapQueryInputContainer: {
-    shadowColor: Resources.get().getColors().Black,
+    shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
       height: 10,
@@ -130,7 +132,7 @@ const styles = StyleSheet.create({
     shadowRadius: 13.16,
 
     elevation: 20,
-    backgroundColor: Resources.get().getColors().White,
+    backgroundColor: res.getColors().White,
     borderRadius: 10,
     marginHorizontal: 10,
     flexDirection: 'row',
