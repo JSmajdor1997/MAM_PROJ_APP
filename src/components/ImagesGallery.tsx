@@ -1,132 +1,119 @@
-import React, { Fragment } from "react";
-import { View, Text, ViewStyle, Image, LayoutChangeEvent, TouchableHighlight, TouchableOpacity, StyleSheet } from "react-native";
-import Resources from "../../res/Resources";
+import React from "react";
+import { View, Image, ViewStyle, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faAd, faAdd, faClose, faPen } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faClose } from "@fortawesome/free-solid-svg-icons";
+import Resources from "../../res/Resources";
 import ImageInput from "./ImageInput";
 
-const res = Resources.get()
+const res = Resources.get();
 
 export interface Props {
-    images: string[]
-    onAddRequest?: () => void
-    onRemoveRequest?: (image: string) => void
-    nrOfImagesPerRow: number
-    style?: ViewStyle
-    interImagesSpace: number
+    images: string[];
+    onAddRequest?: () => void;
+    onRemoveRequest?: (image: string) => void;
+    nrOfImagesPerRow: number;
+    style?: ViewStyle;
+    interImagesSpace: number;
+    rowWidth: number;
 }
 
-export default function ImagesGallery({ images, onAddRequest, onRemoveRequest, nrOfImagesPerRow, style, interImagesSpace }: Props) {
-    const [containerWidth, setContainerWidth] = React.useState(0)
-
-    const nrOfRows = Math.ceil(images.length / nrOfImagesPerRow)
-    const rowsIndices = new Array(nrOfRows).fill(0).map((_, index) => index)
-
-    const imageWidth = (containerWidth - 2 * interImagesSpace * nrOfImagesPerRow) / nrOfImagesPerRow
-
-    const onContainerLayout = ({ nativeEvent: { layout: { width: newWidth } } }: LayoutChangeEvent) => {
-        if (newWidth != containerWidth) {
-            setContainerWidth(newWidth)
-        }
-    }
+const ImagesGallery: React.FC<Props> = ({
+    images,
+    onAddRequest,
+    onRemoveRequest,
+    nrOfImagesPerRow,
+    style,
+    interImagesSpace,
+    rowWidth,
+}) => {
+    // Calculate the total space taken by all the gaps between images
+    const totalSpacing = interImagesSpace * (nrOfImagesPerRow - 1);
+    // Calculate the size of each image considering the total available width minus the spacing
+    const imageSize = (rowWidth - totalSpacing) / nrOfImagesPerRow;
 
     return (
         <View
-            onLayout={onContainerLayout}
-            style={{
-                flexDirection: "column",
-                justifyContent: "flex-start",
-                alignItems: images.length > 0 ? "flex-start" : "center",
-                ...style
-            }}>
-            {rowsIndices.map(rowIndex => (
-                <Row key={rowIndex.toString()}>
-                    {getImagesIndices(images.length, nrOfImagesPerRow, rowIndex).map((index) => (
-                        <Fragment>
-                            <ImageComponent key={index} imageSrc={images[index]} width={imageWidth} margin={interImagesSpace} onRemoveRequest={onRemoveRequest == null ? undefined : () => onRemoveRequest(images[index])} />
-                            {onAddRequest != null && index == images.length-1  ? <ImageInput readonly={false} style={{width: imageWidth, height: imageWidth, margin: interImagesSpace}} onImageSelected={onAddRequest} /> : null}
-                        </Fragment>
-                    ))}
-                </Row>
+            style={[styles.container, style, { width: rowWidth }]}
+        >
+            {images.map((image, index) => (
+                <View key={index} style={{ marginBottom: interImagesSpace, marginRight: (index + 1) % nrOfImagesPerRow === 0 ? 0 : interImagesSpace }}>
+                    <ImageComponent
+                        imageSrc={image}
+                        size={imageSize}
+                        onRemoveRequest={onRemoveRequest ? () => onRemoveRequest(image) : undefined}
+                    />
+                </View>
             ))}
-
-            {onAddRequest != null && images.length == 0 ? <ImageInput readonly={false} style={{width: imageWidth, height: imageWidth, margin: interImagesSpace}} onImageSelected={onAddRequest} /> : null}
+            {onAddRequest && (
+                <TouchableOpacity
+                    style={[styles.addButton, { width: imageSize, height: imageSize, marginBottom: interImagesSpace }]}
+                    onPress={onAddRequest}
+                >
+                    <FontAwesomeIcon icon={faAdd} size={30} color={res.getColors().Blue} />
+                </TouchableOpacity>
+            )}
         </View>
-    )
-}
-
-interface RowProps {
-    children?: React.ReactNode
-}
-
-function Row({ children }: RowProps) {
-    return (
-        <View
-            style={{
-                flexDirection: "row",
-                justifyContent: "flex-start"
-            }}>
-            {children}
-        </View>
-    )
-}
+    );
+};
 
 interface ImageComponentProps {
-    imageSrc: string
-    width: number
-    margin: number
-    onRemoveRequest?: () => void
+    imageSrc: string;
+    size: number;
+    onRemoveRequest?: () => void;
 }
 
-function ImageComponent({ imageSrc, width, margin, onRemoveRequest }: ImageComponentProps) {
+const ImageComponent: React.FC<ImageComponentProps> = ({ imageSrc, size, onRemoveRequest }) => {
     return (
-        <View style={{
-            padding: margin, shadowColor: res.getColors().Black,
-            shadowOffset: {
-                width: 0,
-                height: 2,
-            },
-            shadowOpacity: 0.5,
-            shadowRadius: 3,
-        }}>
-            <Image src={imageSrc} style={{ width: width, height: width }} />
-
-            {onRemoveRequest == null ? null : <TouchableOpacity style={{
-                position: "absolute",
-                right: 14,
-                top: 10,
-                backgroundColor: res.getColors().White,
-                borderRadius: 100,
-                width: 20,
-                height: 20,
-                justifyContent: "center",
-                alignItems: "center",
-                shadowColor: res.getColors().White,
-                shadowOffset: {
-                    width: 0,
-                    height: 5,
-                },
-                shadowOpacity: 0.5,
-                shadowRadius: 4,
-            }}>
-                <FontAwesomeIcon icon={faClose} color={res.getColors().Red} size={15} />
-            </TouchableOpacity>
-            }
+        <View style={[styles.imageContainer, { width: size, height: size }]}>
+            <Image source={{ uri: imageSrc }} style={styles.image} />
+            {onRemoveRequest && (
+                <TouchableOpacity style={styles.deleteButton} onPress={onRemoveRequest}>
+                    <FontAwesomeIcon icon={faClose} color={res.getColors().Red} size={15} />
+                </TouchableOpacity>
+            )}
         </View>
-    )
-}
+    );
+};
 
-function getImagesIndices(totalNrOfImages: number, nrOfImagesPerRow: number, rowIndex: number): number[] {
-    const startingIndex = rowIndex * nrOfImagesPerRow
-    const endingIndex = Math.min(startingIndex + nrOfImagesPerRow, totalNrOfImages - 1)
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+    },
+    imageContainer: {
+        position: 'relative',
+        shadowColor: res.getColors().Black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 3,
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 8,
+    },
+    deleteButton: {
+        position: "absolute",
+        right: 10,
+        top: 10,
+        backgroundColor: res.getColors().White,
+        borderRadius: 100,
+        width: 20,
+        height: 20,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: res.getColors().White,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+    },
+    addButton: {
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: res.getColors().Blue,
+    },
+});
 
-    return startingIndex >= totalNrOfImages ?
-        [] :
-        new Array(endingIndex - startingIndex + 1).fill(0).map((_, index) => index + startingIndex)
-}
-
-interface ImageAddingComponentProps {
-    width: number
-    margin: number
-    onPress?: () => void
-}
+export default ImagesGallery;

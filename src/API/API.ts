@@ -98,7 +98,7 @@ export default abstract class API {
     abstract createOne<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland>(type: T, update: CreateMap<T>): Promise<APIResponse<GeneralError, Ref<T>>>
     abstract updateOne<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland | WisbObjectType.User>(ref: Ref<T>, update: Partial<CreateMap<T>>): Promise<APIResponse<GeneralError, {}>>
 
-    abstract sendEventInvitations(event: WisbEvent, users: (Ref<WisbObjectType.User> & { asAdmin: boolean })[]): Promise<APIResponse<GeneralError, {}>>
+    abstract sendEventInvitations(event: Ref<WisbObjectType.Event>, users: (Ref<WisbObjectType.User> & { asAdmin: boolean })[]): Promise<APIResponse<GeneralError, {}>>
 
     abstract joinEvent(event: WisbEvent | Invitation): Promise<APIResponse<GeneralError, {}>>
 

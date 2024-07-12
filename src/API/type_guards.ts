@@ -35,7 +35,7 @@ export function isRef<T extends WisbObjectType>(obj: any | Ref<T>, type: T): obj
     )
 }
 
-export function isEvent(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation): item is WisbEvent {
+export function isEvent(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbEvent {
     if(item == null) {
         return false
     }
@@ -54,7 +54,7 @@ export function isEvent(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUse
     )
 }
 
-export function isDumpster(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation): item is WisbDumpster {
+export function isDumpster(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbDumpster {
     if(item == null) {
         return false
     }
@@ -89,7 +89,7 @@ export function isUser(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser
     )
 }
 
-export function isWasteland(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation): item is WisbWasteland {
+export function isWasteland(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbWasteland {
     if(item == null) {
         return false
     }

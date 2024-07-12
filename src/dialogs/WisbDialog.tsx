@@ -25,19 +25,16 @@ import { Menu, MenuItem } from 'react-native-material-menu';
 import WisbScreens from '../screens/WisbScreens';
 import IconType from '../components/WisbIcon/IconType';
 import ModificatorType from '../components/WisbIcon/ModificatorType';
+import Spinner from 'react-native-spinkit';
 
 const res = Resources.get()
-
-export enum AddingPhases {
-    None,
-    Adding,
-    Added
-}
 
 export interface RenderPageProps<IndexType> {
     currentIndex: IndexType
     shake: () => void
     startConfetti: () => void
+    setLoading: (label: string | null) => void
+    block: (block: boolean) => void
 }
 
 export interface Section<IndexType> {
@@ -51,14 +48,16 @@ export interface Section<IndexType> {
 
 export enum Mode {
     Adding,
+    Editing,
     Viewing
 }
 
-export interface Action {
+export interface Action<IndexType> {
     label: string
     icon: React.ReactNode
     color: string
-    onPress: (startConfetti: () => void) => void
+    enabled?: boolean
+    onPress: (props: RenderPageProps<IndexType>) => void
 }
 
 export interface Props<IndexType extends number> {
@@ -72,8 +71,8 @@ export interface Props<IndexType extends number> {
 
     mainIcon: IconType
 
-    actions?: Action[]
-    moreActions?: Action[]
+    actions?: Action<IndexType>[]
+    moreActions?: Action<IndexType>[]
 }
 
 const ShakeOffset = 15
@@ -86,6 +85,8 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
     const [currentIndex, setCurrentIndex] = React.useState<IndexType>(sectionsOrder[0])
     const [makeConfetti, setMakeConfetti] = React.useState(false)
     const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
+    const [isBlocked, setIsBlocked] = React.useState(false)
+    const [loadingMessage, setLoadingMessage] = React.useState<string | null>(null)
 
     const { shake, translationX } = useShaky({
         durationMs: ShakingDuration,
@@ -112,6 +113,10 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
             }),
         ]).start();
     }, [currentIndex]);
+
+    const setLoading = (message: string | null) => {
+        setLoadingMessage(message)
+    }
 
     return (
         <Modal
@@ -163,7 +168,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                 <FontAwesomeIcon icon={faClose} color={res.getColors().White} size={20} />
                             </TouchableOpacity>
 
-                            <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : undefined} />
+                            <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : mode == Mode.Editing ? ModificatorType.Edit : undefined} />
 
                             <View>
                                 {moreActions == null ? null :
@@ -176,7 +181,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                             </TouchableOpacity>
                                         }>
                                         {moreActions.map((action, index) => (
-                                            <MenuItem key={`${index}|${action.label}`} onPress={() => { setIsMoreMenuVisible(false); action.onPress }} style={{ backgroundColor: action.label, flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 5, paddingLeft: 10 }}>
+                                            <MenuItem disabled={!(action.enabled ?? true)} key={`${index}|${action.label}`} onPress={() => { setIsMoreMenuVisible(false); action.onPress({ shake, startConfetti, currentIndex, setLoading, block: setIsBlocked }) }} style={{ backgroundColor: action.label, flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 5, paddingLeft: 10 }}>
                                                 {action.icon}
                                                 <Text style={{ flex: 1 }}>{action.label}</Text>
                                             </MenuItem>
@@ -187,7 +192,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                         </Animated.View>
 
                         {
-                            mode == Mode.Adding ? (
+                            mode == Mode.Adding || mode == Mode.Editing ? (
                                 <Swiper
                                     loadMinimal
                                     ref={swiperRef}
@@ -195,15 +200,15 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                     showsPagination={false}
                                     scrollEnabled={false}
                                     loop={false}>
-                                    {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex }, index))}
+                                    {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex, setLoading, block: setIsBlocked }, index))}
                                 </Swiper>
                             ) : <ScrollView>
-                                {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex }, index))}
+                                {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex, setLoading, block: setIsBlocked }, index))}
                             </ScrollView>
                         }
 
                         {
-                            mode == Mode.Adding ?
+                            mode == Mode.Adding || mode == Mode.Editing ?
                                 <Animated.View style={{
                                     width: "100%", paddingBottom: 5, paddingTop: 5, flexDirection: "column", alignItems: "center", shadowColor: res.getColors().Black, shadowOffset: { height: -1, width: 0 }, shadowOpacity: shadowAnim.interpolate({
                                         inputRange: [0, 10],
@@ -219,7 +224,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
 
                                             return {
                                                 ...section,
-                                                disabled: !sectionsOrder.slice(0, index).every(it => sections[it].enabled())
+                                                disabled: !sectionsOrder.slice(0, index).every(it => sections[it].enabled()) || isBlocked
                                             }
                                         })}
                                         style={{ width: "95%" }}
@@ -232,13 +237,30 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
 
                         {makeConfetti ? <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> : null}
 
+                        {mode == Mode.Editing ? (
+                            null
+                        ) : null}
                         {actions == null || mode == Mode.Adding ? null : (
                             <View style={{ flexDirection: 'row', justifyContent: "space-between", width: "100%", padding: 10, height: 100 }}>
                                 {actions.map((action, index) => (
-                                    <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress(startConfetti)} />
+                                    <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress({
+                                        shake,
+                                        startConfetti,
+                                        currentIndex,
+                                        setLoading,
+                                        block: setIsBlocked
+                                    })} />
                                 ))}
                             </View>
                         )}
+                        {loadingMessage != null ? (
+                            <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: "#00000099", justifyContent: "center", alignItems: "center", pointerEvents: "none" }}>
+                                <View style={{ justifyContent: "center", alignItems: "center" }}>
+                                    <Spinner type='Circle' color='white' size={50} style={{ width: 63, height: 63, alignItems: "center", justifyContent: "center", alignSelf: "center" }} />
+                                    <Text style={{ textAlign: "center", fontWeight: "bold", marginTop: 10, letterSpacing: 1, color: "white", fontSize: 20 }}>{loadingMessage}</Text>
+                                </View>
+                            </View>
+                        ) : null}
                     </Animated.View>
                 </View>
             </Pressable>

@@ -13,9 +13,9 @@ import {
 } from 'react-native-color-matrix-image-filters'
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faAdd, faClose } from "@fortawesome/free-solid-svg-icons";
-import ModificatorType from "./ModificatorType";
 import IconType from "./IconType";
 import Modificator from "./Modificator";
+import ModificatorType from "./ModificatorType";
 
 const res = Resources.get()
 

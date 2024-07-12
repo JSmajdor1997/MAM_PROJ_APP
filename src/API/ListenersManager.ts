@@ -32,10 +32,6 @@ export default class ListenersManager {
                 return
             }
 
-            if (notification.author.id == currentUser.id) {
-                return
-            }
-
             for (const [listener, filter] of this.listeners) {
                 if (isObjectCRUDNotification(notification)) {
                     const { location, ref } = notification
@@ -79,18 +75,14 @@ export default class ListenersManager {
     }
 
     unregisterListener(listener: ChangeListener) {
-        if (!this.listeners.has(listener)) {
-            throw new Error("Listener not registered!")
+        if (this.listeners.has(listener)) {
+            this.listeners.delete(listener)
         }
-
-        this.listeners.delete(listener)
     }
 
     updateListener(listener: ChangeListener, filter: Filter) {
-        if (!this.listeners.has(listener)) {
-            throw new Error("Listener not registered!")
+        if (this.listeners.has(listener)) {
+            this.listeners.set(listener, filter)
         }
-
-        this.listeners.set(listener, filter)
     }
 }

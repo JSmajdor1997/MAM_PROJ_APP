@@ -13,7 +13,7 @@ import Geolocation, { GeolocationResponse, GeolocationError } from "@react-nativ
 const MMKVSettingsKey = "settings"
 
 type UserPositionListener = (userPosition: LatLng) => void
-type UserPositionCleanUp = () => void
+type SettingsChangedListener = (newSettings: Settings) => void
 
 export default class Resources {
     private static readonly FallBackLanguage = EnglishTranslation
@@ -87,7 +87,7 @@ export default class Resources {
         this.settingsCache = JSON.parse(this.storage.getString(Resources.MMKV_KEY)!)
 
         if (this.settingsCache.defaultLocation != null) {
-            this.lastLocation = this.settingsCache.defaultLocation.coords
+            this.lastLocation = this.settingsCache.defaultLocation
         }
 
         //last position i listeners
@@ -123,6 +123,8 @@ export default class Resources {
         }
 
         this.storage.set(Resources.MMKV_KEY, JSON.stringify(this.settingsCache))
+
+        this.settingsChangedListeners.forEach(it => it(this.settingsCache))
     }
 
     getColors() {
@@ -194,7 +196,7 @@ export default class Resources {
     }
 
     private userLocationListeners: UserPositionListener[] = []
-    registerUserLocationListener(listener: UserPositionListener): UserPositionCleanUp {
+    registerUserLocationListener(listener: UserPositionListener): () => void {
         if (this.userLocationListeners.includes(listener)) {
             throw new Error("Listener already registered!")
         }
@@ -209,6 +211,17 @@ export default class Resources {
             }
 
             this.userLocationListeners.splice(index, 1)
+        }
+    }
+
+    private settingsChangedListeners: SettingsChangedListener[] = []
+    registerSettingsChangedListener(listener: SettingsChangedListener): () => void {
+        this.settingsChangedListeners.push(listener)
+
+        return () => {
+            const index = this.settingsChangedListeners.indexOf(listener)
+
+            this.settingsChangedListeners.splice(index, 1)
         }
     }
 }

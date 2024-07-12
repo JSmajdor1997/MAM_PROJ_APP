@@ -25,7 +25,7 @@ const res = Resources.get()
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
-export default function EventsScreen({ route: { params: { getCurrentUser } } }: Props) {
+export default function EventsScreen({ route: { params: { getCurrentUser, onItemSelected } } }: Props) {
   const [phrase, setPhrase] = React.useState("")
   const [isSearching, setIsSearching] = React.useState(false)
   const [onlyCurrentEvents, setOnlyCurrentEvents] = React.useState(true)
@@ -92,6 +92,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser } } }: 
         }}
         multi={false}
         phrase={phrase}
+        onPressed={onItemSelected}
         googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
       />
 

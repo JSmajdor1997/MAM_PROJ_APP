@@ -13,6 +13,9 @@ import Dialog, { Position } from './Dialog';
 import Toast from 'react-native-simple-toast';
 import getAPI from '../API/getAPI';
 import { Invitation } from '../API/interfaces';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faArrowRight, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 
 const res = Resources.get()
 
@@ -39,26 +42,64 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
       onDismiss={onDismiss}
       animationDuration={300}
       visible={visible}
-      backdropStyle={{ backgroundColor: undefined }}
+      backdropStyle={{ backgroundColor: "#00000088" }}
       position={Position.Bottom}
       dialogStyle={styles.dialogStyle}
-      dismissOnBackdropPress={false}>
-      <View style={{ flex: 1 }}>
-        <Text>ZAPROSZENIA</Text>
+      dismissOnBackdropPress={true}>
+      <View style={{ flex: 1, borderRadius: 15, overflow: "hidden", alignItems: "center" }}>
+        <View style={{ width: "100%", padding: 10, backgroundColor: res.getColors().Primary, alignItems: "center" }}>
+          <Text style={{ fontSize: 20, fontWeight: "600", fontFamily: "Avenir", color: "white", letterSpacing: 2 }}>ZAPROSZENIA</Text>
+        </View>
+
         {invitations.map(invitation => (
-          <View style={{ padding: 10, flexDirection: "row", justifyContent: "space-between" }}>
+          <Neomorph
+            style={{
+              shadowRadius: 10,
+              borderRadius: 15,
+              marginTop: 10,
+              backgroundColor: '#E5E5E5',
+              width: Dimensions.get("window").width * 0.9,
+              height: 50,
+              overflow: "hidden",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingLeft: 15,
+              paddingRight: 5
+            }}
+          >
+            <FontAwesomeIcon icon={faEnvelope} />
+
             <Text>{invitation.event.name}</Text>
 
-            <TouchableOpacity 
-              style={{ backgroundColor: res.getColors().DarkBeige }}
-              onPress={()=>{
-                api.joinEvent(invitation).then(()=>{
+            <TouchableOpacity
+              style={{ width: 120, height: 40, alignItems: "center", justifyContent: "center" }}
+              onPress={() => {
+                api.joinEvent(invitation).then(() => {
                   Toast.show(`Dołączono do wydarzenia ${invitation.event.name}!`, Toast.SHORT)
                 })
               }}>
-              <Text style={{ color: "white" }}>Dołącz</Text>
+              <Neomorph
+                inner
+                style={{
+                  shadowRadius: 5,
+                  shadowOpacity: 0.1,
+                  borderRadius: 15,
+                  flexDirection: "row",
+                  backgroundColor: "#CCC", 
+                  width: 120,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: 5,
+                  paddingHorizontal: 10
+                }}>
+                <Text style={{ color: "white", fontFamily: "Avenir", fontWeight: 500, letterSpacing: 1 }}>Dołącz</Text>
+
+                <FontAwesomeIcon icon={faArrowRight} style={{ marginLeft: 5 }} color='white' />
+              </Neomorph>
             </TouchableOpacity>
-          </View>
+          </Neomorph>
         ))}
       </View>
     </Dialog>
@@ -67,6 +108,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
 
 const styles = StyleSheet.create({
   dialogStyle: {
+    overflow: "hidden",
     borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: res.getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
   },
   dismissButton: {

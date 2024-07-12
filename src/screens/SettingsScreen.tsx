@@ -21,11 +21,18 @@ const res = Resources.get()
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.SettingsScreen> { }
 
-export default function SettingsScreen({ route: {params: {navigate}}  }: Props) {
+export default function SettingsScreen({ route: { params: { navigate } } }: Props) {
   const [userPosiition, setUserPosiition] = React.useState(res.getLastLocation())
+  const [settings, setSettings] = React.useState(res.getSettings())
 
   React.useEffect(() => {
-    return res.registerUserLocationListener(setUserPosiition)
+    const unregisterSettingsListener = res.registerSettingsChangedListener(setSettings)
+    const unregisterUserLocationListener = res.registerUserLocationListener(setUserPosiition)
+
+    return () => {
+      unregisterSettingsListener()
+      unregisterUserLocationListener()
+    }
   }, [])
 
   return (
@@ -35,7 +42,7 @@ export default function SettingsScreen({ route: {params: {navigate}}  }: Props) 
           <FontAwesomeIcon icon={faChevronLeft} color={res.getColors().Primary} />
         </TouchableOpacity>
 
-        <FontAwesomeIcon icon={faCog} color={res.getColors().Primary}/>
+        <FontAwesomeIcon icon={faCog} color={res.getColors().Primary} />
       </View>
 
       <View style={{ width: "100%", height: 0, borderColor: res.getColors().Primary, borderWidth: 2, borderStyle: "dashed" }} />
@@ -48,58 +55,78 @@ export default function SettingsScreen({ route: {params: {navigate}}  }: Props) 
             { label: "Domyślna", value: MapType.Default },
             { label: "Satelitarna", value: MapType.Satellite },
           ]}
-          selectedValue={res.getSettings().mapType}
-          onSelected={value => res.setSettings({mapType: value.value})} />
+          selectedValue={settings.mapType}
+          onSelected={value => res.setSettings({ mapType: value.value })} />
         <DropDownItem
           label='Język'
-          selectedValue={res.getSettings().languageCode}
-          onSelected={item => res.setSettings({languageCode: item.value})}
+          selectedValue={settings.languageCode}
+          onSelected={item => res.setSettings({ languageCode: item.value })}
           data={res.getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text>{language.flagEmoji}</Text>, value: language.code }))}
           icon={<FontAwesomeIcon icon={faLanguage} size={20} color={res.getColors().Green} />} />
-        <BooleanItem label='Powiadomienia o nowych wydarzeniach' icon={<WisbIcon icon={IconType.Calendar} size={20}/>} value={res.getSettings().notifications.newEventInArea} onValueChanged={item => res.setSettings({notifications: {newEventInArea: item}})} />
-        <BooleanItem label='Powiadomienia o nowych śmietnikach' icon={<WisbIcon icon={IconType.Dumpster} size={20}/>} value={res.getSettings().notifications.newDumpsterInArea} onValueChanged={item => res.setSettings({notifications: {newDumpsterInArea: item}})} />
-        <BooleanItem label='Powiadomienia o nowych wysypiskach' icon={<WisbIcon icon={IconType.WastelandIcon} size={20}/>} value={res.getSettings().notifications.newWastelandInArea} onValueChanged={item => res.setSettings({notifications: {newWastelandInArea: item}})} />
-        <BooleanItem label='Powiadomienia o zaproszeniach do wydarzeń' icon={<FontAwesomeIcon icon={faEnvelope} size={20} color={res.getColors().Primary} />} value={res.getSettings().notifications.newInvitation} onValueChanged={item => res.setSettings({notifications: {newInvitation: item}})} />
-        <BooleanItem label='Powiadomienia o nowych wiadomościach' icon={<FontAwesomeIcon icon={faMessage} size={20} color={res.getColors().Primary} />} value={res.getSettings().notifications.newMessage} onValueChanged={item => res.setSettings({notifications: {newMessage: item}})} />
+        <BooleanItem label='Powiadomienia o nowych wydarzeniach' icon={<WisbIcon icon={IconType.Calendar} size={20} />} value={settings.notifications.newEventInArea} onValueChanged={item => res.setSettings({ notifications: { newEventInArea: item } })} />
+        <BooleanItem label='Powiadomienia o nowych śmietnikach' icon={<WisbIcon icon={IconType.Dumpster} size={20} />} value={settings.notifications.newDumpsterInArea} onValueChanged={item => res.setSettings({ notifications: { newDumpsterInArea: item } })} />
+        <BooleanItem label='Powiadomienia o nowych wysypiskach' icon={<WisbIcon icon={IconType.WastelandIcon} size={20} />} value={settings.notifications.newWastelandInArea} onValueChanged={item => res.setSettings({ notifications: { newWastelandInArea: item } })} />
+        <BooleanItem label='Powiadomienia o zaproszeniach do wydarzeń' icon={<FontAwesomeIcon icon={faEnvelope} size={20} color={res.getColors().Primary} />} value={settings.notifications.newInvitation} onValueChanged={item => res.setSettings({ notifications: { newInvitation: item } })} />
+        <BooleanItem label='Powiadomienia o nowych wiadomościach' icon={<FontAwesomeIcon icon={faMessage} size={20} color={res.getColors().Primary} />} value={settings.notifications.newMessage} onValueChanged={item => res.setSettings({ notifications: { newMessage: item } })} />
 
-        <ItemTemplate icon={<FontAwesomeIcon icon={faLocationDot} color={res.getColors().Red} />} label='GPS'>
-          <View style={{ flexDirection: "column" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 4 }}>
-              <Switch
-                value={res.getSettings().defaultLocation == null}
-                onValueChange={item => res.setSettings({})}
+        <View
+          style={{
+            padding: 10,
+            backgroundColor: "white",
+            margin: 10,
+            borderRadius: 15,
+            overflow: "hidden",
+            minHeight: 50
+          }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+            <FontAwesomeIcon icon={faLocationDot} color={res.getColors().Red} />
+            <Text
+              style={{
+                marginLeft: 10,
+                fontWeight: "800",
+                fontFamily: "Avenir",
+                letterSpacing: 0.5,
+                fontSize: 13,
+                color: res.getColors().DarkBeige
+              }}>
+              {settings.defaultLocation == null ? "Domyślna lokalizacja" : "Automatyczna lokalizacja"}
+            </Text>
+
+            <Switch
+                value={settings.defaultLocation == null}
+                onValueChange={item => res.setSettings({ defaultLocation: item ? null : userPosiition })}
                 circleSize={20}
                 barHeight={24}
                 circleBorderWidth={0}
                 activeText=''
                 inActiveText=''
-                backgroundActive={res.getColors().Primary}
-                backgroundInactive={res.getColors().DarkBeige}
+                backgroundActive={res.getColors().Green}
+                backgroundInactive={res.getColors().Beige}
                 circleActiveColor={res.getColors().White}
-                circleInActiveColor={res.getColors().Primary}
+                circleInActiveColor={res.getColors().White}
                 switchLeftPx={2}
                 switchRightPx={2}
                 switchWidthMultiplier={2.2}
                 switchBorderRadius={40}
               />
+          </View>
 
-              <Text>{res.getSettings().defaultLocation == null ? "Lokalizacja automatyczna (GPS)" : "Domyślak lokalizacja"}</Text>
-            </View>
-
-            <LocationInput
-              readonly={res.getSettings().defaultLocation == null}
+          <LocationInput
+              style={{ height: 250, marginTop: 10 }}
+              readonly={settings.defaultLocation == null}
               userLocation={userPosiition}
               showNavigateButton={false}
               location={{
-                coords: {
-                  latitude: 0,
-                  longitude: 0
-                },
+                coords: settings.defaultLocation ?? userPosiition,
                 asText: ''
               }}
               apiKey={res.getEnv().GOOGLE_MAPS_API_KEY} />
-          </View>
-        </ItemTemplate>
+        </View>
       </ScrollView>
     </SafeAreaView>
   )
@@ -131,10 +158,10 @@ function BooleanItem({ icon, label, onValueChanged, value }: { icon: React.React
         inActiveText=''
         barHeight={24}
         circleBorderWidth={0}
-        backgroundActive={res.getColors().Primary}
-        backgroundInactive={res.getColors().DarkBeige}
+        backgroundActive={res.getColors().Green}
+        backgroundInactive={res.getColors().Beige}
         circleActiveColor={res.getColors().White}
-        circleInActiveColor={res.getColors().Primary}
+        circleInActiveColor={res.getColors().White}
         switchLeftPx={2}
         switchRightPx={2}
         switchWidthMultiplier={2.2}

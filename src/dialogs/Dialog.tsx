@@ -97,7 +97,10 @@ export default function Dialog({
 
     return (
         <Portal>
-            <Pressable pointerEvents={dismissOnBackdropPress && !visible ? "auto" : "box-none"} style={{ ...styles.backdrop, ...backdropStyle }} onPress={dismissOnBackdropPress ? onDismiss : undefined}>
+            <Pressable 
+                pointerEvents={(visible && dismissOnBackdropPress) ? "auto" : "box-none"} 
+                style={{ ...styles.backdrop, ...backdropStyle, backgroundColor: visible ? (backdropStyle?.backgroundColor ?? "transparent") : "transparent" }} 
+                onPress={dismissOnBackdropPress ? onDismiss : undefined}>
                 <Animated.View pointerEvents="auto" style={{ ...styles.dialog, ...dialogStyle, transform }}>
                     {children}
                 </Animated.View>

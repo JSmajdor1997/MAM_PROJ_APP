@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
-import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage, faCopy, faClock } from "@fortawesome/free-solid-svg-icons";
+import WisbDialog, { Mode } from "./WisbDialog";
+import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage, faCopy, faClock, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Animated, FlatList, Image, StyleSheet, Text, TextInput, Touchable, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import Resources from "../../res/Resources";
@@ -18,7 +18,7 @@ import UserItem from "../components/UserItem";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import ImageInput from "../components/ImageInput";
 import ObjectsList from "../components/ObjectsList";
-import { isUser, isWasteland } from "../API/type_guards";
+import { isEvent, isUser, isWasteland } from "../API/type_guards";
 import Share from 'react-native-share';
 import getMockupEvents from "../API/generators/getMockupEvents";
 import getAPI from "../API/getAPI";
@@ -50,14 +50,17 @@ export interface Props {
 
 const api = getAPI()
 
-export default function EventDialog({ mode, event, onDismiss, visible, userLocation, onOpenChat, currentUser, googleMapsApiKey }: Props) {
-    const [workingEvent, setWorkingEvent] = React.useState<Partial<WisbEvent>>(event ?? {})
+export default function EventDialog({ mode: propMode, event, onDismiss, visible, userLocation, onOpenChat, currentUser, googleMapsApiKey }: Props) {
+    const [mode, setMode] = React.useState(propMode)
+    const [workingEvent, setWorkingEvent] = React.useState<Partial<WisbEvent>>(event ?? {
+        members: new Map()
+    })
     const [wastelandPhrase, setWastelandPhrase] = React.useState("")
     const [userPhrase, setUserPhrase] = React.useState("")
 
     const [selectedMembers, setSelectedMembers] = React.useState<WisbUser[]>([])
 
-    const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
+    const [isJoiningOrLeavingLoading, setIsJoiningOrLeavingLoading] = React.useState(false)
 
     return (
         <Fragment>
@@ -65,51 +68,68 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                 visible={visible}
                 mainIcon={IconType.Calendar}
                 mode={mode}
-                moreActions={[
+                moreActions={mode == Mode.Viewing && isEvent(workingEvent) && (workingEvent?.members?.get(currentUser.id.toString())?.isAdmin ?? false) ? [
                     {
                         label: res.getStrings().Dialogs.EventDialog.DeleteAction,
                         icon: <FontAwesomeIcon icon={faTrash} />,
                         color: res.getColors().Red,
-                        onPress: () => { }
+                        onPress: ({setLoading}) => {
+                            console.log("SRKA")
+                            setLoading("Usuwanie...")
+                            api.deleteOne({ type: WisbObjectType.Event, id: workingEvent.id })
+                            setLoading(null)
+                            onDismiss()
+                        },
                     },
                     {
                         label: res.getStrings().Dialogs.EventDialog.EditAction,
                         icon: <FontAwesomeIcon icon={faEdit} />,
                         color: res.getColors().White,
-                        onPress: () => { }
+                        onPress: () => {
+                            setMode(Mode.Editing)
+                        }
                     }
-                ]}
-                actions={[
-                    {
-                        label: res.getStrings().Dialogs.EventDialog.JoinAction,
-                        icon: <FontAwesomeIcon icon={faAdd} />,
-                        color: res.getColors().Yellow,
-                        onPress: () => { },
-                    },
-                    {
-                        label: res.getStrings().Dialogs.EventDialog.ShareAction,
-                        icon: <FontAwesomeIcon icon={faShare} />,
-                        color: res.getColors().Blue,
-                        onPress: () => { },
-                    },
-                    {
-                        label: res.getStrings().Dialogs.EventDialog.LeaveAction,
-                        icon: <FontAwesomeIcon icon={faClose} />,
-                        color: res.getColors().Lime,
-                        onPress: () => { },
-                    },
+                ] : undefined}
+                actions={isEvent(workingEvent) && mode == Mode.Viewing ? [
+                    !workingEvent.members.has(currentUser.id.toString()) ?
+                        {
+                            label: res.getStrings().Dialogs.EventDialog.JoinAction,
+                            icon: isJoiningOrLeavingLoading ? <Spinner size={16} color="white" type="Circle" /> : <FontAwesomeIcon icon={faAdd} />,
+                            color: res.getColors().Yellow,
+                            onPress: () => {
+                                setIsJoiningOrLeavingLoading(true)
+                                api.joinEvent(workingEvent).then(() => {
+                                    setIsJoiningOrLeavingLoading(false)
+                                    workingEvent.members.set(currentUser.id.toString(), { type: WisbObjectType.User, id: currentUser.id, isAdmin: false })
+                                    setWorkingEvent(workingEvent)
+                                })
+                            },
+                        } :
+                        {
+                            label: res.getStrings().Dialogs.EventDialog.LeaveAction,
+                            icon: isJoiningOrLeavingLoading ? <Spinner size={16} color="white" type="Circle" /> : <FontAwesomeIcon icon={faClose} />,
+                            color: res.getColors().Lime,
+                            onPress: () => {
+                                setIsJoiningOrLeavingLoading(true)
+                                api.leaveEvent(workingEvent).then(() => {
+                                    setIsJoiningOrLeavingLoading(false)
+                                    workingEvent.members.delete(currentUser.id.toString())
+                                    setWorkingEvent(workingEvent)
+                                })
+                            },
+                        },
                     {
                         label: res.getStrings().Dialogs.EventDialog.OpenChatAction,
                         icon: <FontAwesomeIcon icon={faMessage} />,
                         color: res.getColors().Primary,
                         onPress: () => onOpenChat(event!),
                     }
-                ]}
+                ] : []}
                 onDismiss={onDismiss}
-                sectionsOrder={[Sections.BasicInfo, Sections.MeetPlace, Sections.Wastelands, Sections.Members, Sections.Sharing]}
+                sectionsOrder={[Sections.BasicInfo, Sections.MeetPlace, Sections.Wastelands, Sections.Members, ...(mode == Mode.Editing ? [] : [Sections.Sharing])]}
                 sections={{
                     [Sections.BasicInfo]: {
-                        enabled: () => workingEvent.name != null && workingEvent.iconUrl != null && workingEvent.dateRange != null && workingEvent.description != null && workingEvent.description.length != null && addingPhase != AddingPhases.Added,
+                        enabled: () => workingEvent.name != null && workingEvent.iconUrl != null && workingEvent.dateRange != null && workingEvent.dateRange[0] instanceof Date && workingEvent.dateRange[1] instanceof Date && workingEvent.description != null && workingEvent.description.length != null,
                         icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: "Podstawowe informacje", renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 10 }}>
                                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 120 }}>
@@ -193,13 +213,13 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         ),
                     },
                     [Sections.MeetPlace]: {
-                        enabled: () => workingEvent.place != null && addingPhase != AddingPhases.Added,
+                        enabled: () => workingEvent.place != null,
                         icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Lime, name: res.getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, padding: 15 }}>
                                 <LocationInput
                                     readonly={mode == Mode.Viewing}
                                     iconColor={res.getColors().DarkBeige}
-                                    style={{ width: "100%", height: "100%" }}
+                                    style={{ width: "100%", height: 300 }}
                                     userLocation={userLocation}
                                     apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                     onLocationChanged={(latLng, asText) => setWorkingEvent({ ...workingEvent, place: { coords: latLng, asText } })}
@@ -211,7 +231,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         )
                     },
                     [Sections.Wastelands]: {
-                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0 && addingPhase != AddingPhases.Added,
+                        enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0,
                         icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().DarkBeige, name: res.getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1, minHeight: 50 }}>
                                 <Text>Co sprzątamy?</Text>
@@ -228,8 +248,8 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                         }
                                     }}
                                     type={WisbObjectType.Wasteland}
-                                    multi={true}
-                                    selectedItemsIds={([...workingEvent.wastelands?.values()?? []]).map(it => it.id)}
+                                    multi={mode == Mode.Adding}
+                                    selectedItemsIds={([...workingEvent.wastelands?.values() ?? []]).map(it => it.id)}
                                     onSelected={selectedItem => {
                                         if (isWasteland(selectedItem)) {
                                             if (workingEvent.wastelands != null && (workingEvent.wastelands ?? []).some(it => it.id == selectedItem.id)) {
@@ -241,8 +261,8 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                                 setWorkingEvent({
                                                     ...workingEvent,
                                                     wastelands: [
-                                                        ...(workingEvent.wastelands ?? []).map(({id}) => ({type: WisbObjectType.Wasteland, id} satisfies Ref<WisbObjectType.Wasteland>)),
-                                                        {type: WisbObjectType.Wasteland, id: selectedItem.id}
+                                                        ...(workingEvent.wastelands ?? []).map(({ id }) => ({ type: WisbObjectType.Wasteland, id } satisfies Ref<WisbObjectType.Wasteland>)),
+                                                        { type: WisbObjectType.Wasteland, id: selectedItem.id }
                                                     ]
                                                 })
                                             }
@@ -255,7 +275,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         )
                     },
                     [Sections.Members]: {
-                        enabled: () => addingPhase != AddingPhases.Added,
+                        enabled: () => true,
                         icon: <FontAwesomeIcon icon={faPerson} />, color: res.getColors().Purple, name: res.getStrings().Dialogs.EventDialog.MembersLabel, renderPage: (props, index) => (
                             <View key={index} style={{ flex: 1 }}>
                                 <Text>Zaproś uczestników</Text>
@@ -281,6 +301,7 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                                             }
                                         }
                                     }}
+                                    onPressed={e=>console.log(e.id)}
                                     phrase={userPhrase}
                                     currentUser={currentUser}
                                     googleMapsApiKey={googleMapsApiKey} />
@@ -292,39 +313,31 @@ export default function EventDialog({ mode, event, onDismiss, visible, userLocat
                         icon: <FontAwesomeIcon icon={faAdd} />,
                         color: res.getColors().Primary,
                         name: "Dodaj",
-                        renderPage: (props, index) => {
+                        renderPage: ({startConfetti, setLoading, currentIndex, block}, index) => {
                             if (mode == Mode.Adding) {
-                                if (props.currentIndex == Sections.Sharing && addingPhase == AddingPhases.Added) {
-                                    props.startConfetti()
-                                }
+                                return (
+                                    <View>
+                                        <TouchableOpacity onPress={() => {
+                                            if (isEvent({...workingEvent, id: -1})) {
+                                                setLoading("Trwa dodawanie")
 
-                                if (addingPhase == AddingPhases.None) {
-                                    return (
-                                        <View>
-                                            <TouchableOpacity onPress={() => {
-                                                setAddingPhase(AddingPhases.Adding)
-           
-                                                if(workingEvent.name != null && workingEvent.dateRange != null && workingEvent.iconUrl != null && workingEvent.place && workingEvent.description && workingEvent.members != null && workingEvent.wastelands != null) {
-                                                    api.createOne(WisbObjectType.Event, workingEvent as Omit<WisbEvent, "id">).then(() => {
-                                                        setAddingPhase(AddingPhases.Added)
-                                                    })
-                                                }
-                                            }}>
-                                                <Text>DODAJ</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    )
-                                }
-
-                                if (addingPhase == AddingPhases.Adding) {
-                                    return (
-                                        <View>
-                                            <Spinner />
-                                        </View>
-                                    )
-                                }
+                                                api.createOne(WisbObjectType.Event, workingEvent as Omit<WisbEvent, "id">).then(async ref => {
+                                                    if(ref.data != null) {
+                                                        setLoading("Wysyłanie zaproszeń")
+                                                        api.sendEventInvitations(ref.data, selectedMembers.map(it=>({type: WisbObjectType.User, id: it.id, asAdmin: false}))).then(()=>{
+                                                            setLoading(null)
+                                                            block(true)
+                                                            startConfetti()
+                                                        })
+                                                    }
+                                                })
+                                            }
+                                        }}>
+                                            <Text>DODAJ</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )
                             }
-
 
                             return (
                                 <View key={index} style={{ flex: 1 }}>

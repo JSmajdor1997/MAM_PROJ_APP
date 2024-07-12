@@ -1,10 +1,10 @@
-import { SimplePlace } from "../src/API/interfaces";
+import { LatLng } from "react-native-maps";
 import MapType from "./MapType";
 
 export default interface Settings {
     mapType: MapType
     languageCode: string 
-    defaultLocation: null | SimplePlace
+    defaultLocation: null | LatLng
     notifications: {
         newMessage: boolean
         newInvitation: boolean

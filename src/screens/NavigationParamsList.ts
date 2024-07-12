@@ -28,6 +28,7 @@ type NavigationParamsList = {
     [WisbScreens.MyEventsScreen]: {
         getCurrentUser(): WisbUser
         navigate: Navigation
+        onItemSelected: (event: WisbEvent) => void
     },
     [WisbScreens.SettingsScreen]: {
         navigate: Navigation

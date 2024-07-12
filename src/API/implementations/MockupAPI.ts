@@ -360,11 +360,18 @@ export default class MockupAPI extends API {
 
         const newId = Math.max(...[...collection.keys()].map(it => parseInt(it))) + 1
 
-        const newObject: TypeMap<T> = {
+        let newObject: TypeMap<T> = {
             ...defaultObject,
             ...object,
             id: newId
         } as any
+
+        if(type == WisbObjectType.Event) {
+            newObject = {
+                ...newObject,
+                members: new Map([[currentUser.id.toString(), {type: WisbObjectType.User, id: currentUser.id, isAdmin: true}]])
+            }
+        }
 
         collection.set(newId.toString(), newObject as any)
 
@@ -612,14 +619,14 @@ export default class MockupAPI extends API {
                 }
             }
 
-            if ([...event.members.values()].some(it => it.id == currentUser.id && it.isAdmin)) {
+            if (event.members.get(currentUser.id.toString())?.isAdmin !== true) {
                 return {
                     error: GeneralError.UserNotAuthorized,
-                    description: "Only user who reported the wasteland may report it"
+                    description: "Only administrator may change event"
                 }
             }
 
-            this.db.events.set(ref.id.toString(), { ...this.db.events.get(ref.id.toString())!, ...update })
+            this.db.events.set(ref.id.toString(), { ...event, ...update })
         } else if (ref.type == WisbObjectType.User) {
             const user = this.db.users.get(ref.id.toString())
 
@@ -648,7 +655,16 @@ export default class MockupAPI extends API {
     }
 
     @api_endpoint({ checkLogin: true, altersData: true, notification: (api, event, users) => users.map(({ id, asAdmin }) => ({ invitation: { event: { type: WisbObjectType.Event, id: event.id }, user: { type: WisbObjectType.User, id }, asAdmin } })) })
-    async sendEventInvitations(event: WisbEvent, users: (Ref<WisbObjectType.User> & { asAdmin: boolean })[]): Promise<APIResponse<GeneralError, {}>> {
+    async sendEventInvitations(eventRef: Ref<WisbObjectType.Event>, users: (Ref<WisbObjectType.User> & { asAdmin: boolean })[]): Promise<APIResponse<GeneralError, {}>> {
+        const event = this.db.events.get(eventRef.id.toString())
+
+        if(event == null) {
+            return {
+                error: GeneralError.InvalidDataProvided,
+                description: "Event of provided id does not exist"
+            }
+        }
+        
         for (const user of users) {
             const invitations = this.db.invitations.get(user.id.toString()) ?? []
 
@@ -695,9 +711,7 @@ export default class MockupAPI extends API {
         event.members.set(currentUser.id.toString(), { type: WisbObjectType.User, id: currentUser.id, isAdmin: asAdmin })
 
         return {
-            data: {
-                updatedItem: {}
-            }
+            data: {}
         }
     }
 

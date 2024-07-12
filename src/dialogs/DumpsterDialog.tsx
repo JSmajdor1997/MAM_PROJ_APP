@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
+import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faEdit, faImage } from "@fortawesome/free-solid-svg-icons";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import Resources from "../../res/Resources";
 import LocationInput from "../components/LocationInput";
 import { LatLng } from "react-native-maps";
@@ -12,6 +12,7 @@ import Spinner from "react-native-spinkit";
 import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";
 import WisbObjectType from "../API/WisbObjectType";
+import { isDumpster } from "../API/type_guards";
 
 const res = Resources.get()
 
@@ -36,8 +37,6 @@ const api = getAPI()
 export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
     const [workingDumpster, setWorkingDumpster] = React.useState<Partial<WisbDumpster>>(dumpster ?? {})
 
-    const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
-
     return (
         <WisbDialog
             visible={visible}
@@ -45,12 +44,12 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
             mode={mode}
             onDismiss={onDismiss}
             sectionsOrder={[Sections.Location, Sections.BasicInfo, Sections.Photos]}
-            moreActions={[
+            moreActions={mode == Mode.Viewing && isDumpster(workingDumpster) && (workingDumpster?.addedBy.id == currentUser.id ?? false) ? [
                 {
                     label: res.getStrings().Dialogs.DumpsterDialog.DeleteAction,
                     icon: <FontAwesomeIcon icon={faTrash} />,
                     color: res.getColors().Red,
-                    onPress: () => { }
+                    onPress: () => api.deleteOne({ type: WisbObjectType.Dumpster, id: workingDumpster.id }),
                 },
                 {
                     label: res.getStrings().Dialogs.DumpsterDialog.EditAction,
@@ -58,7 +57,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                     color: res.getColors().White,
                     onPress: () => { }
                 }
-            ]}
+            ] : undefined}
             sections={{
                 [Sections.Location]: {
                     enabled: () => workingDumpster.place != null,
@@ -105,55 +104,36 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                     icon: <FontAwesomeIcon icon={faImage} />,
                     color: res.getColors().Yellow,
                     name: "Zdjęcia",
-                    renderPage: (props, index) => {
-                        if (mode == Mode.Adding) {
-                            if (props.currentIndex == Sections.Photos && addingPhase == AddingPhases.Added) {
-                                props.startConfetti()
-                            }
-
-                            if (addingPhase == AddingPhases.None) {
-                                return (
-                                    <View>
-                                        <View key={index} style={{ flex: 1, padding: 10 }}>
-                                            <Text style={{ fontWeight: "bold" }}>
-                                                Zdjęcia
-                                            </Text>
-
-                                            <ImagesGallery
-                                                images={workingDumpster.photos ?? []}
-                                                interImagesSpace={5}
-                                                style={{ width: "100%" }}
-                                                onAddRequest={() => { }}
-                                                onRemoveRequest={() => { }}
-                                                nrOfImagesPerRow={4} />
-
-
-                                        </View>
-                                        <TouchableOpacity onPress={() => {
-                                            setAddingPhase(AddingPhases.Adding)
-                                            api.createOne(WisbObjectType.Dumpster, workingDumpster as WisbDumpster).then(() => {
-                                                setAddingPhase(AddingPhases.Added)
-                                            })
-                                        }}>
-                                            <Text>DODAJ</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                )
-                            }
-
-                            if (addingPhase == AddingPhases.Adding) {
-                                return (
-                                    <View>
-                                        <Spinner />
-                                    </View>
-                                )
-                            }
-                        }
-
-
+                    renderPage: ({ block, startConfetti, setLoading }, index) => {
                         return (
-                            <View key={index} style={{ flex: 1 }}>
-                                <Text>:) to już wszystko</Text>
+                            <View>
+                                <View key={index} style={{ flex: 1, padding: 10 }}>
+                                    <Text style={{ fontWeight: "bold" }}>
+                                        Zdjęcia
+                                    </Text>
+
+                                    <ImagesGallery
+                                        images={workingDumpster.photos ?? []}
+                                        rowWidth={Dimensions.get("window").width * 0.9}
+                                        interImagesSpace={5}
+                                        style={{ width: "100%" }}
+                                        onAddRequest={() => { }}
+                                        onRemoveRequest={() => { }}
+                                        nrOfImagesPerRow={4} />
+
+
+                                </View>
+                                <TouchableOpacity onPress={() => {
+                                    if (isDumpster({ ...workingDumpster, id: -1 })) {
+                                        setLoading("Trwa dodawanie")
+
+                                        api.createOne(WisbObjectType.Dumpster, workingDumpster as Omit<WisbDumpster, "id">).then(async ref => {
+                                            setLoading(null)
+                                        })
+                                    }
+                                }}>
+                                    <Text>DODAJ</Text>
+                                </TouchableOpacity>
                             </View>
                         )
                     }

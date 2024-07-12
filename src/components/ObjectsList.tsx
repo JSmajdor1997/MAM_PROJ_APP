@@ -67,16 +67,17 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState<{
         items: (WisbWasteland | WisbEvent | WisbDumpster | WisbUser)[],
-        hasMore: boolean
+        hasMore: boolean,
+        index: number
     }>({
         items: [],
-        hasMore: true
+        hasMore: true,
+        index: 0
     });
     const [places, setPlaces] = useState<Place[]>([]);
-    const [_, setPageIndex] = useState(0);
 
-    const updateItems = async (append: boolean, index: number) => {
-        if (isLoading || (!data.hasMore && append)) {
+    const updateItems = async (index: number) => {
+        if (isLoading || !data.hasMore) {
             return;
         }
 
@@ -91,31 +92,36 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
             return;
         }
 
-        setData(data => append ? {
+        console.log(result)
+        console.log(index)
+
+        setData(data => index != 0 ? {
             items: [...data.items, ...result.data.items],
-            hasMore: range[1] < result.data.totalLength
+            hasMore: range[1] < result.data.totalLength,
+            index
         } : {
             items: result.data.items,
-            hasMore: range[1] < result.data.totalLength
+            hasMore: range[1] < result.data.totalLength,
+            index
         });
 
         setIsLoading(false);
 
-        if (!append) {
+        if (index != 0) {
             flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
         }
     };
 
     useEffect(() => {
-        updateItems(false, 0);
+        updateItems(0);
     }, [type]);
 
     useEffect(()=>{
-        updateItems(false, 0);
+        updateItems(0);
     }, Object.values(filter ?? {}))
 
     useEffect(() => {
-        updateItems(false, 0);
+        updateItems(0);
 
         if (placesConfig == null) {
             return;
@@ -157,7 +163,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
             {isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
             {isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} isAdmin={item.members.get(currentUser.id.toString())?.isAdmin ?? false} /> : null}
             {isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
-            {isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={() => { }} /> : null}
+            {isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={()=>onPressed?.(item as any)} /> : null}
             
             {multi ? (
                 <View style={{ width: "20%", justifyContent: "center", alignItems: "center" }}>
@@ -176,11 +182,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 ref={flatListRef}
                 onEndReached={() => {
                     if (data.hasMore) {
-                        setPageIndex(prev => {
-                            const nextIndex = prev + 1;
-                            updateItems(true, nextIndex);
-                            return nextIndex;
-                        });
+                        updateItems(data.index+1);
                     }
                 }}
                 onEndReachedThreshold={0.5}

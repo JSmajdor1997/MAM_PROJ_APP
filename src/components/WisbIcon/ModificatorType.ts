@@ -1,6 +1,7 @@
 enum ModificatorType {
     Add,
-    Delete
+    Delete,
+    Edit
 }
 
 export default ModificatorType

@@ -71,7 +71,7 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
         })
       }
 
-      setIsLoading(true)
+      setIsLoading(false)
     })
   }, [])
 
@@ -155,6 +155,7 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
             paddingRight: 8,
             paddingBottom: 4,
           }}>
+      
           <Menu
             visible={isMoreMenuVisible}
             anchor={<TouchableOpacity onPress={() => setIsMoreMenuVisible(true)}>
@@ -171,10 +172,12 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
               navigate.go(WisbScreens.LoginScreen, {})
             }}>Wyloguj</MenuItem>
             <MenuItem onPress={() => {
+              console.log("KURWAAAA")
               navigate.go(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
             }}>{res.getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
             <MenuItem onPress={() => {
+              console.log("KURWA")
               setIsInvitationDialogVisible(true)
               setIsMoreMenuVisible(false)
             }}>Zaproszenia</MenuItem>
@@ -241,7 +244,7 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
             {isLoading ? (
               <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
                 <Spinner
-                  isVisible={true}
+                  isVisible={isLoading}
                   color={res.getColors().Primary}
                   type="ChasingDots"
                   size={50}
@@ -286,7 +289,7 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
             <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Anuluj</Text>
           </TouchableOpacity>
         </View>
-      ) : null}
+      ) : null} 
     </SafeAreaView>
   );
 }

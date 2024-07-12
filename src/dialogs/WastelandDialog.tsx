@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { AddingPhases, Mode } from "./WisbDialog";
+import WisbDialog, { Mode } from "./WisbDialog";
 import { faGripLines, faMapPin, faTrash, faPerson, faShare, faLocationArrow, faCalendar, faClose, faBroom, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TextInput, Touchable, TouchableOpacity, View } from "react-native";
 import MapView, { LatLng } from "react-native-maps";
 import Resources from "../../res/Resources";
 import ImagesGallery from "../components/ImagesGallery";
@@ -9,6 +9,9 @@ import LocationInput from "../components/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
 import React from "react";
 import { WisbWasteland, WisbUser } from "../API/interfaces";
+import { isWasteland } from "../API/type_guards";
+import WisbObjectType from "../API/WisbObjectType";
+import getAPI from "../API/getAPI";
 
 const res = Resources.get()
 
@@ -28,10 +31,10 @@ export interface Props {
     currentUser: WisbUser
 }
 
+const api = getAPI()
+
 export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
     const [workingWasteland, setWorkingWasteland] = React.useState<Partial<WisbWasteland>>(wasteland ?? {})
-
-    const [addingPhase, setAddingPhase] = React.useState(AddingPhases.None)
 
     return (
         <WisbDialog
@@ -39,14 +42,20 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
             mainIcon={IconType.WastelandIcon}
             mode={mode}
             onDismiss={onDismiss}
-            moreActions={[
+            moreActions={mode == Mode.Viewing && isWasteland(workingWasteland) && (workingWasteland?.reportedBy?.id == currentUser.id ?? false) ? [
+                {
+                    label: res.getStrings().Dialogs.WastelandDialog.DeleteAction,
+                    icon: <FontAwesomeIcon icon={faTrash} />,
+                    color: res.getColors().Red,
+                    onPress: () => api.deleteOne({ type: WisbObjectType.Wasteland, id: workingWasteland.id }),
+                },
                 {
                     label: res.getStrings().Dialogs.WastelandDialog.EditAction,
                     icon: <FontAwesomeIcon icon={faEdit} />,
                     color: res.getColors().White,
                     onPress: () => { }
                 }
-            ]}
+            ] : undefined}
             actions={[
                 {
                     label: res.getStrings().Dialogs.WastelandDialog.CleanAction,
@@ -67,16 +76,15 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                     onPress: () => { },
                 }
             ]}
-            sectionsOrder={[Sections.BasicInfo, Sections.BeforeCleaningPhotos, Sections.AfterCleaningPhotos]}
+            sectionsOrder={[Sections.BasicInfo, Sections.BeforeCleaningPhotos, ...(mode == Mode.Viewing ? [Sections.AfterCleaningPhotos] : [])]}
             sections={{
                 [Sections.BasicInfo]: {
                     enabled: () => workingWasteland.place != null && workingWasteland.description != null && workingWasteland.description.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, margin: 5 }}>
-                            <View style={{ flex: 1, padding: 10 }}>
-                                <LocationInput
+                        <View key={index} style={{ flex: 1, padding: 15 }}>
+                            <LocationInput
                                     readonly={mode == Mode.Viewing}
-                                    style={{ width: "100%", height: 200 }}
+                                    style={{ width: "100%", height: 300 }}
                                     apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                     userLocation={userLocation}
                                     onLocationChanged={(latLng, asText) => setWorkingWasteland({ ...workingWasteland, place: { coords: latLng, asText } })}
@@ -84,7 +92,6 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                                         coords: userLocation,
                                         asText: "Obecna"
                                     }} />
-                            </View>
 
                             <View style={{ flexDirection: "row", padding: 10, justifyContent: "space-between" }}>
                                 <FontAwesomeIcon icon={faCalendar} size={15} />
@@ -118,37 +125,56 @@ export default function WastelandDialog({ mode, wasteland, onDismiss, onAdd, vis
                         <View key={index} style={{ flex: 1, padding: 15 }}>
                             <Text style={{ fontWeight: "bold" }}>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
+                                style={{ marginTop: 10 }}
                                 images={workingWasteland.photos ?? []}
-                                nrOfImagesPerRow={3}
+                                nrOfImagesPerRow={4}
                                 interImagesSpace={5}
                                 onAddRequest={() => { }}
                                 onRemoveRequest={() => { }}
-                                style={{
-                                    flex: 1
-                                }} />
+                                rowWidth={Dimensions.get("window").width * 0.9} />
                         </View>
                     )
                 },
-                [Sections.AfterCleaningPhotos]: {
-                    enabled: () => workingWasteland.afterCleaningData != null && workingWasteland.afterCleaningData.photos.length > 0,
-                    icon: <FontAwesomeIcon icon={faBroom} />, color: res.getColors().DarkBeige, name: res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, renderPage: ({ shake, startConfetti }, index) => (
-                        <View key={index} style={{ flex: 1 }}>
-                            <View style={{
-                                width: "100%",
-                                marginTop: 40
-                            }}>
-                                <Text style={{ fontWeight: "bold" }}>{res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
-                                <ImagesGallery
-                                    images={workingWasteland.afterCleaningData?.photos ?? []}
-                                    nrOfImagesPerRow={3}
-                                    interImagesSpace={5}
-                                    style={{
-                                        flex: 1
-                                    }} />
+                ...(mode == Mode.Viewing ? {
+                    [Sections.AfterCleaningPhotos]:  {
+                        enabled: () => workingWasteland.afterCleaningData != null && workingWasteland.afterCleaningData.photos.length > 0,
+                        icon: <FontAwesomeIcon icon={faBroom} />, 
+                        color: res.getColors().DarkBeige, 
+                        name: res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel, 
+                        renderPage: ({ shake, startConfetti, block, setLoading }, index) => (
+                            <View key={index} style={{ flex: 1 }}>
+                                <View style={{
+                                    width: "100%",
+                                    marginTop: 40,
+                                    padding: 15
+                                }}>
+                                    <Text style={{ fontWeight: "bold" }}>{res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
+                                    <ImagesGallery
+                                        images={workingWasteland.afterCleaningData?.photos ?? []}
+                                        style={{ marginTop: 10 }}
+                                        nrOfImagesPerRow={4}
+                                        interImagesSpace={5}
+                                        onAddRequest={() => { }}
+                                        onRemoveRequest={() => { }}
+                                        rowWidth={Dimensions.get("window").width * 0.9} />
+                                </View>
+
+                                <TouchableOpacity onPress={()=>{
+                                    if(isWasteland({...workingWasteland, id: -1})) {
+                                        setLoading("Trwa dodawanie")
+                                        api.createOne(WisbObjectType.Wasteland, workingWasteland as Omit<WisbWasteland, "id">).then(()=>{
+                                            setLoading(null)
+                                            block(true)
+                                            startConfetti()
+                                        })
+                                    }
+                                }}>
+                                    <Text>DODAJ</Text>
+                                </TouchableOpacity>
                             </View>
-                        </View>
-                    )
-                },
+                        )
+                    }
+                } : {} as any)
             }} />
     )
 }
