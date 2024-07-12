@@ -172,12 +172,10 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
               navigate.go(WisbScreens.LoginScreen, {})
             }}>Wyloguj</MenuItem>
             <MenuItem onPress={() => {
-              console.log("KURWAAAA")
               navigate.go(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
             }}>{res.getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
             <MenuItem onPress={() => {
-              console.log("KURWA")
               setIsInvitationDialogVisible(true)
               setIsMoreMenuVisible(false)
             }}>Zaproszenia</MenuItem>

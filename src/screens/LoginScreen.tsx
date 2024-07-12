@@ -35,21 +35,33 @@ enum Mode {
 export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: Props) {
   const [mode, setMode] = React.useState(Mode.Login)
 
-  const [email, setEmail] = React.useState("")
-  const [password, setPassword] = React.useState("")
+  const emailRef = React.useRef<TextInput>(null)
+  const passwordRef = React.useRef<TextInput>(null)
 
   const [userName, setUserName] = React.useState("")
   const [photo, setPhoto] = React.useState("")
+
+  function getCredentials(): { email: string, password: string } {
+    return {
+      email: (emailRef.current as any)?._getText() ?? "",
+      password: (passwordRef.current as any)?._getText() ?? "",
+    }
+  }
+
+  function clearInputs() {
+    emailRef.current?.clear()
+    passwordRef.current?.clear()
+  }
 
   const toast = (message: string) => {
     Toast.showWithGravityAndOffset(message, Toast.SHORT, Toast.CENTER, 0, 10)
   }
 
-  React.useEffect(()=>{
-    setTimeout(()=>{
+  React.useEffect(() => {
+    setTimeout(() => {
       const currentUser = api.getCurrentUser()
 
-      if(currentUser != null) {
+      if (currentUser != null) {
         onUserLoggedIn(currentUser)
       }
     }, 200)
@@ -73,24 +85,20 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
         <View
           style={styles.inputsContainer}>
           <TextInput
+            ref={emailRef}
             placeholder={res.getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
             keyboardType="email-address"
             placeholderTextColor={res.getColors().DarkBeige}
             autoCapitalize="none"
-            onChangeText={value => {
-              setEmail(value)
-            }}
           />
           <TextInput
+            ref={passwordRef}
             placeholder={res.getStrings().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
             placeholderTextColor={res.getColors().DarkBeige}
             autoCapitalize="none"
-            onChangeText={value => {
-              setPassword(value)
-            }}
           />
 
           {mode == Mode.SignUp ? (
@@ -121,13 +129,14 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
 
           <TouchableOpacity
             onPress={() => {
+              const { email, password } = getCredentials()
+
               if (mode == Mode.Login) {
-                api.login("abc@abc.com", "123").then(result => {
+                api.login(email, password).then(result => {
                   if (result.error == GeneralError.InvalidDataProvided) {
                     toast(res.getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
-                  } else if(result.data!=null){
-                    setEmail("")
-                    setPassword("")
+                  } else if (result.data != null) {
+                    clearInputs()
                     onUserLoggedIn(result.data)
                   }
                 })

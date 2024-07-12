@@ -13,6 +13,7 @@ import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";
 import WisbObjectType from "../API/WisbObjectType";
 import { isDumpster } from "../API/type_guards";
+import { isObjectCRUDNotification } from "../API/notifications";
 
 const res = Resources.get()
 
@@ -34,32 +35,35 @@ export interface Props {
 
 const api = getAPI()
 
-export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
+export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
+    const [mode, setMode] = React.useState(propMode)
     const [workingDumpster, setWorkingDumpster] = React.useState<Partial<WisbDumpster>>(dumpster ?? {})
+
+    React.useEffect(() => {
+        const unregister = api.notifications.registerListener((n) => {
+            if ((mode == Mode.Viewing || mode == Mode.Editing) && isObjectCRUDNotification(n)) {
+                setWorkingDumpster({
+                    ...workingDumpster,
+                    ...n.updatedFields
+                })
+            }
+        }, { observedIds: dumpster?.id != null ? [{ type: WisbObjectType.Event, id: dumpster.id }] : [] })
+
+        return unregister
+    }, [dumpster, mode])
 
     return (
         <WisbDialog
+            currentUser={currentUser}
+            type={WisbObjectType.Dumpster}
+            workingItem={workingDumpster}
+            onModeChanged={setMode}
             visible={visible}
             mainIcon={IconType.Dumpster}
             mode={mode}
             onDismiss={onDismiss}
-            sectionsOrder={[Sections.Location, Sections.BasicInfo, Sections.Photos]}
-            moreActions={mode == Mode.Viewing && isDumpster(workingDumpster) && (workingDumpster?.addedBy.id == currentUser.id ?? false) ? [
+            sections={[
                 {
-                    label: res.getStrings().Dialogs.DumpsterDialog.DeleteAction,
-                    icon: <FontAwesomeIcon icon={faTrash} />,
-                    color: res.getColors().Red,
-                    onPress: () => api.deleteOne({ type: WisbObjectType.Dumpster, id: workingDumpster.id }),
-                },
-                {
-                    label: res.getStrings().Dialogs.DumpsterDialog.EditAction,
-                    icon: <FontAwesomeIcon icon={faEdit} />,
-                    color: res.getColors().White,
-                    onPress: () => { }
-                }
-            ] : undefined}
-            sections={{
-                [Sections.Location]: {
                     enabled: () => workingDumpster.place != null,
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Green, name: res.getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 15 }}>
@@ -76,7 +80,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                         </View>
                     )
                 },
-                [Sections.BasicInfo]: {
+                {
                     enabled: () => workingDumpster.description != null && workingDumpster.description.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={{ flex: 1, padding: 10 }}>
@@ -99,7 +103,7 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                         </View>
                     )
                 },
-                [Sections.Photos]: {
+                {
                     enabled: () => workingDumpster.photos != null && workingDumpster.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faImage} />,
                     color: res.getColors().Yellow,
@@ -138,10 +142,6 @@ export default function DumpsterDialog({ mode, dumpster, onDismiss, onAdd, visib
                         )
                     }
                 },
-            }} />
+            ]} />
     )
 }
-
-const styles = StyleSheet.create({
-
-})

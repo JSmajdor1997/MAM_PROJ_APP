@@ -92,9 +92,6 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
             return;
         }
 
-        console.log(result)
-        console.log(index)
-
         setData(data => index != 0 ? {
             items: [...data.items, ...result.data.items],
             hasMore: range[1] < result.data.totalLength,

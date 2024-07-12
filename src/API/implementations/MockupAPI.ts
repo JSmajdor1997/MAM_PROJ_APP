@@ -12,7 +12,7 @@ import getMockupMessages from "../generators/getMockupMessages";
 import type Ref from "../Ref";
 import api_endpoint from "./api_endpoint";
 import { CRUD, ObjectCRUDNotification } from "../notifications";
-import { isEvent, isWasteland } from "../type_guards";
+import { isEvent, isInvitation, isWasteland } from "../type_guards";
 import isLatLngInRegion from "../../utils/isLatLngInRegion";
 import MapType from "../../../res/MapType";
 import { faker } from "@faker-js/faker";
@@ -75,7 +75,7 @@ export default class MockupAPI extends API {
         this.mmkvStorage.set(MockupAPI.MMKV_KEY, JSON.stringify(this.db, MockupAPI.StringifyJSON))
     }
 
-    private static readonly DefualtUsers: WisbUser[] = [
+    private static readonly DefaultUsers: WisbUser[] = [
         {
             id: 99999,
             email: "abc@abc.com",
@@ -103,7 +103,7 @@ export default class MockupAPI extends API {
 
         if (!this.mmkvStorage.contains(MockupAPI.MMKV_KEY)) {
             const users = getMockupUsers()
-            for (const defUser of MockupAPI.DefualtUsers) {
+            for (const defUser of MockupAPI.DefaultUsers) {
                 users.set(defUser.id.toString(), defUser)
             }
 
@@ -463,7 +463,7 @@ export default class MockupAPI extends API {
                     return false
                 }
 
-                if (q.phrase !== undefined && q.phrase?.length !== 0 && !event.name.includes(q.phrase)) {
+                if (q.phrase !== undefined && q.phrase?.length !== 0 && !event.name.toLocaleLowerCase().includes(q.phrase.toLocaleLowerCase())) {
                     return false
                 }
 
@@ -692,7 +692,7 @@ export default class MockupAPI extends API {
 
         let eventId: number
         let asAdmin: boolean
-        if ((obj as Invitation).asAdmin != undefined) {
+        if (isInvitation(obj)) {
             const invitation = obj as Invitation
 
             const userInvitations = this.db.invitations.get(currentUser.id.toString()) ?? []
@@ -700,12 +700,10 @@ export default class MockupAPI extends API {
 
             eventId = invitation.event.id
             asAdmin = invitation.asAdmin
-        } else {
-            const event = obj as WisbEvent
-
-            eventId = event.id
+        } else if(isEvent(obj)){
+            eventId = obj.id
             asAdmin = false
-        }
+        } else throw new Error("Invalid object sent, expected Invitation of Event")
 
         const event = this.db.events.get(eventId.toString())!
         event.members.set(currentUser.id.toString(), { type: WisbObjectType.User, id: currentUser.id, isAdmin: asAdmin })
@@ -718,8 +716,23 @@ export default class MockupAPI extends API {
     @api_endpoint({ checkLogin: true, altersData: true, notification: (api, event) => [{ action: CRUD.Updated, ref: { type: WisbObjectType.Event, id: event.id }, updatedFields: "members" }] })
     async leaveEvent(event: WisbEvent): Promise<APIResponse<GeneralError, {}>> {
         const currentUser = this.getCurrentUser()!
-
         const currentEvent = this.db.events.get(event.id.toString())!
+        const asMember = currentEvent.members.get(currentUser.id.toString())
+
+        if(asMember == null) {
+            return {
+                error: GeneralError.InvalidDataProvided,
+                description: "User is not a member of event"
+            }
+        }
+
+        if(asMember.isAdmin) {
+            return {
+                error: GeneralError.InvalidDataProvided,
+                description: "User cannot leave event which he created"
+            }
+        }
+
         currentEvent.members.delete(currentUser.id.toString())
 
         return {

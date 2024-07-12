@@ -20,30 +20,37 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import useShaky from '../hooks/useShaky';
 import FAB from '../components/FAB';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faClose, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faEdit, faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Menu, MenuItem } from 'react-native-material-menu';
 import WisbScreens from '../screens/WisbScreens';
 import IconType from '../components/WisbIcon/IconType';
 import ModificatorType from '../components/WisbIcon/ModificatorType';
 import Spinner from 'react-native-spinkit';
+import WisbObjectType from '../API/WisbObjectType';
+import { TypeMap } from '../API/API';
+import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from '../API/interfaces';
+import { isDumpster, isEvent, isWasteland } from '../API/type_guards';
+import getAPI from '../API/getAPI';
 
 const res = Resources.get()
+const api = getAPI()
 
-export interface RenderPageProps<IndexType> {
-    currentIndex: IndexType
+export interface RenderPageProps<Type extends ObjectType> {
+    currentIndex: number
     shake: () => void
     startConfetti: () => void
     setLoading: (label: string | null) => void
     block: (block: boolean) => void
+    item: Partial<TypeMap<Type>>
 }
 
-export interface Section<IndexType> {
+export interface Section<Type extends ObjectType> {
     icon: React.ReactNode
     color: string
     name: string
 
     enabled: () => boolean
-    renderPage(props: RenderPageProps<IndexType>, index: number): React.ReactNode
+    renderPage(props: RenderPageProps<Type>, index: number): React.ReactNode
 }
 
 export enum Mode {
@@ -52,37 +59,52 @@ export enum Mode {
     Viewing
 }
 
-export interface Action<IndexType> {
+export interface Action<Type extends ObjectType> {
     label: string
     icon: React.ReactNode
     color: string
     enabled?: boolean
-    onPress: (props: RenderPageProps<IndexType>) => void
+    onPress: (props: RenderPageProps<Type>) => void
 }
 
-export interface Props<IndexType extends number> {
-    style?: ViewStyle
+type ObjectType = WisbObjectType.Dumpster | WisbObjectType.Wasteland | WisbObjectType.Event
+
+export interface Props<Type extends ObjectType> {
+    type: Type
+    workingItem: Partial<TypeMap<Type>>
     mode: Mode
+    currentUser: WisbUser
+
     onDismiss(): void
     visible: boolean
 
-    sections: { [key in IndexType]: Section<IndexType> }
-    sectionsOrder: IndexType[]
+    sections: Section<Type>[]
 
     mainIcon: IconType
 
-    actions?: Action<IndexType>[]
-    moreActions?: Action<IndexType>[]
+    actions?: Action<Type>[]
+
+    onModeChanged: (newMode: Mode)=>void
 }
 
 const ShakeOffset = 15
 const ShakingDuration = 15
 const TranslationAnimationDuration = 300
 
-export default function WisbDialog<IndexType extends number>({ style, mode, onDismiss, visible, sections, sectionsOrder, actions, moreActions, mainIcon }: Props<IndexType>) {
+function isAllowedToManage(user: WisbUser, item: Partial<WisbDumpster | WisbEvent | WisbWasteland>) {
+    if(isEvent(item)) {
+        return item.members.get(user.id.toString())?.isAdmin === true
+    } else if(isWasteland(item)) {
+        return item.reportedBy.id == user.id
+    } else if(isDumpster(item)) {
+        return item.addedBy.id == user.id
+    } else return false
+}
+
+export default function WisbDialog<Type extends ObjectType>({ currentUser, type, workingItem, mode, onDismiss, visible, sections, actions, mainIcon, onModeChanged }: Props<Type>) {
     const shadowAnim = React.useRef(new Animated.Value(0)).current;
     const swiperRef = React.useRef<Swiper>(null)
-    const [currentIndex, setCurrentIndex] = React.useState<IndexType>(sectionsOrder[0])
+    const [currentIndex, setCurrentIndex] = React.useState<number>(0)
     const [makeConfetti, setMakeConfetti] = React.useState(false)
     const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
     const [isBlocked, setIsBlocked] = React.useState(false)
@@ -118,6 +140,32 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
         setLoadingMessage(message)
     }
 
+    const ManageActions: Action<Type>[] = [
+        {
+            label: res.getStrings().Dialogs.EventDialog.DeleteAction,
+            icon: <FontAwesomeIcon icon={faTrash} />,
+            color: res.getColors().Red,
+            onPress: ({ setLoading }) => {
+                setLoading("Usuwanie...")
+                api.deleteOne({ type: type, id: workingItem.id! })
+                setLoading(null)
+                onDismiss()
+            },
+        },
+        {
+            label: res.getStrings().Dialogs.EventDialog.EditAction,
+            icon: <FontAwesomeIcon icon={faEdit} />,
+            color: res.getColors().White,
+            onPress: () => {
+                onModeChanged(Mode.Editing)
+            }
+        }
+    ]
+
+    const params = {
+        shake, startConfetti, currentIndex, setLoading, block: setIsBlocked, item: workingItem
+    }
+
     return (
         <Modal
             animationType='slide'
@@ -126,7 +174,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
             onDismiss={onDismiss}>
 
             <Pressable
-                style={{ height: "100%", display: "flex", ...style }}
+                style={{ height: "100%", display: "flex" }}
                 onPress={onDismiss} >
                 <View style={{ backgroundColor: res.getColors().BackdropBlack, flex: 1, justifyContent: "flex-end", alignItems: "center" }}>
                     <Animated.View
@@ -171,7 +219,7 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                             <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : mode == Mode.Editing ? ModificatorType.Edit : undefined} />
 
                             <View>
-                                {moreActions == null ? null :
+                                {mode == Mode.Viewing && isAllowedToManage(currentUser, workingItem) ?
                                     <Menu
                                         visible={isMoreMenuVisible}
                                         onRequestClose={() => setIsMoreMenuVisible(false)}
@@ -180,14 +228,14 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                                 <FontAwesomeIcon icon={faEllipsisV} size={20} color={res.getColors().White} />
                                             </TouchableOpacity>
                                         }>
-                                        {moreActions.map((action, index) => (
-                                            <MenuItem disabled={!(action.enabled ?? true)} key={`${index}|${action.label}`} onPress={() => { setIsMoreMenuVisible(false); action.onPress({ shake, startConfetti, currentIndex, setLoading, block: setIsBlocked }) }} style={{ backgroundColor: action.label, flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 5, paddingLeft: 10 }}>
+                                        {ManageActions.map((action, index) => (
+                                            <MenuItem disabled={!(action.enabled ?? true)} key={`${index}|${action.label}`} onPress={() => { setIsMoreMenuVisible(false); action.onPress(params) }} style={{ backgroundColor: action.label, flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 5, paddingLeft: 10 }}>
                                                 {action.icon}
                                                 <Text style={{ flex: 1 }}>{action.label}</Text>
                                             </MenuItem>
                                         ))}
                                     </Menu>
-                                }
+                                : null}
                             </View>
                         </Animated.View>
 
@@ -200,10 +248,10 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                     showsPagination={false}
                                     scrollEnabled={false}
                                     loop={false}>
-                                    {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex, setLoading, block: setIsBlocked }, index))}
+                                    {sections.map((it, index) => it.renderPage(params, index))}
                                 </Swiper>
                             ) : <ScrollView>
-                                {sectionsOrder.map((it, index) => sections[it].renderPage({ shake, startConfetti, currentIndex, setLoading, block: setIsBlocked }, index))}
+                                {sections.map((it, index) => it.renderPage(params, index))}
                             </ScrollView>
                         }
 
@@ -218,41 +266,32 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
                                     <Text style={{ fontWeight: "bold", fontStyle: "italic" }}>{sections[currentIndex].name}</Text>
                                     <ProgressInput
                                         translationAnimationTime={TranslationAnimationDuration}
-                                        selectedOptionIndex={sectionsOrder.indexOf(currentIndex)}
-                                        options={sectionsOrder.map((it, index) => {
-                                            const section = sections[it]
-
+                                        selectedOptionIndex={currentIndex}
+                                        options={sections.map((it, index) => {
                                             return {
-                                                ...section,
-                                                disabled: !sectionsOrder.slice(0, index).every(it => sections[it].enabled()) || isBlocked
+                                                ...it,
+                                                disabled: !sections.slice(0, index).every(it => it.enabled()) || isBlocked
                                             }
                                         })}
                                         style={{ width: "95%" }}
                                         onSelectedOptionChanged={i => {
-                                            setCurrentIndex(sectionsOrder[i])
+                                            setCurrentIndex(i)
                                             swiperRef.current?.scrollTo(i, true)
                                         }} />
                                 </Animated.View> : null
                         }
 
-                        {makeConfetti ? <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> : null}
+                        {makeConfetti ? 
+                            <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> : 
+                            null }
 
-                        {mode == Mode.Editing ? (
-                            null
-                        ) : null}
                         {actions == null || mode == Mode.Adding ? null : (
                             <View style={{ flexDirection: 'row', justifyContent: "space-between", width: "100%", padding: 10, height: 100 }}>
                                 {actions.map((action, index) => (
-                                    <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress({
-                                        shake,
-                                        startConfetti,
-                                        currentIndex,
-                                        setLoading,
-                                        block: setIsBlocked
-                                    })} />
+                                    <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress(params)} />
                                 ))}
-                            </View>
-                        )}
+                            </View> )}
+
                         {loadingMessage != null ? (
                             <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: "#00000099", justifyContent: "center", alignItems: "center", pointerEvents: "none" }}>
                                 <View style={{ justifyContent: "center", alignItems: "center" }}>
@@ -267,7 +306,3 @@ export default function WisbDialog<IndexType extends number>({ style, mode, onDi
         </Modal>
     )
 }
-
-const styles = StyleSheet.create({
-
-})
