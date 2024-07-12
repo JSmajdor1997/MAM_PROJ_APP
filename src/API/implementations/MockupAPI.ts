@@ -1,26 +1,23 @@
-import { MMKV } from "react-native-mmkv";
-import API, { GeneralError, SignUpError, LogoutError } from "../API";
-import type { APIResponse, QueryMap, TypeMap, CreateMap } from "../API";
-import type { WisbEvent, WisbUser, Invitation, WisbWasteland, WisbMessage, WastelandCleaningData, WisbDumpster } from "../interfaces";
-import WisbObjectType from "../WisbObjectType";
-import getMockupInvitations from "../generators/getMockupInvitations";
-import getMockupDumpsters from "../generators/getMockupDumpsters";
-import getMockupEvents from "../generators/getMockupEvents";
-import getMockupUsers from "../generators/getMockupUsers";
-import getMockupWastelands from "../generators/getMockupWastelands";
-import getMockupMessages from "../generators/getMockupMessages";
-import type Ref from "../Ref";
-import api_endpoint from "./api_endpoint";
-import { CRUD, ObjectCRUDNotification } from "../notifications";
-import { isEvent, isInvitation, isWasteland } from "../type_guards";
-import isLatLngInRegion from "../../utils/isLatLngInRegion";
-import MapType from "../../../res/MapType";
 import { faker } from "@faker-js/faker";
 import { LatLng } from "react-native-maps";
-import getSeededImage from "../generators/getSeededImage";
-import scaleRegion from "../../utils/scaleRegion";
+import { MMKV } from "react-native-mmkv";
+import GeoHelper from "../../utils/GeoHelper";
 import compareDates from "../../utils/dates/compareDates";
-import Snackbar from 'react-native-snackbar';
+import type { APIResponse, CreateMap, QueryMap, TypeMap } from "../API";
+import API, { GeneralError, LogoutError, SignUpError } from "../API";
+import type Ref from "../Ref";
+import WisbObjectType from "../WisbObjectType";
+import getMockupDumpsters from "../generators/getMockupDumpsters";
+import getMockupEvents from "../generators/getMockupEvents";
+import getMockupInvitations from "../generators/getMockupInvitations";
+import getMockupMessages from "../generators/getMockupMessages";
+import getMockupUsers from "../generators/getMockupUsers";
+import getMockupWastelands from "../generators/getMockupWastelands";
+import getSeededImage from "../generators/getSeededImage";
+import type { Invitation, WastelandCleaningData, WisbDumpster, WisbEvent, WisbMessage, WisbUser, WisbWasteland } from "../interfaces";
+import { CRUD } from "../notifications";
+import { isEvent, isInvitation } from "../type_guards";
+import api_endpoint from "./api_endpoint";
 
 interface DB {
     users: Map<string, WisbUser>
@@ -366,10 +363,10 @@ export default class MockupAPI extends API {
             id: newId
         } as any
 
-        if(type == WisbObjectType.Event) {
+        if (type == WisbObjectType.Event) {
             newObject = {
                 ...newObject,
-                members: new Map([[currentUser.id.toString(), {type: WisbObjectType.User, id: currentUser.id, isAdmin: true}]])
+                members: new Map([[currentUser.id.toString(), { type: WisbObjectType.User, id: currentUser.id, isAdmin: true }]])
             }
         }
 
@@ -429,7 +426,7 @@ export default class MockupAPI extends API {
                         return false
                     }
 
-                    if (q.region != null && !isLatLngInRegion(q.region, dumpster.place.coords)) {
+                    if (q.region != null && !GeoHelper.isLatLngInRegion(q.region, dumpster.place.coords)) {
                         return false
                     }
 
@@ -443,7 +440,7 @@ export default class MockupAPI extends API {
                     return false
                 }
 
-                if (q.region != null && !isLatLngInRegion(scaleRegion(q.region, 1.1), place.coords)) {
+                if (q.region != null && !GeoHelper.isLatLngInRegion(GeoHelper.scaleRegion(q.region, 1.1), place.coords)) {
                     return false
                 }
 
@@ -467,7 +464,7 @@ export default class MockupAPI extends API {
                     return false
                 }
 
-                if (q.region != null && !isLatLngInRegion(q.region, event.place.coords)) {
+                if (q.region != null && !GeoHelper.isLatLngInRegion(q.region, event.place.coords)) {
                     return false
                 }
 
@@ -658,13 +655,13 @@ export default class MockupAPI extends API {
     async sendEventInvitations(eventRef: Ref<WisbObjectType.Event>, users: (Ref<WisbObjectType.User> & { asAdmin: boolean })[]): Promise<APIResponse<GeneralError, {}>> {
         const event = this.db.events.get(eventRef.id.toString())
 
-        if(event == null) {
+        if (event == null) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "Event of provided id does not exist"
             }
         }
-        
+
         for (const user of users) {
             const invitations = this.db.invitations.get(user.id.toString()) ?? []
 
@@ -700,7 +697,7 @@ export default class MockupAPI extends API {
 
             eventId = invitation.event.id
             asAdmin = invitation.asAdmin
-        } else if(isEvent(obj)){
+        } else if (isEvent(obj)) {
             eventId = obj.id
             asAdmin = false
         } else throw new Error("Invalid object sent, expected Invitation of Event")
@@ -719,14 +716,14 @@ export default class MockupAPI extends API {
         const currentEvent = this.db.events.get(event.id.toString())!
         const asMember = currentEvent.members.get(currentUser.id.toString())
 
-        if(asMember == null) {
+        if (asMember == null) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "User is not a member of event"
             }
         }
 
-        if(asMember.isAdmin) {
+        if (asMember.isAdmin) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "User cannot leave event which he created"
@@ -780,14 +777,14 @@ export default class MockupAPI extends API {
         const currentUser = this.getCurrentUser()!
 
         const event = this.db.events.get(message.event.id.toString())
-        if(event == null) {
+        if (event == null) {
             return {
                 error: GeneralError.InvalidDataProvided,
                 description: "Event of provided id does not exist"
             }
         }
 
-        if(!event.members.has(currentUser.id.toString())) {
+        if (!event.members.has(currentUser.id.toString())) {
             return {
                 error: GeneralError.UserNotAuthorized,
                 description: "User must be member of event to send a message"

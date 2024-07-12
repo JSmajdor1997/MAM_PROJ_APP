@@ -1,9 +1,9 @@
-import { faCamera, faEdit, faPen, faPenAlt } from "@fortawesome/free-solid-svg-icons"
+import { faker } from "@faker-js/faker"
+import { faPen } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome"
-import { Alert, TouchableOpacity, View, ViewStyle } from "react-native"
+import { TouchableOpacity, View, ViewStyle } from "react-native"
 import FastImage from "react-native-fast-image"
 import Resources from "../../res/Resources"
-import { faker } from "@faker-js/faker"
 
 const res = Resources.get()
 

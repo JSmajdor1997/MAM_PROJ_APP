@@ -1,15 +1,14 @@
-import { Animated, Modal, Pressable, Text, TouchableOpacity, View } from "react-native"
-import Resources from "../../res/Resources"
-import React from "react"
-import QRCodeScanner from 'react-native-qrcode-scanner';
-import { RNCamera } from 'react-native-camera';
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { faQrcode } from "@fortawesome/free-solid-svg-icons";
-import getAPI from "../API/getAPI";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import React from "react";
+import { Animated, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { RNCamera } from 'react-native-camera';
+import QRCodeScanner from 'react-native-qrcode-scanner';
 import Spinner from "react-native-spinkit";
-import BlurryView from "./BlurryView";
-import useShaky from "../hooks/useShaky";
+import Resources from "../../res/Resources";
+import getAPI from "../API/getAPI";
 import { WisbEvent } from "../API/interfaces";
+import useShaky from "../hooks/useShaky";
 
 const res = Resources.get()
 

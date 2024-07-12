@@ -1,16 +1,15 @@
 import { faker } from "@faker-js/faker";
-import Ref from "../Ref";
 import WisbObjectType from "../WisbObjectType";
-import { WisbMessage, WisbEvent, WisbUser } from "../interfaces";
+import { WisbEvent, WisbMessage, WisbUser } from "../interfaces";
 
 export default function getMockupMessages(events: Map<string, WisbEvent>, users: Map<string, WisbUser>): Map<string, WisbMessage[]> {
     //kazdy event, każdy członek
 
     const map = new Map<string, WisbMessage[]>()
-    for(const event of events.values()) {
+    for (const event of events.values()) {
         const messages: WisbMessage[] = []
 
-        for(const userId of event.members.values()) {
+        for (const userId of event.members.values()) {
             const user = users.get(userId.id.toString())!
 
             messages.push({

@@ -1,21 +1,19 @@
-import React, { Component, ReactElement } from 'react';
+import { faArrowRight, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import React from 'react';
 import {
-  View,
+  Dimensions,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  ScrollView,
+  View
 } from 'react-native';
-import Resources from '../../res/Resources';
-import Dialog, { Position } from './Dialog';
+import { Neomorph } from 'react-native-neomorph-shadows-fixes';
 import Toast from 'react-native-simple-toast';
+import Resources from '../../res/Resources';
 import getAPI from '../API/getAPI';
 import { Invitation } from '../API/interfaces';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faArrowRight, faEnvelope } from '@fortawesome/free-solid-svg-icons';
-import { Neomorph } from 'react-native-neomorph-shadows-fixes';
+import Dialog, { Position } from './Dialog';
 
 const res = Resources.get()
 
@@ -86,7 +84,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
                   shadowOpacity: 0.1,
                   borderRadius: 15,
                   flexDirection: "row",
-                  backgroundColor: "#CCC", 
+                  backgroundColor: "#CCC",
                   width: 120,
                   height: 40,
                   alignItems: "center",

@@ -1,18 +1,9 @@
 import { StyleSheet, View, ViewStyle } from "react-native";
+import {
+    Grayscale
+} from 'react-native-color-matrix-image-filters';
 import FastImage from 'react-native-fast-image';
 import Resources from "../../../res/Resources";
-import {
-    Grayscale,
-    Sepia,
-    Tint,
-    ColorMatrix,
-    concatColorMatrices,
-    invert,
-    contrast,
-    saturate
-} from 'react-native-color-matrix-image-filters'
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faAdd, faClose } from "@fortawesome/free-solid-svg-icons";
 import IconType from "./IconType";
 import Modificator from "./Modificator";
 import ModificatorType from "./ModificatorType";
@@ -33,7 +24,7 @@ export default function WisbIcon({ style, size, icon, modificator, greyOut }: Pr
             {greyOut ? (
                 <Grayscale amount={greyOut ? 1 : 0}>
                     <FastImage
-                        style={{ ...styles.image, width: size, height: size}}
+                        style={{ ...styles.image, width: size, height: size }}
                         resizeMode="cover"
                         source={icon} />
                 </Grayscale>

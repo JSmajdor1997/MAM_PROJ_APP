@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
-import { View, Text, StatusBar, Animated, Image, StyleSheet } from 'react-native';
-import BlurryView from '../components/BlurryView';
-import Resources from '../../res/Resources';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React from 'react';
+import { StatusBar, StyleSheet, View } from 'react-native';
+import Resources from '../../res/Resources';
+import getAPI from '../API/getAPI';
+import BlurryView from '../components/BlurryView';
+import Logo from '../components/Logo';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
-import Logo from '../components/Logo';
-import getAPI from '../API/getAPI';
 
 const res = Resources.get()
 const api = getAPI()
@@ -15,7 +15,7 @@ interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens
 
 }
 
-export default function SplashScreen({ route: {params: {navigate}} }: Props) {
+export default function SplashScreen({ route: { params: { navigate } } }: Props) {
   const [isBlurred, setIsBlurred] = React.useState(false)
 
   React.useEffect(() => {

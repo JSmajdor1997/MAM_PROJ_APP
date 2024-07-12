@@ -1,19 +1,18 @@
+import { faGripLines, faImage, faMapPin } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { Mode } from "./WisbDialog";
-import { faGripLines, faMapPin, faTrash, faEdit, faImage } from "@fortawesome/free-solid-svg-icons";
-import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import Resources from "../../res/Resources";
-import LocationInput from "../components/LocationInput";
-import { LatLng } from "react-native-maps";
-import IconType from "../components/WisbIcon/IconType";
-import ImagesGallery from "../components/ImagesGallery";
 import React from "react";
-import Spinner from "react-native-spinkit";
+import { Dimensions, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { LatLng } from "react-native-maps";
+import Resources from "../../res/Resources";
+import WisbObjectType from "../API/WisbObjectType";
 import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";
-import WisbObjectType from "../API/WisbObjectType";
-import { isDumpster } from "../API/type_guards";
 import { isObjectCRUDNotification } from "../API/notifications";
+import { isDumpster } from "../API/type_guards";
+import ImagesGallery from "../components/ImagesGallery";
+import LocationInput from "../components/LocationInput";
+import IconType from "../components/WisbIcon/IconType";
+import WisbDialog, { Mode } from "./WisbDialog";
 
 const res = Resources.get()
 

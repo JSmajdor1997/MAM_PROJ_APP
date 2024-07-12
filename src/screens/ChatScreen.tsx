@@ -1,30 +1,30 @@
+import { faArrowLeft, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View,
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { GiftedChat, IMessage, Message, MessageProps } from 'react-native-gifted-chat';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import Resources from '../../res/Resources';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import WisbScreens from './WisbScreens';
-import { faArrowLeft, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from 'react-native-spinkit';
+import Resources from '../../res/Resources';
+import WisbObjectType from '../API/WisbObjectType';
 import getAPI from '../API/getAPI';
 import { WisbMessage } from '../API/interfaces';
 import Avatar from '../components/Avatar';
-import WisbObjectType from '../API/WisbObjectType';
 import NavigationParamsList from './NavigationParamsList';
+import WisbScreens from './WisbScreens';
 
 const res = Resources.get();
 
 const api = getAPI();
 
-interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> {}
+interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.ChatScreen> { }
 
 const PageSize = 25;
 

@@ -1,21 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FlatList, ListRenderItemInfo, StyleSheet, Text, View, ViewStyle } from "react-native";
-import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
+import CheckBox from 'react-native-check-box';
+import { LatLng } from "react-native-maps";
+import Toast from 'react-native-simple-toast';
 import Spinner from "react-native-spinkit";
 import Resources from "../../res/Resources";
-import { isWasteland, isEvent, isDumpster, isUser } from "../API/type_guards";
+import { QueryMap, TypeMap } from "../API/API";
+import WisbObjectType from "../API/WisbObjectType";
+import getAPI from "../API/getAPI";
+import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces";
+import { isDumpster, isEvent, isUser, isWasteland } from "../API/type_guards";
+import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
 import DumpsterItem from "./DumpsterItem";
 import EventItem from "./EventItem";
 import LocationItem from "./LocationItem";
-import WastelandItem from "./WastelandItem";
-import getAPI from "../API/getAPI";
-import Toast from 'react-native-simple-toast';
-import { LatLng } from "react-native-maps";
 import UserItem from "./UserItem";
-import CheckBox from 'react-native-check-box';
-import WisbObjectType from "../API/WisbObjectType";
-import { QueryMap, TypeMap } from "../API/API";
-import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces";
+import WastelandItem from "./WastelandItem";
 
 const res = Resources.get()
 
@@ -113,7 +113,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
         updateItems(0);
     }, [type]);
 
-    useEffect(()=>{
+    useEffect(() => {
         updateItems(0);
     }, Object.values(filter ?? {}))
 
@@ -160,8 +160,8 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
             {isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
             {isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} isAdmin={item.members.get(currentUser.id.toString())?.isAdmin ?? false} /> : null}
             {isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
-            {isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={()=>onPressed?.(item as any)} /> : null}
-            
+            {isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={() => onPressed?.(item as any)} /> : null}
+
             {multi ? (
                 <View style={{ width: "20%", justifyContent: "center", alignItems: "center" }}>
                     <CheckBox
@@ -179,7 +179,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 ref={flatListRef}
                 onEndReached={() => {
                     if (data.hasMore) {
-                        updateItems(data.index+1);
+                        updateItems(data.index + 1);
                     }
                 }}
                 onEndReachedThreshold={0.5}

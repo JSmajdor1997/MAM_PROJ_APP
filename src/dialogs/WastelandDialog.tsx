@@ -1,19 +1,19 @@
+import { faBroom, faCalendar, faGripLines, faShare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { Mode, Section } from "./WisbDialog";
-import { faGripLines, faMapPin, faTrash, faPerson, faShare, faLocationArrow, faCalendar, faClose, faBroom, faEdit } from "@fortawesome/free-solid-svg-icons";
-import { Dimensions, StyleSheet, Text, TextInput, Touchable, TouchableOpacity, View } from "react-native";
-import MapView, { LatLng } from "react-native-maps";
+import React from "react";
+import { Dimensions, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { LatLng } from "react-native-maps";
+import Share from 'react-native-share';
 import Resources from "../../res/Resources";
+import WisbObjectType from "../API/WisbObjectType";
+import getAPI from "../API/getAPI";
+import { WisbUser, WisbWasteland } from "../API/interfaces";
+import { isObjectCRUDNotification } from "../API/notifications";
+import { isWasteland } from "../API/type_guards";
 import ImagesGallery from "../components/ImagesGallery";
 import LocationInput from "../components/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
-import React from "react";
-import { WisbWasteland, WisbUser } from "../API/interfaces";
-import { isWasteland } from "../API/type_guards";
-import WisbObjectType from "../API/WisbObjectType";
-import getAPI from "../API/getAPI";
-import Share from 'react-native-share';
-import { isObjectCRUDNotification } from "../API/notifications";
+import WisbDialog, { Mode, Section } from "./WisbDialog";
 
 const res = Resources.get()
 

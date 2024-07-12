@@ -1,21 +1,21 @@
-import MapView, { LatLng, Marker, Region } from "react-native-maps"
 import { faChevronDown, faChevronUp, faEarth, faLocationArrow } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { StyleSheet, Text, View, ViewStyle, Animated, Easing, TouchableOpacity, Dimensions } from "react-native";
-import { GoogleStaticMapNext } from "react-native-google-static-map-next";
-import Resources from "../../res/Resources";
-import FAB from "./FAB";
-import openMapsAndNavigate from "../utils/openMapsAndNavigate";
 import React from "react";
-import SearchBar from "./SearchBar";
+import { Animated, Dimensions, Easing, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import { useClickOutside } from "react-native-click-outside";
-import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
-import Separator from "./Separator";
+import { GoogleStaticMapNext } from "react-native-google-static-map-next";
+import MapView, { LatLng } from "react-native-maps";
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import Resources from "../../res/Resources";
 import reverseGeoCode from "../utils/GooglePlacesAPI/reverseGeoCode";
+import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
+import openMapsAndNavigate from "../utils/openMapsAndNavigate";
+import FAB from "./FAB";
 import LocationItem from "./LocationItem";
+import SearchBar from "./SearchBar";
+import Separator from "./Separator";
 import IconType from "./WisbIcon/IconType";
 import WisbIcon from "./WisbIcon/WisbIcon";
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 const res = Resources.get()
 
@@ -156,10 +156,6 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                     if (newHeight != searchBarHeight) {
                         setSearchBarHeight(newHeight)
                     }
-                }}
-                onClear={() => {
-                    setPhrase("")
-                    setIsDropdownVisible(true)
                 }}
                 leftIcon={<FontAwesomeIcon icon={faEarth} color={iconColor ?? res.getColors().Black} size={16} />}
                 onPhraseChanged={setPhrase}

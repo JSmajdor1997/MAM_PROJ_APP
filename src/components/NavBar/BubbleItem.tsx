@@ -1,5 +1,5 @@
 import React from "react";
-import { ViewStyle, Animated, TouchableOpacity, StyleSheet } from "react-native";
+import { Animated, StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 import Resources from "../../../res/Resources";
 
 const res = Resources.get()

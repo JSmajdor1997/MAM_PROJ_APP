@@ -1,22 +1,19 @@
-import React, { Component, Fragment } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  Text,
-  Alert,
-  StatusBar,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import { MenuItem, Menu } from 'react-native-material-menu';
-import FastImage from 'react-native-fast-image';
+import { faCalendarAlt, faMapPin, faUnlock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import WisbIcon from './WisbIcon/WisbIcon';
-import { faCalendar, faCalendarAlt, faCrown, faEdit, faMapPin, faMobileRetro, faUnlock } from '@fortawesome/free-solid-svg-icons';
-import Resources from '../../res/Resources';
-import IconType from './WisbIcon/IconType';
+import React from 'react';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';
+import Resources from '../../res/Resources';
 import { WisbEvent } from '../API/interfaces';
+import IconType from './WisbIcon/IconType';
+import WisbIcon from './WisbIcon/WisbIcon';
 
 const res = Resources.get()
 

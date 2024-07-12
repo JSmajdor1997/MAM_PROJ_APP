@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import getSeededImage from './getSeededImage';
 import { WisbUser } from '../interfaces';
+import getSeededImage from './getSeededImage';
 
 export default function getMockupUsers(): Map<string, WisbUser> {
     return faker.helpers.multiple(() => ({

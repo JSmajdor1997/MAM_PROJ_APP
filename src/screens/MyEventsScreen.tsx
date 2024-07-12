@@ -1,25 +1,17 @@
-import React, { Component } from 'react';
-import {
-  View,
-  StatusBar,
-  FlatList,
-  Text,
-  StyleSheet,
-  Dimensions
-} from 'react-native';
-import EventItem from '../components/EventItem';
-import WisbScreens from './WisbScreens';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import NavigationParamsList from './NavigationParamsList';
+import React from 'react';
+import {
+  StatusBar,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
 import Resources from '../../res/Resources';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCalendar } from '@fortawesome/free-solid-svg-icons';
-import SearchBar from '../components/SearchBar';
-import QueryInput from '../components/QueryInput/QueryInput';
-import getAPI from '../API/getAPI';
-import ObjectsList from '../components/ObjectsList';
-import { isEvent } from '../API/type_guards';
 import WisbObjectType from '../API/WisbObjectType';
+import ObjectsList from '../components/ObjectsList';
+import QueryInput from '../components/QueryInput/QueryInput';
+import NavigationParamsList from './NavigationParamsList';
+import WisbScreens from './WisbScreens';
 
 const res = Resources.get()
 

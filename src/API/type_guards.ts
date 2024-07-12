@@ -1,7 +1,7 @@
 import { LatLng } from "react-native-maps";
-import { WisbEvent, WisbDumpster, WisbWasteland, WisbUser, Invitation } from "./interfaces";
-import WisbObjectType from "./WisbObjectType";
 import Ref from "./Ref";
+import WisbObjectType from "./WisbObjectType";
+import { Invitation, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "./interfaces";
 
 export interface SimplePlace {
     coords: LatLng
@@ -9,7 +9,7 @@ export interface SimplePlace {
 }
 
 export function isLatLng(obj: any | LatLng): obj is LatLng {
-    if(obj == null) {
+    if (obj == null) {
         return false
     }
 
@@ -17,7 +17,7 @@ export function isLatLng(obj: any | LatLng): obj is LatLng {
 }
 
 export function isSimplePlace(obj: any | SimplePlace): obj is LatLng {
-    if(obj == null) {
+    if (obj == null) {
         return false
     }
 
@@ -25,7 +25,7 @@ export function isSimplePlace(obj: any | SimplePlace): obj is LatLng {
 }
 
 export function isRef<T extends WisbObjectType>(obj: any | Ref<T>, type: T): obj is Ref<T> {
-    if(obj == null) {
+    if (obj == null) {
         return false
     }
 
@@ -36,12 +36,12 @@ export function isRef<T extends WisbObjectType>(obj: any | Ref<T>, type: T): obj
 }
 
 export function isEvent(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbEvent {
-    if(item == null) {
+    if (item == null) {
         return false
     }
 
     const e = item as WisbEvent
-    
+
     return (
         typeof e.id === "number" &&
         typeof e.name === "string" &&
@@ -55,7 +55,7 @@ export function isEvent(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUse
 }
 
 export function isDumpster(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbDumpster {
-    if(item == null) {
+    if (item == null) {
         return false
     }
 
@@ -71,7 +71,7 @@ export function isDumpster(item: WisbEvent | WisbDumpster | WisbWasteland | Wisb
 }
 
 export function isUser(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation): item is WisbUser {
-    if(item == null) {
+    if (item == null) {
         return false
     }
 
@@ -90,7 +90,7 @@ export function isUser(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser
 }
 
 export function isWasteland(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbWasteland {
-    if(item == null) {
+    if (item == null) {
         return false
     }
 
@@ -112,7 +112,7 @@ export function isWasteland(item: WisbEvent | WisbDumpster | WisbWasteland | Wis
 }
 
 export function isInvitation(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation): item is Invitation {
-    if(item == null) {
+    if (item == null) {
         return false
     }
 

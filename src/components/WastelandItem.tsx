@@ -1,20 +1,19 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import Resources from '../../res/Resources';
 import { faImage, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { GoogleStaticMapNext } from 'react-native-google-static-map-next';
-import { Neomorph } from 'react-native-neomorph-shadows-fixes';
+import React from 'react';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import WisbIcon from './WisbIcon/WisbIcon';
-import IconType from './WisbIcon/IconType';
+import { Neomorph } from 'react-native-neomorph-shadows-fixes';
+import Resources from '../../res/Resources';
 import { WisbWasteland } from '../API/interfaces';
+import IconType from './WisbIcon/IconType';
+import WisbIcon from './WisbIcon/WisbIcon';
 
 const res = Resources.get()
 

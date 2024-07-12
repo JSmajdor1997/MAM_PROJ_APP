@@ -19,7 +19,7 @@ export default function Separator({ backgroundColor, color }: Props) {
 
 const styles = StyleSheet.create({
     root: {
-        width: '100%', 
+        width: '100%',
         height: StyleSheet.hairlineWidth
     }
 })

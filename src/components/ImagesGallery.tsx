@@ -1,9 +1,8 @@
-import React from "react";
-import { View, Image, ViewStyle, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faAdd, faClose } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import React from "react";
+import { Image, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Resources from "../../res/Resources";
-import ImageInput from "./ImageInput";
 
 const res = Resources.get();
 

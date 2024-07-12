@@ -1,17 +1,14 @@
-import React, { Component, VoidFunctionComponent } from 'react';
+import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import React from 'react';
 import {
-    View,
-    TextInput,
-    Text,
-    TouchableOpacity,
-    StyleProp,
-    ViewStyle,
     Animated,
     Easing,
     StyleSheet,
+    TouchableOpacity,
+    View,
+    ViewStyle
 } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Resources from '../../../res/Resources';
 import SearchBar from '../SearchBar';
 

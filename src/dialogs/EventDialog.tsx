@@ -1,25 +1,25 @@
+import { faAdd, faClock, faClose, faGripLines, faMapPin, faMessage, faPerson, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import WisbDialog, { Mode } from "./WisbDialog";
-import { faGripLines, faMapPin, faTrash, faPerson, faShare, faClose, faAdd, faEdit, faMessage, faCopy, faClock, faCheck } from "@fortawesome/free-solid-svg-icons";
-import { Animated, FlatList, Image, StyleSheet, Text, TextInput, Touchable, TouchableOpacity, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
-import Resources from "../../res/Resources";
-import LocationInput from "../components/LocationInput";
-import { LatLng } from "react-native-maps";
-import IconType from "../components/WisbIcon/IconType";
-import SearchBar from "../components/SearchBar";
-import React, { Fragment } from "react";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
-import ImageInput from "../components/ImageInput";
-import ObjectsList from "../components/ObjectsList";
-import { isEvent, isUser, isWasteland } from "../API/type_guards";
+import React from "react";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { LatLng } from "react-native-maps";
+import QRCode from "react-native-qrcode-svg";
 import Share from 'react-native-share';
-import getAPI from "../API/getAPI";
 import Spinner from "react-native-spinkit";
-import { WisbEvent, WisbUser } from "../API/interfaces";
-import WisbObjectType from "../API/WisbObjectType";
+import Resources from "../../res/Resources";
 import Ref from "../API/Ref";
+import WisbObjectType from "../API/WisbObjectType";
+import getAPI from "../API/getAPI";
+import { WisbEvent, WisbUser } from "../API/interfaces";
 import { isObjectCRUDNotification } from "../API/notifications";
+import { isEvent, isUser, isWasteland } from "../API/type_guards";
+import ImageInput from "../components/ImageInput";
+import LocationInput from "../components/LocationInput";
+import ObjectsList from "../components/ObjectsList";
+import SearchBar from "../components/SearchBar";
+import IconType from "../components/WisbIcon/IconType";
+import WisbDialog, { Mode } from "./WisbDialog";
 
 const res = Resources.get()
 

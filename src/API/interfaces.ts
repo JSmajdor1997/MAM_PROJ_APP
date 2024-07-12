@@ -11,7 +11,7 @@ export interface WisbMessage {
     event: Ref<WisbObjectType.Event>
     content: string
     date: Date
-    sender: Ref<WisbObjectType.User>&{userName: string, photoUrl?: string}
+    sender: Ref<WisbObjectType.User> & { userName: string, photoUrl?: string }
 }
 
 export interface Invitation {

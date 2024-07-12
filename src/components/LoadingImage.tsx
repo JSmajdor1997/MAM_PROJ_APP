@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import FastImage, { ImageStyle } from 'react-native-fast-image';
 import Spinner from 'react-native-spinkit';
 import Resources from '../../res/Resources';

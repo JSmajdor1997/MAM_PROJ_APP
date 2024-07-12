@@ -1,16 +1,13 @@
-import React, { Component, ReactElement, SyntheticEvent, Fragment } from 'react';
+import React, { Fragment, ReactElement } from 'react';
 import {
+  Animated,
+  Dimensions,
   StyleSheet,
   View,
-  TouchableHighlight,
-  Dimensions,
-  Animated,
-  Image,
-  ViewStyle,
-  TouchableOpacity,
+  ViewStyle
 } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
 import Ripple from 'react-native-material-ripple';
+import Svg, { Circle, Path } from 'react-native-svg';
 import Resources from '../../../res/Resources';
 import BubbleItem from './BubbleItem';
 

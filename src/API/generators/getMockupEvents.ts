@@ -1,10 +1,10 @@
 import { faker } from '@faker-js/faker';
+import Ref from '../Ref';
+import WisbObjectType from '../WisbObjectType';
+import { WisbEvent, WisbUser, WisbWasteland } from '../interfaces';
 import getRandomDateRangeInRange from './getRandomDateRange';
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
 import getSeededImage from './getSeededImage';
-import { WisbMessage, WisbEvent, WisbUser, WisbWasteland } from '../interfaces';
-import WisbObjectType from '../WisbObjectType';
-import Ref from '../Ref';
 
 function getYearDateRange(): [Date, Date] {
     const nextYearDate = new Date()
@@ -32,9 +32,9 @@ export default function getMockupEvents(users: Map<string, WisbUser>, wastelands
                 coords: getRandomLatLngInPoland()
             },
             description: faker.word.words(),
-            wastelands: faker.helpers.arrayElements([...wastelands.values()]).map(({id}) => ({type: WisbObjectType.Wasteland, id})),
+            wastelands: faker.helpers.arrayElements([...wastelands.values()]).map(({ id }) => ({ type: WisbObjectType.Wasteland, id })),
             members: [
-                ...faker.helpers.arrayElements(usersList, {min: 10, max: usersList.length}).filter(member => !admins.some(admin => admin.id == member.id)).map(it => ({ id: it.id, type: WisbObjectType.User, isAdmin: false } as Ref<WisbObjectType.User> & { isAdmin: boolean })),
+                ...faker.helpers.arrayElements(usersList, { min: 10, max: usersList.length }).filter(member => !admins.some(admin => admin.id == member.id)).map(it => ({ id: it.id, type: WisbObjectType.User, isAdmin: false } as Ref<WisbObjectType.User> & { isAdmin: boolean })),
                 ...admins.map(it => ({ id: it.id, type: WisbObjectType.User, isAdmin: true } as Ref<WisbObjectType.User> & { isAdmin: boolean }))
             ].reduce((map, obj) => map.set(obj.id, obj), new Map())
         } satisfies WisbEvent

@@ -1,36 +1,33 @@
-import React, { Fragment } from 'react';
+import { faArrowLeft, faArrowRight, faAt, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  StatusBar,
-  TouchableOpacity,
-  ScrollView,
   Animated,
   Easing,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import Spinner from 'react-native-spinkit';
-import Toast from 'react-native-simple-toast';
-import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import NavigationParamsList from './NavigationParamsList';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import WisbScreens from './WisbScreens';
-import { faArrowLeft, faArrowRight, faAt, faCrown, faEllipsisH, faEllipsisV, faPerson } from '@fortawesome/free-solid-svg-icons';
-import Avatar from '../components/Avatar';
+import { Menu, MenuItem } from 'react-native-material-menu';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Separator from '../components/Separator';
+import Toast from 'react-native-simple-toast';
+import Spinner from 'react-native-spinkit';
 import Resources from '../../res/Resources';
-import WisbIcon from '../components/WisbIcon/WisbIcon';
-import IconType from '../components/WisbIcon/IconType';
-import getAPI from '../API/getAPI';
-import UserItem from '../components/UserItem';
-import InvitationsDialog from '../dialogs/InvitationsDialog';
-import ObjectsList from '../components/ObjectsList';
 import WisbObjectType from '../API/WisbObjectType';
+import getAPI from '../API/getAPI';
 import { WisbUser } from '../API/interfaces';
+import Avatar from '../components/Avatar';
+import UserItem from '../components/UserItem';
+import IconType from '../components/WisbIcon/IconType';
+import WisbIcon from '../components/WisbIcon/WisbIcon';
+import InvitationsDialog from '../dialogs/InvitationsDialog';
+import NavigationParamsList from './NavigationParamsList';
+import WisbScreens from './WisbScreens';
 
 const res = Resources.get()
 
@@ -40,7 +37,7 @@ const api = getAPI()
 
 const RecordsPerPage = 20
 
-export default function LeaderboardScreen({ route: {params: {navigate}}  }: Props) {
+export default function LeaderboardScreen({ route: { params: { navigate } } }: Props) {
   const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
 
   const avatarSectionSize = React.useRef(new Animated.Value(200)).current;
@@ -155,7 +152,7 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
             paddingRight: 8,
             paddingBottom: 4,
           }}>
-      
+
           <Menu
             visible={isMoreMenuVisible}
             anchor={<TouchableOpacity onPress={() => setIsMoreMenuVisible(true)}>
@@ -281,13 +278,13 @@ export default function LeaderboardScreen({ route: {params: {navigate}}  }: Prop
             }} >
             <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Zapisz</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.editButton, {backgroundColor: res.getColors().Red}]}
+          <TouchableOpacity
+            style={[styles.editButton, { backgroundColor: res.getColors().Red }]}
             onPress={() => setUpdatedSelfData(null)}>
             <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Anuluj</Text>
           </TouchableOpacity>
         </View>
-      ) : null} 
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -303,7 +300,7 @@ const styles = StyleSheet.create({
       height: 3,
     },
     shadowOpacity: 0.34,
-    shadowRadius: 3, 
+    shadowRadius: 3,
     marginTop: 10,
 
     elevation: 10,

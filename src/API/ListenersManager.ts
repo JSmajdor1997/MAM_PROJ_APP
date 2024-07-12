@@ -1,10 +1,8 @@
 import { LatLng } from "react-native-maps"
-import { CRUD, Notification, isNewInvitationNotification, isNewMessageNotification, isObjectCRUDNotification } from "./notifications"
-import Ref, { isRef } from "./Ref"
+import GeoHelper from "../utils/GeoHelper"
 import API from "./API"
-import { WisbUser } from "./interfaces"
-import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng"
-import isLatLng from "../utils/isLatLng"
+import Ref, { isRef } from "./Ref"
+import { Notification, isNewInvitationNotification, isNewMessageNotification, isObjectCRUDNotification } from "./notifications"
 
 export type ChangeListener = (n: Notification) => void
 
@@ -21,7 +19,6 @@ export enum NotificationType {
 }
 
 export default class ListenersManager {
-    private static readonly MinDistance = 10000
     private listeners = new Map<ChangeListener, Filter>()
 
     constructor(private readonly api: API, getController: (g: (notification: Notification) => void) => void) {
@@ -36,7 +33,7 @@ export default class ListenersManager {
                 if (isObjectCRUDNotification(notification)) {
                     const { location, ref } = notification
 
-                    if (filter.location != undefined && isLatLng(location) && calcApproxDistanceBetweenLatLngInMeters(location, filter.location)) {
+                    if (filter.location != undefined && GeoHelper.isLatLng(location) && GeoHelper.calcApproxDistanceBetweenLatLngInMeters(location, filter.location)) {
                         listener(notification)
                     }
 

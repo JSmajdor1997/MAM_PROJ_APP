@@ -1,9 +1,9 @@
 import { faker } from '@faker-js/faker';
+import Ref from '../Ref';
+import WisbObjectType from '../WisbObjectType';
+import { WisbUser, WisbWasteland } from '../interfaces';
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
 import getSeededImage from './getSeededImage';
-import { WisbUser, WisbWasteland } from '../interfaces';
-import WisbObjectType from '../WisbObjectType';
-import Ref from '../Ref';
 
 export default function getMockupWastelands(users: Map<string, WisbUser>, count: number = 30): Map<string, WisbWasteland> {
     const usersList = [...users.values()]

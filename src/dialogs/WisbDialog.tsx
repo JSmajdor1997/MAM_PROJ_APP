@@ -1,36 +1,31 @@
+import { faClose, faEdit, faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import {
     Animated,
     Modal,
-    SafeAreaView,
     Pressable,
-    Text,
     ScrollView,
-    View,
+    Text,
     TouchableOpacity,
-    StyleSheet,
-    StyleProp,
-    ViewStyle
+    View
 } from 'react-native';
-import WisbIcon from "../components/WisbIcon/WisbIcon"
+import ConfettiCannon from 'react-native-confetti-cannon';
+import { Menu, MenuItem } from 'react-native-material-menu';
+import Spinner from 'react-native-spinkit';
 import Swiper from 'react-native-swiper';
 import Resources from '../../res/Resources';
-import ProgressInput from '../components/ProgressInput';
-import ConfettiCannon from 'react-native-confetti-cannon';
-import useShaky from '../hooks/useShaky';
-import FAB from '../components/FAB';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faClose, faEdit, faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { Menu, MenuItem } from 'react-native-material-menu';
-import WisbScreens from '../screens/WisbScreens';
-import IconType from '../components/WisbIcon/IconType';
-import ModificatorType from '../components/WisbIcon/ModificatorType';
-import Spinner from 'react-native-spinkit';
-import WisbObjectType from '../API/WisbObjectType';
 import { TypeMap } from '../API/API';
+import WisbObjectType from '../API/WisbObjectType';
+import getAPI from '../API/getAPI';
 import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from '../API/interfaces';
 import { isDumpster, isEvent, isWasteland } from '../API/type_guards';
-import getAPI from '../API/getAPI';
+import FAB from '../components/FAB';
+import ProgressInput from '../components/ProgressInput';
+import IconType from '../components/WisbIcon/IconType';
+import ModificatorType from '../components/WisbIcon/ModificatorType';
+import WisbIcon from "../components/WisbIcon/WisbIcon";
+import useShaky from '../hooks/useShaky';
 
 const res = Resources.get()
 const api = getAPI()
@@ -84,7 +79,7 @@ export interface Props<Type extends ObjectType> {
 
     actions?: Action<Type>[]
 
-    onModeChanged: (newMode: Mode)=>void
+    onModeChanged: (newMode: Mode) => void
 }
 
 const ShakeOffset = 15
@@ -92,11 +87,11 @@ const ShakingDuration = 15
 const TranslationAnimationDuration = 300
 
 function isAllowedToManage(user: WisbUser, item: Partial<WisbDumpster | WisbEvent | WisbWasteland>) {
-    if(isEvent(item)) {
+    if (isEvent(item)) {
         return item.members.get(user.id.toString())?.isAdmin === true
-    } else if(isWasteland(item)) {
+    } else if (isWasteland(item)) {
         return item.reportedBy.id == user.id
-    } else if(isDumpster(item)) {
+    } else if (isDumpster(item)) {
         return item.addedBy.id == user.id
     } else return false
 }
@@ -235,7 +230,7 @@ export default function WisbDialog<Type extends ObjectType>({ currentUser, type,
                                             </MenuItem>
                                         ))}
                                     </Menu>
-                                : null}
+                                    : null}
                             </View>
                         </Animated.View>
 
@@ -281,16 +276,16 @@ export default function WisbDialog<Type extends ObjectType>({ currentUser, type,
                                 </Animated.View> : null
                         }
 
-                        {makeConfetti ? 
-                            <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> : 
-                            null }
+                        {makeConfetti ?
+                            <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> :
+                            null}
 
                         {actions == null || mode == Mode.Adding ? null : (
                             <View style={{ flexDirection: 'row', justifyContent: "space-between", width: "100%", padding: 10, height: 100 }}>
                                 {actions.map((action, index) => (
                                     <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress(params)} />
                                 ))}
-                            </View> )}
+                            </View>)}
 
                         {loadingMessage != null ? (
                             <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: "#00000099", justifyContent: "center", alignItems: "center", pointerEvents: "none" }}>

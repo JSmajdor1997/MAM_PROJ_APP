@@ -3,7 +3,7 @@ import MapType from "./MapType";
 
 export default interface Settings {
     mapType: MapType
-    languageCode: string 
+    languageCode: string
     defaultLocation: null | LatLng
     notifications: {
         newMessage: boolean

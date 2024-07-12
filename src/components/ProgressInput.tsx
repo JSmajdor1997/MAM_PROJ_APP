@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Animated, ViewStyle, Pressable, Easing } from "react-native";
+import { Animated, Easing, Pressable, StyleSheet, View, ViewStyle } from "react-native";
 import Resources from "../../res/Resources";
 
 const res = Resources.get()

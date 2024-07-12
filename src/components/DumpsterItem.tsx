@@ -1,16 +1,16 @@
+import { faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import {
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
   Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import Resources from '../../res/Resources';
 import { GoogleStaticMapNext } from 'react-native-google-static-map-next';
 import { Neomorph } from 'react-native-neomorph-shadows-fixes';
-import { faMapPin } from '@fortawesome/free-solid-svg-icons';
+import Resources from '../../res/Resources';
 import { WisbDumpster } from '../API/interfaces';
 
 const res = Resources.get()
@@ -57,7 +57,7 @@ function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
         <View style={{ flex: 1, flexDirection: "column", padding: 5 }}>
           <Text style={{ flex: 1, fontSize: 14, fontFamily: "Avenir", fontWeight: "900", letterSpacing: 1, textAlign: "right", marginTop: 10, marginRight: 10 }}>{item.description}</Text>
 
-          <View style={{flexDirection: "row", justifyContent: "space-between"}}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.place.asText}</Text>
             <FontAwesomeIcon icon={faMapPin} size={10} color={res.getColors().Red} />
           </View>

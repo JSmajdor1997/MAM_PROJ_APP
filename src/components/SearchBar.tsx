@@ -1,16 +1,14 @@
 import React from 'react';
 import {
-    View,
-    TextInput,
-    TouchableOpacity,
-    ViewStyle,
     LayoutChangeEvent,
     StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faChevronDown, faClose, faSearch } from '@fortawesome/free-solid-svg-icons';
-import Resources from '../../res/Resources';
 import Spinner from 'react-native-spinkit';
+import Resources from '../../res/Resources';
 
 const res = Resources.get()
 

@@ -1,16 +1,12 @@
 import { Portal } from '@gorhom/portal';
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import {
     Animated,
-    Modal,
-    SafeAreaView,
-    Pressable,
-    ViewStyle,
-    StyleSheet,
-    View,
-    TouchableOpacity,
     Dimensions,
-    Easing
+    Easing,
+    Pressable,
+    StyleSheet,
+    ViewStyle
 } from 'react-native';
 import Resources from '../../res/Resources';
 
@@ -49,7 +45,7 @@ export default function Dialog({
     const translateValue = useRef(new Animated.Value(0)).current;
 
     React.useEffect(() => {
-        if(prevVisible.current == visible) {
+        if (prevVisible.current == visible) {
             translateValue.setValue(getTranslation(visible, position))
             return
         }
@@ -65,7 +61,7 @@ export default function Dialog({
             }).start();
         } else {
             Animated.timing(translateValue, {
-                toValue:  getTranslation(false, position),
+                toValue: getTranslation(false, position),
                 duration: animationDuration,
                 useNativeDriver: true,
                 easing: Easing.quad
@@ -91,15 +87,15 @@ export default function Dialog({
         }
     }
 
-    const transform = position == Position.Left || position == Position.Right ? 
+    const transform = position == Position.Left || position == Position.Right ?
         [{ translateX: translateValue }, { translateY: 0 }] :
         [{ translateX: 0 }, { translateY: translateValue }]
 
     return (
         <Portal>
-            <Pressable 
-                pointerEvents={(visible && dismissOnBackdropPress) ? "auto" : "box-none"} 
-                style={{ ...styles.backdrop, ...backdropStyle, backgroundColor: visible ? (backdropStyle?.backgroundColor ?? "transparent") : "transparent" }} 
+            <Pressable
+                pointerEvents={(visible && dismissOnBackdropPress) ? "auto" : "box-none"}
+                style={{ ...styles.backdrop, ...backdropStyle, backgroundColor: visible ? (backdropStyle?.backgroundColor ?? "transparent") : "transparent" }}
                 onPress={dismissOnBackdropPress ? onDismiss : undefined}>
                 <Animated.View pointerEvents="auto" style={{ ...styles.dialog, ...dialogStyle, transform }}>
                     {children}

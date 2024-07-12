@@ -1,11 +1,9 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
-  ViewStyle,
-  Image,
+  Text,
   TouchableOpacity,
+  ViewStyle
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Resources from '../../res/Resources';
@@ -30,7 +28,7 @@ function getInitials(username: string) {
     const secondLetter = splittedWords[1][0] || '';
 
     return firstLetter.toUpperCase() + secondLetter.toUpperCase();
-  } else if(splittedWords[0] != null) {
+  } else if (splittedWords[0] != null) {
     return splittedWords[0][0]
   }
 

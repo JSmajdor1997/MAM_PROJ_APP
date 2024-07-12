@@ -1,6 +1,5 @@
 import React, { ReactElement } from "react";
-import { StyleSheet, ViewStyle } from "react-native";
-import { View, Text } from "react-native";
+import { StyleSheet, Text, View, ViewStyle } from "react-native";
 import Ripple from 'react-native-material-ripple';
 import Resources from "../../res/Resources";
 

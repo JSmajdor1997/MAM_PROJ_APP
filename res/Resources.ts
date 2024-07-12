@@ -1,14 +1,13 @@
-import Translation from "./Translation";
+import Geolocation from "@react-native-community/geolocation";
+import * as RNLocalize from 'react-native-localize';
+import { LatLng } from "react-native-maps";
+import { MMKV } from 'react-native-mmkv';
+import getRandomLatLngInPoland from "../src/API/generators/getRandomLatLngInPoland";
+import MapType from "./MapType";
+import Settings from "./Settings";
 import BelarusianTranslation from "./translations/BelarusianTranslation";
 import EnglishTranslation from "./translations/EnglishTranslation";
 import PolishTranslation from "./translations/PolishTranslation";
-import * as RNLocalize from 'react-native-localize';
-import MapType from "./MapType";
-import Settings from "./Settings";
-import { MMKV } from 'react-native-mmkv'
-import getRandomLatLngInPoland from "../src/API/generators/getRandomLatLngInPoland";
-import { LatLng } from "react-native-maps";
-import Geolocation, { GeolocationResponse, GeolocationError } from "@react-native-community/geolocation";
 
 const MMKVSettingsKey = "settings"
 

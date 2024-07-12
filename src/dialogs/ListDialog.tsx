@@ -1,17 +1,17 @@
 import React from 'react';
 import {
-  View,
-  StyleSheet,
   Dimensions,
+  StyleSheet,
+  View,
 } from 'react-native';
-import Resources from '../../res/Resources';
-import Dialog, { Position } from './Dialog';
-import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import { LatLng } from 'react-native-maps';
-import ObjectsList from '../components/ObjectsList';
+import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
-import { WisbWasteland, WisbEvent, WisbDumpster, WisbUser } from '../API/interfaces';
+import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from '../API/interfaces';
 import { isUser } from '../API/type_guards';
+import ObjectsList from '../components/ObjectsList';
+import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
+import Dialog, { Position } from './Dialog';
 
 const res = Resources.get()
 

@@ -1,39 +1,30 @@
-import React, { Component, ReactElement, Fragment } from 'react';
-import {
-  View,
-  Text,
-  StatusBar,
-  ViewStyle,
-  ToastAndroid,
-  TouchableOpacity,
-  Dimensions,
-  StyleSheet,
-} from 'react-native';
-import MapView, { Marker, Region, LatLng } from 'react-native-maps';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
-import Geolocation from '@react-native-community/geolocation';
-import ListDialog from '../dialogs/ListDialog';
-import getAPI from '../API/getAPI';
-import Toast from 'react-native-simple-toast';
-import WisbIcon from '../components/WisbIcon/WisbIcon';
-import metersToLatLngDelta from '../utils/metersToDelta';
-import scaleRegion from '../utils/scaleRegion';
-import doesRegionInclude from '../utils/doesRegionInclude';
-import calcRegionAreaInMeters from '../utils/calcRegionAreaInMeters';
+import { faArrowUp, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faArrowUp, faChevronDown, faMapPin } from '@fortawesome/free-solid-svg-icons';
-import isLatLngInRegion from '../utils/isLatLngInRegion';
-import Resources from '../../res/Resources';
-import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
-import IconType from '../components/WisbIcon/IconType';
-import QueryInput from '../components/QueryInput/QueryInput';
-import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { Fragment } from 'react';
+import {
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import MapView, { LatLng, Marker, Region } from 'react-native-maps';
 import MapType from '../../res/MapType';
+import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
+import getAPI from '../API/getAPI';
 import { WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
 import { Notification } from '../API/notifications';
+import QueryInput from '../components/QueryInput/QueryInput';
+import IconType from '../components/WisbIcon/IconType';
+import WisbIcon from '../components/WisbIcon/WisbIcon';
+import ListDialog from '../dialogs/ListDialog';
+import GeoHelper from '../utils/GeoHelper';
+import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
+import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
+import NavigationParamsList from './NavigationParamsList';
+import WisbScreens from './WisbScreens';
 const map_style = require('../../res/map_style.json');
 
 const api = getAPI()
@@ -58,7 +49,7 @@ const InitialRegion = {
 
 interface Query {
   phrase: string
-  type: WisbObjectType.Dumpster |WisbObjectType.Event |WisbObjectType.Wasteland
+  type: WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland
 }
 
 export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser } } }: Props) {
@@ -86,23 +77,23 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   }
 
   React.useEffect(() => {
-    api.notifications.registerListener(onNewNotification, {location: InitialRegion})
+    api.notifications.registerListener(onNewNotification, { location: InitialRegion })
 
     setCurrentRegionName(InitialRegion)
 
     const unregister = res.registerUserLocationListener(newLocation => {
       setUserPosition(newLocation)
-      api.notifications.updateListener(onNewNotification, {location: newLocation})
+      api.notifications.updateListener(onNewNotification, { location: newLocation })
     })
 
-    return ()=>{
+    return () => {
       unregister()
       updateMapObjects(InitialRegion)
     }
   }, [])
 
   const getTrackingIconPosition = (region: Region) => {
-    if (userPosition != null && !isLatLngInRegion(region, userPosition)) {
+    if (userPosition != null && !GeoHelper.isLatLngInRegion(region, userPosition)) {
       const visibleMapCenter = {
         latitude: region.latitude,
         longitude: region.longitude
@@ -130,11 +121,11 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     return null
   }
 
-  const [mapObjects, setMapObjects] = React.useState<{ 
+  const [mapObjects, setMapObjects] = React.useState<{
     [WisbObjectType.Dumpster]: WisbDumpster[],
     [WisbObjectType.Event]: WisbEvent[],
     [WisbObjectType.Wasteland]: WisbWasteland[],
-    region: Region 
+    region: Region
   }>({
     [WisbObjectType.Dumpster]: [],
     [WisbObjectType.Event]: [],
@@ -143,17 +134,17 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   })
 
   const updateMapObjects = (region: Region) => {
-      Promise.all([
-        api.getMany(WisbObjectType.Wasteland, {region, activeOnly: true}, [0, NaN]),
-        api.getMany(WisbObjectType.Dumpster, {region}, [0, NaN]),
-        api.getMany(WisbObjectType.Event, {region, activeOnly: true}, [0, NaN])
-      ]).then(result => ({
-        [WisbObjectType.Wasteland]: result[0].data!.items,
-        [WisbObjectType.Dumpster]: result[1].data!.items,
-        [WisbObjectType.Event]: result[2].data!.items
-      })).then(result =>  {
-        setMapObjects(mapObjects => ({...mapObjects, ...result}))
-      })
+    Promise.all([
+      api.getMany(WisbObjectType.Wasteland, { region, activeOnly: true }, [0, NaN]),
+      api.getMany(WisbObjectType.Dumpster, { region }, [0, NaN]),
+      api.getMany(WisbObjectType.Event, { region, activeOnly: true }, [0, NaN])
+    ]).then(result => ({
+      [WisbObjectType.Wasteland]: result[0].data!.items,
+      [WisbObjectType.Dumpster]: result[1].data!.items,
+      [WisbObjectType.Event]: result[2].data!.items
+    })).then(result => {
+      setMapObjects(mapObjects => ({ ...mapObjects, ...result }))
+    })
   }
 
   return (
@@ -164,8 +155,8 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
         mapType={res.getSettings().mapType == MapType.Default ? "standard" : "hybrid"}
         initialRegion={InitialRegion}
         onRegionChangeComplete={newRegion => {
-          if (!doesRegionInclude(mapObjects.region, newRegion) && calcRegionAreaInMeters(newRegion) < 100000) {
-            updateMapObjects(scaleRegion(newRegion, 1.5))
+          if (!GeoHelper.doesRegionInclude(mapObjects.region, newRegion) && GeoHelper.calcRegionAreaInMeters(newRegion) < 100000) {
+            updateMapObjects(GeoHelper.scaleRegion(newRegion, 1.5))
           }
 
           setCurrentRegionName(newRegion)
@@ -293,7 +284,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
               phrase: ""
             })
 
-            const deltas = metersToLatLngDelta(2000, userPosition.latitude)
+            const deltas = GeoHelper.metersToLatLngDelta(2000, userPosition.latitude)
             const region: Region = {
               ...userPosition,
               latitudeDelta: deltas.latitudeDelta,

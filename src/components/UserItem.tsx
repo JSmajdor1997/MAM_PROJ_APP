@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, Dimensions, StyleProp, Touchable, TouchableOpacity } from "react-native";
-import Resources from "../../res/Resources";
-import Avatar from "./Avatar";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Neomorph } from "react-native-neomorph-shadows-fixes";
+import Resources from "../../res/Resources";
 import getAPI from "../API/getAPI";
 import { WisbUser } from "../API/interfaces";
+import Avatar from "./Avatar";
 
 const res = Resources.get()
 

@@ -1,26 +1,22 @@
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { Fragment } from 'react';
 import {
-  View,
-  TextInput,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
-  Image,
+  View
 } from 'react-native';
+import Toast from 'react-native-simple-toast';
 import Resources from '../../res/Resources';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import BambooImage from "../../res/images/bamboo.svg";
+import LeavesImage from "../../res/images/leaves_on_stick.svg";
+import { GeneralError, SignUpError } from '../API/API';
+import getAPI from '../API/getAPI';
 import NavigationParamsList from './NavigationParamsList';
 import WisbScreens from './WisbScreens';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import getAPI from '../API/getAPI';
-import Toast from 'react-native-simple-toast';
-import FastImage from 'react-native-fast-image';
-import { SvgUri } from 'react-native-svg';
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { faFacebookF, faGoogle } from '@fortawesome/free-brands-svg-icons';
-import BambooImage from "../../res/images/bamboo.svg"
-import LeavesImage from "../../res/images/leaves_on_stick.svg"
-import { GeneralError, SignUpError } from '../API/API';
 
 const api = getAPI()
 const res = Resources.get()

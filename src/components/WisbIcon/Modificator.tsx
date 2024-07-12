@@ -14,8 +14,8 @@ export default function Modificator({ modificator }: Props) {
     return (
         <View style={styles.root}>
             {modificator == ModificatorType.Add ? <FontAwesomeIcon icon={faAdd} color={res.getColors().Primary} /> :
-             modificator == ModificatorType.Edit ? <FontAwesomeIcon icon={faEdit} color={res.getColors().Primary} /> :
-                <FontAwesomeIcon icon={faClose} color={res.getColors().Primary} />}
+                modificator == ModificatorType.Edit ? <FontAwesomeIcon icon={faEdit} color={res.getColors().Primary} /> :
+                    <FontAwesomeIcon icon={faClose} color={res.getColors().Primary} />}
         </View>
     )
 }

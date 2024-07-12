@@ -1,11 +1,11 @@
-import { TouchableOpacity, View, Text, StyleSheet, Dimensions } from "react-native"
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { LatLng } from "react-native-maps"
-import calcApproxDistanceBetweenLatLngInMeters from "../utils/calcApproxDistanceBetweenLatLng"
-import formatDistance from "../utils/formatDistance"
+import { Neomorph } from "react-native-neomorph-shadows-fixes"
 import Resources from "../../res/Resources"
+import GeoHelper from "../utils/GeoHelper"
+import formatDistance from "../utils/formatDistance"
 import IconType from "./WisbIcon/IconType"
 import WisbIcon from "./WisbIcon/WisbIcon"
-import { Neomorph } from "react-native-neomorph-shadows-fixes"
 
 const res = Resources.get()
 
@@ -39,7 +39,7 @@ export default function LocationItem({ onPress, userLocation, location }: Props)
                     <Text style={styles.name}>{location.asText}</Text>
                 </View>
 
-                <Text style={styles.distanceInfo}>{res.getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {res.getStrings().Components.LocationItem.FromYouMessage}</Text>
+                <Text style={styles.distanceInfo}>{res.getStrings().Components.LocationItem.ShortAboutMessage} {formatDistance(GeoHelper.calcApproxDistanceBetweenLatLngInMeters(location.coords, userLocation))} {res.getStrings().Components.LocationItem.FromYouMessage}</Text>
             </Neomorph>
         </TouchableOpacity>
     )

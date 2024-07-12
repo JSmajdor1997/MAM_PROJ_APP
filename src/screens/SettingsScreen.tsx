@@ -1,21 +1,19 @@
-import React, { Component } from 'react';
-import { StyleSheet, Text, View, StatusBar, TouchableOpacity, ScrollView } from 'react-native';
-import { Switch } from 'react-native-switch';
-import Resources from '../../res/Resources';
-import WisbScreens from './WisbScreens';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import NavigationParamsList from './NavigationParamsList';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faMap } from '@fortawesome/free-regular-svg-icons';
-import { faBell, faChevronLeft, faCog, faColonSign, faDumpster, faEnvelope, faHandsBubbles, faLanguage, faLightbulb, faLocationDot, faMessage, faSmile, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faCog, faEnvelope, faLanguage, faLocationDot, faMessage } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React from 'react';
+import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import LocationInput from '../components/LocationInput';
-import Separator from '../components/Separator';
+import { Switch } from 'react-native-switch';
 import MapType from '../../res/MapType';
-import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
-import WisbIcon from '../components/WisbIcon/WisbIcon';
+import Resources from '../../res/Resources';
+import LocationInput from '../components/LocationInput';
 import IconType from '../components/WisbIcon/IconType';
-import ModificatorType from '../components/WisbIcon/ModificatorType';
+import WisbIcon from '../components/WisbIcon/WisbIcon';
+import NavigationParamsList from './NavigationParamsList';
+import WisbScreens from './WisbScreens';
 
 const res = Resources.get()
 
@@ -98,34 +96,34 @@ export default function SettingsScreen({ route: { params: { navigate } } }: Prop
             </Text>
 
             <Switch
-                value={settings.defaultLocation == null}
-                onValueChange={item => res.setSettings({ defaultLocation: item ? null : userPosiition })}
-                circleSize={20}
-                barHeight={24}
-                circleBorderWidth={0}
-                activeText=''
-                inActiveText=''
-                backgroundActive={res.getColors().Green}
-                backgroundInactive={res.getColors().Beige}
-                circleActiveColor={res.getColors().White}
-                circleInActiveColor={res.getColors().White}
-                switchLeftPx={2}
-                switchRightPx={2}
-                switchWidthMultiplier={2.2}
-                switchBorderRadius={40}
-              />
+              value={settings.defaultLocation == null}
+              onValueChange={item => res.setSettings({ defaultLocation: item ? null : userPosiition })}
+              circleSize={20}
+              barHeight={24}
+              circleBorderWidth={0}
+              activeText=''
+              inActiveText=''
+              backgroundActive={res.getColors().Green}
+              backgroundInactive={res.getColors().Beige}
+              circleActiveColor={res.getColors().White}
+              circleInActiveColor={res.getColors().White}
+              switchLeftPx={2}
+              switchRightPx={2}
+              switchWidthMultiplier={2.2}
+              switchBorderRadius={40}
+            />
           </View>
 
           <LocationInput
-              style={{ height: 250, marginTop: 10 }}
-              readonly={settings.defaultLocation == null}
-              userLocation={userPosiition}
-              showNavigateButton={false}
-              location={{
-                coords: settings.defaultLocation ?? userPosiition,
-                asText: ''
-              }}
-              apiKey={res.getEnv().GOOGLE_MAPS_API_KEY} />
+            style={{ height: 250, marginTop: 10 }}
+            readonly={settings.defaultLocation == null}
+            userLocation={userPosiition}
+            showNavigateButton={false}
+            location={{
+              coords: settings.defaultLocation ?? userPosiition,
+              asText: ''
+            }}
+            apiKey={res.getEnv().GOOGLE_MAPS_API_KEY} />
         </View>
       </ScrollView>
     </SafeAreaView>
