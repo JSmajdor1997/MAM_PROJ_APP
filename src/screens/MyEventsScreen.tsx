@@ -73,7 +73,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
         }}
         multi={false}
         phrase={phrase}
-        onPressed={onItemSelected}
+        onSelected={onItemSelected}
         googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
       />
 

@@ -7,11 +7,11 @@ import {
 import { LatLng } from 'react-native-maps';
 import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
-import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from '../API/interfaces';
+import { SimplePlace, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from '../API/interfaces';
 import { isUser } from '../API/type_guards';
 import ObjectsList from '../components/ObjectsList';
-import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import Dialog, { Position } from './Dialog';
+import LocationsList from '../components/LocationsList';
 
 const res = Resources.get()
 
@@ -24,11 +24,10 @@ export interface Props {
   visible: boolean;
   onDismiss: () => void;
   onItemSelected: (item: WisbWasteland | WisbEvent | WisbDumpster) => void;
-  onPlaceSelected: (place: Place) => void
+  onPlaceSelected: (place: SimplePlace) => void
   query: Query
   googleMapsApiKey: string
   userLocation: LatLng
-
   currentUser: WisbUser
 }
 
@@ -43,6 +42,14 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       dialogStyle={styles.dialogStyle}
       dismissOnBackdropPress={false}>
       <View style={styles.container}>
+        <LocationsList
+          userLocation={userLocation}
+          maxNrOfPlaces={3}
+          phrase={query.phrase}
+          style={{ width: "100%", backgroundColor: "white", height: "100%" }}
+          apiKey={googleMapsApiKey}
+          onSelected={onPlaceSelected} />
+
         <ObjectsList
           type={query.type}
           multi={false}
@@ -53,11 +60,7 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
           }}
           phrase={query.phrase}
           currentUser={currentUser}
-          googleMapsApiKey={googleMapsApiKey}
-          placesConfig={{
-            userLocation,
-            onPlaceSelected
-          }} />
+          googleMapsAPIKey={googleMapsApiKey} />
       </View>
     </Dialog>
   );
@@ -65,14 +68,14 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
 
 const styles = StyleSheet.create({
   dialogStyle: {
-    borderBottomLeftRadius: 0, 
-    borderBottomRightRadius: 0, 
-    top: 140, 
-    bottom: 0, 
-    height: Dimensions.get("screen").height - 140, 
-    backgroundColor: res.getColors().White, 
-    justifyContent: "space-between", 
-    width: "100%", 
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    top: 140,
+    bottom: 0,
+    height: Dimensions.get("screen").height - 140,
+    backgroundColor: res.getColors().White,
+    justifyContent: "space-between",
+    width: "100%",
     flexDirection: "column"
   },
   container: {

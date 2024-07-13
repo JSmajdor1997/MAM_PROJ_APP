@@ -10,10 +10,8 @@ import WisbObjectType from "../API/WisbObjectType";
 import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces";
 import { isDumpster, isEvent, isUser, isWasteland } from "../API/type_guards";
-import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
 import DumpsterItem from "./DumpsterItem";
 import EventItem from "./EventItem";
-import LocationItem from "./inputs/LocationItem";
 import UserItem from "./UserItem";
 import WastelandItem from "./WastelandItem";
 
@@ -38,11 +36,7 @@ export interface Props<MultiSelect extends boolean, ItemType extends WisbObjectT
     selectedItemsIds?: number[];
     phrase?: string;
     currentUser: WisbUser;
-    googleMapsApiKey: string;
-    placesConfig?: {
-        onPlaceSelected: (place: Place) => void;
-        userLocation: LatLng;
-    };
+    googleMapsAPIKey: string
 }
 
 const PageSize = 10;
@@ -54,12 +48,11 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     type,
     multi,
     onSelected,
-    googleMapsApiKey,
     currentUser,
     onPressed,
     phrase,
     selectedItemsIds,
-    placesConfig,
+    googleMapsAPIKey,
     filter
 }: Props<MultiSelect, ItemType>) {
     const flatListRef = useRef<FlatList>(null);
@@ -74,7 +67,6 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
         hasMore: true,
         index: 0
     });
-    const [places, setPlaces] = useState<Place[]>([]);
 
     const updateItems = async (index: number) => {
         if (isLoading || !data.hasMore) {
@@ -119,20 +111,6 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
 
     useEffect(() => {
         updateItems(0);
-
-        if (placesConfig == null) {
-            return;
-        }
-
-        const searchPlacesTimeoutId = setTimeout(() => {
-            setIsLoading(true);
-            searchPlaces(googleMapsApiKey, phrase ?? "", res.getSettings().languageCode, placesConfig.userLocation, 1).then(places => {
-                setPlaces(places ?? []);
-                setIsLoading(false);
-            });
-        }, 200);
-
-        return () => clearTimeout(searchPlacesTimeoutId);
     }, [phrase]);
 
     const renderFooter = () => {
@@ -159,7 +137,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
             {isWasteland(item) ? <WastelandItem widthCoeff={multi ? 0.7 : 0.9} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
             {isEvent(item) ? <EventItem widthCoeff={multi ? 0.7 : 0.9} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} isAdmin={item.members.get(currentUser.id.toString())?.isAdmin ?? false} /> : null}
-            {isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsApiKey} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
+            {isDumpster(item) ? <DumpsterItem widthCoeff={multi ? 0.7 : 0.9} googleMapsAPIKey={googleMapsAPIKey} item={item} onOpen={onPressed ?? onSelected ?? (() => { }) as any} /> : null}
             {isUser(item) ? <UserItem widthCoeff={multi ? 0.7 : 0.9} item={item} onPress={() => onPressed?.(item as any)} /> : null}
 
             {multi ? (
@@ -187,13 +165,6 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 maxToRenderPerBatch={PageSize}
                 extraData={data.items}
                 removeClippedSubviews
-                ListHeaderComponent={placesConfig != null && places.length > 0 ? (
-                    <View>
-                        {places.map(place => (
-                            <LocationItem key={place.id} onPress={() => placesConfig.onPlaceSelected(place)} userLocation={placesConfig.userLocation} location={{ coords: place.location, asText: place.formattedAddress }} />
-                        ))}
-                    </View>
-                ) : null}
                 style={{ flex: 1 }}
                 renderItem={renderItem}
                 keyExtractor={(item) => (item as any).id.toString()}

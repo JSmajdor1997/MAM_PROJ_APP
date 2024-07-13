@@ -1,10 +1,10 @@
-import { faChevronDown, faChevronUp, faEarth, faLocationArrow } from "@fortawesome/free-solid-svg-icons";
+import { faChevronDown, faChevronUp, faEarth, faExpand, faLocationArrow } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Animated, Dimensions, Easing, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import { Animated, Dimensions, Easing, FlatList, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import { useClickOutside } from "react-native-click-outside";
 import { GoogleStaticMapNext } from "react-native-google-static-map-next";
-import MapView, { LatLng } from "react-native-maps";
+import MapView, { LatLng, Marker } from "react-native-maps";
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Resources from "../../../res/Resources";
 import reverseGeoCode from "../../utils/GooglePlacesAPI/reverseGeoCode";
@@ -15,6 +15,8 @@ import LocationItem from "./LocationItem";
 import IconType from "../WisbIcon/IconType";
 import WisbIcon from "../WisbIcon/WisbIcon";
 import SearchBar from "./SearchBar";
+import LocationsList from "../LocationsList";
+import { SimplePlace } from "../../API/interfaces";
 
 const res = Resources.get()
 
@@ -22,7 +24,7 @@ export interface Props {
     style?: ViewStyle
     readonly: boolean
     userLocation: LatLng
-    onLocationChanged?: (coords: LatLng, asText: string) => void
+    onLocationChanged?: (location: SimplePlace) => void
     location: {
         coords: LatLng,
         asText: string
@@ -32,50 +34,42 @@ export interface Props {
     iconColor?: string
 }
 
+const UserMarkerId = "user-marker"
+
+const InputBarHeight = 40
+const InputBarMargin = 5
+
 export default function LocationInput({ style, readonly, onLocationChanged, userLocation, location, apiKey, showNavigateButton, iconColor }: Props) {
     const mapViewRef = React.useRef<MapView>(null)
     const [containerHeight, setContainerHeight] = React.useState(0)
-    const [searchBarHeight, setSearchBarHeight] = React.useState(0)
-    const [isDropdownVisible, setIsDropdownVisible] = React.useState(false)
+    const [expanded, setExpanded] = React.useState(false)
 
-    const heightAnim = React.useRef(new Animated.Value(0)).current;
+    const heightAnim = React.useRef(new Animated.Value(InputBarHeight + 2 * InputBarMargin)).current;
     const [phrase, setPhrase] = React.useState<string>("")
-    const [places, setPlaces] = React.useState<Place[]>()
 
     const outsideClickRef = useClickOutside<View>(() => {
-        if (isDropdownVisible) {
-            setIsDropdownVisible(false)
+        if (expanded) {
+            setExpanded(false)
         }
     });
 
-    const searchPlacesTimeoutId = React.useRef<NodeJS.Timeout | null>(null)
     React.useEffect(() => {
-        if (searchPlacesTimeoutId.current != null) {
-            clearTimeout(searchPlacesTimeoutId.current)
-        }
-
-        searchPlacesTimeoutId.current = setTimeout(() => {
-            searchPlaces(apiKey, phrase, res.getSettings().languageCode, userLocation).then(setPlaces)
-        }, 200)
-    }, [phrase])
-
-    React.useEffect(() => {
-        if (isDropdownVisible) {
+        if (expanded) {
             Animated.timing(heightAnim, {
-                toValue: containerHeight - searchBarHeight,
+                toValue: containerHeight / 5 * 4,
                 duration: 100,
                 useNativeDriver: false,
                 easing: Easing.linear
             }).start()
         } else {
             Animated.timing(heightAnim, {
-                toValue: 0,
+                toValue: InputBarHeight + 2 * InputBarMargin,
                 duration: 100,
                 useNativeDriver: false,
                 easing: Easing.linear
             }).start()
         }
-    }, [isDropdownVisible, containerHeight, searchBarHeight])
+    }, [expanded, containerHeight])
 
     const previousCoords = React.useRef(location.coords)
     React.useEffect(() => {
@@ -86,6 +80,8 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                 longitudeDelta: 0.5,
             })
         }
+
+        setExpanded(false)
 
         previousCoords.current = location.coords
     }, [location.coords])
@@ -130,80 +126,80 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
                                 onRegionChangeComplete={newRegion => {
                                     previousCoords.current = newRegion
                                     reverseGeoCode(res.getEnv().GOOGLE_MAPS_API_KEY, newRegion).then(formattedAddress => {
-                                        onLocationChanged?.(newRegion, formattedAddress ?? res.getStrings().Components.LocationInput.UnknownPlaceMessage)
+                                        onLocationChanged?.({ coords: newRegion, asText: formattedAddress ?? res.getStrings().Components.LocationInput.UnknownPlaceMessage })
                                     })
                                 }}
                                 showsScale={false}
                                 showsIndoors={false}
                                 showsTraffic={false}
                                 showsMyLocationButton={false}
+                                showsUserLocation={false}
                                 toolbarEnabled={false}
                                 showsCompass={false}
                                 provider="google"
                                 showsPointsOfInterest={false}
-                                style={{ ...styles.map, width: '100%', height: "100%" }} />
-                            <WisbIcon size={28} icon={IconType.MapPin} style={{ position: "absolute", pointerEvents: "none", alignSelf: "center" }} />
+                                style={{ ...styles.map, width: '100%', height: "100%" }} >
+                                <Marker
+                                    id={UserMarkerId}
+                                    coordinate={userLocation}>
+                                    <WisbIcon size={25}
+                                        icon={IconType.MapPin} />
+                                </Marker>
+                            </MapView>
+                            <View style={{
+                                position: "absolute",
+                                pointerEvents: "none",
+                                alignSelf: "center",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                borderColor: "white",
+                                borderWidth: 6,
+                                borderRadius: 5,
+                                width: 27,
+                                height: 27,
+                            }}>
+                                <FontAwesomeIcon
+                                    size={28}
+                                    color={res.getColors().Red}
+                                    icon={faExpand} />
+                            </View>
                         </View>
                     )
                 }
             </View>
 
-            <SearchBar
-                onLayout={e => {
-                    const newHeight = e.nativeEvent.layout.height
+            <Animated.View style={{ position: "absolute", bottom: 0, backgroundColor: res.getColors().White, maxHeight: heightAnim, height: heightAnim, alignItems: "center", }}>
+                <SearchBar
+                    style={{ height: InputBarHeight, marginVertical: InputBarMargin, maxWidth: "100%" }}
+                    leftIcon={<FontAwesomeIcon icon={faEarth} color={iconColor ?? res.getColors().Black} size={16} />}
+                    onPhraseChanged={setPhrase}
+                    phrase={expanded ? phrase : location.asText}
+                    readonly={readonly}
+                    onPress={() => {
+                        if (!readonly) {
+                            setExpanded(true)
+                        }
+                    }}
+                    rightIcon={readonly ? undefined : (
+                        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+                            <FontAwesomeIcon icon={expanded ? faChevronDown : faChevronUp} color={iconColor ?? res.getColors().Black} size={16} />
+                        </TouchableOpacity>
+                    )}
+                    placeholder={res.getStrings().Components.LocationInput.EnterPlaceMessage} />
 
-                    if (newHeight != searchBarHeight) {
-                        setSearchBarHeight(newHeight)
-                    }
-                }}
-                leftIcon={<FontAwesomeIcon icon={faEarth} color={iconColor ?? res.getColors().Black} size={16} />}
-                onPhraseChanged={setPhrase}
-                phrase={isDropdownVisible ? phrase : location.asText}
-                readonly={readonly}
-                onPress={() => {
-                    if (!readonly) {
-                        setIsDropdownVisible(true)
-                    }
-                }}
-                rightIcon={readonly ? undefined : (
-                    <TouchableOpacity onPress={() => isDropdownVisible ? setIsDropdownVisible(false) : setIsDropdownVisible(true)}>
-                        {isDropdownVisible ? <FontAwesomeIcon icon={faChevronUp} color={iconColor ?? res.getColors().Black} size={16} /> : <FontAwesomeIcon icon={faChevronDown} color={iconColor ?? res.getColors().Black} size={16} />}
-                    </TouchableOpacity>
-                )}
-                placeholder={res.getStrings().Components.LocationInput.EnterPlaceMessage} />
-
-            {readonly ? null : <Animated.FlatList
-                style={{ width: "100%", backgroundColor: res.getColors().DarkBeige, maxHeight: heightAnim, height: "100%" }}
-                data={places}
-                keyExtractor={place => place.id}
-                ListEmptyComponent={
-                    <View style={{ justifyContent: "center" }}>
-                        {Array.from({ length: 3 }, () => (
-                            <SkeletonPlaceholder borderRadius={4} backgroundColor="white">
-                                <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" width={"90%"} height={50}>
-                                    <SkeletonPlaceholder.Item width={20} height={20} borderRadius={100} left={10} />
-                                    <SkeletonPlaceholder.Item marginLeft={20}>
-                                        <SkeletonPlaceholder.Item width={Dimensions.get("window").width - 100} height={20} />
-                                        <SkeletonPlaceholder.Item marginTop={6} width={80} height={20} />
-                                    </SkeletonPlaceholder.Item>
-                                </SkeletonPlaceholder.Item>
-                            </SkeletonPlaceholder>
-                        ))}
-                    </View>
-                }
-                renderItem={({ item }) => (
-                    <LocationItem
-                        onPress={() => {
-                            setPhrase("")
-                            onLocationChanged?.(item.location, item.formattedAddress)
-                            setIsDropdownVisible(false)
-                        }}
+                {readonly ? null : (
+                    <LocationsList
                         userLocation={userLocation}
-                        location={{
-                            asText: item.formattedAddress,
-                            coords: location.coords
+                        phrase={phrase}
+                        style={{ width: "100%", backgroundColor: "white", height: "100%" }}
+                        apiKey={apiKey}
+                        onSelected={location => {
+                            setPhrase("")
+                            onLocationChanged?.(location)
+                            setExpanded(false)
                         }} />
-                )} />}
+                )}
+            </Animated.View>
         </View>
     )
 }
@@ -216,6 +212,7 @@ const styles = StyleSheet.create({
     mapContainer: {
         borderRadius: 15,
         flex: 1,
+        marginBottom: 48
     },
     map: {
         flex: 1,

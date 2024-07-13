@@ -14,14 +14,13 @@ import MapType from '../../res/MapType';
 import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
 import getAPI from '../API/getAPI';
-import { WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
+import { SimplePlace, WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
 import { Notification } from '../API/notifications';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import ListDialog from '../dialogs/ListDialog';
 import GeoHelper from '../utils/GeoHelper';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
-import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 import QueryInput from '../components/inputs/QueryInput';
 const map_style = require('../../res/map_style.json');
@@ -36,7 +35,7 @@ const MarkerIdSeparator = '-'
 
 const UserMarkerId = 'USER-MARKER'
 
-interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> {}
+interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> { }
 
 const InitialRegion = {
   ...res.getLastLocation(),
@@ -57,7 +56,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   const [currentLocationAsText, setCurrentLocationAsText] = React.useState<string | null>(null)
   const [query, setQuery] = React.useState<Query>({ phrase: "", type: WisbObjectType.Event })
   const [isSearchDialogVisible, setIsSearchDialogVisible] = React.useState(false)
-  const [searchedPlace, setSearchedPlace] = React.useState<Place | null>(null)
+  const [searchedPlace, setSearchedPlace] = React.useState<SimplePlace | null>(null)
   const [userPosition, setUserPosition] = React.useState<LatLng>(InitialRegion)
 
   const setCurrentRegionName = (region: Region) => {
@@ -68,7 +67,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     })
   }
 
-  const onNewNotification = (n: Notification) => {}
+  const onNewNotification = (n: Notification) => { }
 
   React.useEffect(() => {
     api.notifications.registerListener(onNewNotification, { location: InitialRegion })
@@ -201,8 +200,8 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
                 setSearchedPlace(null)
               }}
               style={styles.searchedPlaceMarker}
-              coordinate={searchedPlace.location}>
-              <Text style={styles.searchedPlaceMarkerLabel}>{searchedPlace.formattedAddress}</Text>
+              coordinate={searchedPlace.coords}>
+              <Text style={styles.searchedPlaceMarkerLabel}>{searchedPlace.asText}</Text>
               <FontAwesomeIcon icon={faMapPin} size={30} />
             </Marker>
           )}
@@ -321,7 +320,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
           setIsSearchDialogVisible(false)
           setSearchedPlace(selectedPlace)
           mapRef.current?.animateToRegion({
-            ...selectedPlace.location,
+            ...selectedPlace.coords,
             latitudeDelta: 0.1,
             longitudeDelta: 0.1,
           })

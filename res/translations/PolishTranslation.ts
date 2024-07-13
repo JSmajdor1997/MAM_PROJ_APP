@@ -10,7 +10,7 @@ const PolishTranslation: Translation = {
 
         },
         [WisbScreens.LeaderBoardScreen]: {
-            GoToSettings: "Przejdź do ustawień"
+            GoToSettings: "Ustawienia"
         },
         [WisbScreens.LoginScreen]: {
             LoginHeader: "LOGOWANIE",
