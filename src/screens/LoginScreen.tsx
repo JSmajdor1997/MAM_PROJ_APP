@@ -15,8 +15,7 @@ import BambooImage from "../../res/images/bamboo.svg";
 import LeavesImage from "../../res/images/leaves_on_stick.svg";
 import { GeneralError, SignUpError } from '../API/API';
 import getAPI from '../API/getAPI';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 
 const api = getAPI()
 const res = Resources.get()
@@ -31,23 +30,13 @@ enum Mode {
 export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: Props) {
   const [mode, setMode] = React.useState(Mode.Login)
 
-  const emailRef = React.useRef<TextInput>(null)
-  const passwordRef = React.useRef<TextInput>(null)
+  const [credentials, setCredentials] = React.useState({
+    email: "",
+    password: ""
+  })
 
   const [userName, setUserName] = React.useState("")
   const [photo, setPhoto] = React.useState("")
-
-  function getCredentials(): { email: string, password: string } {
-    return {
-      email: (emailRef.current as any)?._getText() ?? "",
-      password: (passwordRef.current as any)?._getText() ?? "",
-    }
-  }
-
-  function clearInputs() {
-    emailRef.current?.clear()
-    passwordRef.current?.clear()
-  }
 
   const toast = (message: string) => {
     Toast.showWithGravityAndOffset(message, Toast.SHORT, Toast.CENTER, 0, 10)
@@ -64,24 +53,19 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
   })
 
   return (
-    <View
-      style={styles.root}>
-      <LeavesImage
-        style={styles.leavesImage} />
-      <BambooImage
-        style={styles.bambooImage} />
+    <View style={styles.root}>
+      <LeavesImage style={styles.leavesImage} />
+      <BambooImage style={styles.bambooImage} />
       <View>
-        <View
-          style={styles.headerContainer}>
+        <View style={styles.headerContainer}>
           <Text style={styles.header}>
             {mode == Mode.Login ? res.getStrings().Screens.LoginScreen.LoginHeader : res.getStrings().Screens.LoginScreen.SignUpHeader}
           </Text>
         </View>
 
-        <View
-          style={styles.inputsContainer}>
+        <View style={styles.inputsContainer}>
           <TextInput
-            ref={emailRef}
+            onChangeText={value => setCredentials({ ...credentials, email: value })}
             placeholder={res.getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
             keyboardType="email-address"
@@ -89,7 +73,7 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
             autoCapitalize="none"
           />
           <TextInput
-            ref={passwordRef}
+            onChangeText={value => setCredentials({ ...credentials, password: value })}
             placeholder={res.getStrings().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
@@ -124,15 +108,19 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
           ) : null}
 
           <TouchableOpacity
+            disabled={credentials.email.length == 0 && credentials.password.length == 0}
             onPress={() => {
-              const { email, password } = getCredentials()
+              const { email, password } = credentials
 
               if (mode == Mode.Login) {
                 api.login(email, password).then(result => {
                   if (result.error == GeneralError.InvalidDataProvided) {
                     toast(res.getStrings().Screens.LoginScreen.LoginErrorInvalidPasswordMessage);
                   } else if (result.data != null) {
-                    clearInputs()
+                    setCredentials({
+                      password: "",
+                      email: ""
+                    })
                     onUserLoggedIn(result.data)
                   }
                 })
@@ -151,40 +139,21 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
                 })
               }
             }}
-            style={{
-              borderRadius: 50,
-              backgroundColor: res.getColors().White,
-              aspectRatio: 1,
-              height: 54,
-              position: 'absolute',
-              justifyContent: 'center',
-              alignItems: 'center',
-              right: 0,
-              top: 0,
-              elevation: 20,
-            }}>
+            style={styles.submitButton}>
             <FontAwesomeIcon icon={faArrowRight} color={res.getColors().Primary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          flexDirection: 'column',
-          paddingBottom: 8,
-          bottom: 0,
-          right: 0,
-          left: 0,
-          position: 'absolute',
-        }}>
-        <View style={{ flexDirection: "row" }}>
-          <Text style={{ color: res.getColors().Beige }}>{mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.AlreadyHaveAccountQuestion : res.getStrings().Screens.LoginScreen.DontYouHaveAccountQuestion}</Text>
-          <TouchableOpacity
-            onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
-            <Text style={styles.login}>{mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.LoginExclamation : res.getStrings().Screens.LoginScreen.SignUpExclamation}</Text>
+      <View style={styles.bottomContainer}>
+        <View style={styles.switchModeContainer}>
+          <Text style={{ color: res.getColors().Beige }}>
+            {mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.AlreadyHaveAccountQuestion : res.getStrings().Screens.LoginScreen.DontYouHaveAccountQuestion}
+          </Text>
+          <TouchableOpacity onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
+            <Text style={styles.login}>
+              {mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.LoginExclamation : res.getStrings().Screens.LoginScreen.SignUpExclamation}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -199,7 +168,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   header: {
-    color: res.getColors().White, fontSize: 40, fontFamily: res.getFonts().Primary
+    color: res.getColors().White,
+    fontSize: 40,
+    fontFamily: res.getFonts().Primary,
   },
   leavesImage: {
     height: 190,
@@ -227,10 +198,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowColor: res.getColors().Black,
     elevation: 2,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: res.getColors().Beige,
+    padding: 15,
   },
   headerContainer: {
     alignItems: 'center',
@@ -240,39 +208,36 @@ const styles = StyleSheet.create({
   input: {
     padding: 15,
     fontSize: 15,
+    color: res.getColors().DarkBeige,
   },
-  inputWrapper: {
-    width: 350,
-    marginTop: 100,
-    borderTopRightRadius: 80,
-    borderBottomRightRadius: 80,
-    backgroundColor: res.getColors().Beige,
-    shadowOffset: { width: 5, height: 0 },
-    shadowRadius: 10,
-    shadowOpacity: 0.4,
-    shadowColor: res.getColors().Black,
-    elevation: 2,
-  },
-  submitWrapper: {
+  submitButton: {
+    borderRadius: 50,
+    backgroundColor: res.getColors().White,
+    aspectRatio: 1,
+    height: 54,
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    top: 460,
-    left: 320,
-    // alignSelf: 'center',
-    backgroundColor: res.getColors().Primary,
-    borderRadius: 50,
-    height: 60,
-    width: 60,
-    shadowOffset: { width: 5, height: 0 },
-    shadowRadius: 10,
-    shadowOpacity: 0.4,
-    shadowColor: res.getColors().Black,
-    elevation: 2,
+    right: 0,
+    top: 0,
+    elevation: 20,
   },
-  loginWrapper: {},
+  bottomContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flexDirection: 'column',
+    paddingBottom: 8,
+    bottom: 0,
+    right: 0,
+    left: 0,
+    position: 'absolute',
+  },
+  switchModeContainer: {
+    flexDirection: "row",
+  },
   login: {
     marginLeft: 8,
     color: res.getColors().White,
-  }
+  },
 });

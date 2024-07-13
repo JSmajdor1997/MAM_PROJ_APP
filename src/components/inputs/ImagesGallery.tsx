@@ -2,7 +2,7 @@ import { faAdd, faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
-import Resources from "../../res/Resources";
+import Resources from "../../../res/Resources";
 
 const res = Resources.get();
 

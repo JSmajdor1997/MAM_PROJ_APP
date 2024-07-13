@@ -38,11 +38,11 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       onDismiss={onDismiss}
       animationDuration={300}
       visible={visible}
-      backdropStyle={{ backgroundColor: undefined }}
+      backdropStyle={styles.backdropStyle}
       position={Position.Bottom}
       dialogStyle={styles.dialogStyle}
       dismissOnBackdropPress={false}>
-      <View style={{ flex: 1 }}>
+      <View style={styles.container}>
         <ObjectsList
           type={query.type}
           multi={false}
@@ -65,7 +65,21 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
 
 const styles = StyleSheet.create({
   dialogStyle: {
-    borderBottomLeftRadius: 0, borderBottomRightRadius: 0, top: 140, bottom: 0, height: Dimensions.get("screen").height - 140, backgroundColor: res.getColors().White, justifyContent: "space-between", width: "100%", flexDirection: "column"
+    borderBottomLeftRadius: 0, 
+    borderBottomRightRadius: 0, 
+    top: 140, 
+    bottom: 0, 
+    height: Dimensions.get("screen").height - 140, 
+    backgroundColor: res.getColors().White, 
+    justifyContent: "space-between", 
+    width: "100%", 
+    flexDirection: "column"
+  },
+  container: {
+    flex: 1
+  },
+  backdropStyle: {
+    backgroundColor: undefined
   },
   dismissButton: {
     marginBottom: 5

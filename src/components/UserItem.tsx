@@ -28,27 +28,20 @@ export default function UserItem({ item, position, style, onPress, widthCoeff }:
       <Neomorph
         inner
         style={{
-          ...style as any,
           shadowRadius: 10,
           borderRadius: 15,
           paddingLeft: 10,
-          flex: 1,
           padding: 5,
-          width: Dimensions.get("window").width * widthCoeff,
           height: 50,
           overflow: "hidden",
           flexDirection: "row",
           backgroundColor: "#EEE",
           alignItems: 'center',
           justifyContent: 'space-between',
+          width: Dimensions.get("window").width * widthCoeff
         }}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            marginVertical: 10,
-            alignItems: 'center',
-          }}>
+        <View style={styles.userInfo}>
           <Avatar
             colors={res.getColors().AvatarColors}
             image={item.photoUrl}
@@ -59,12 +52,7 @@ export default function UserItem({ item, position, style, onPress, widthCoeff }:
           />
           <Text style={styles.nameText}>{item.userName}</Text>
         </View>
-        <Text
-          style={{
-            marginRight: 15,
-            fontSize: 17,
-            fontWeight: 'bold',
-          }}>
+        <Text style={styles.rankText}>
           {api.calculateUserRank(item)}
         </Text>
       </Neomorph>
@@ -73,8 +61,10 @@ export default function UserItem({ item, position, style, onPress, widthCoeff }:
 }
 
 const styles = StyleSheet.create({
-  elementOfList: {
-    marginHorizontal: 15,
+  userInfo: {
+    flexDirection: 'row',
+    marginVertical: 10,
+    alignItems: 'center',
   },
   nameText: {
     marginHorizontal: 15,
@@ -84,6 +74,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '300',
     color: res.getColors().DarkBeige,
+  },
+  rankText: {
+    marginRight: 15,
+    fontSize: 17,
+    fontWeight: 'bold',
   },
   avatar: {
     height: 30,

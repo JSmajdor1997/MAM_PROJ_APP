@@ -26,8 +26,7 @@ import UserItem from '../components/UserItem';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import InvitationsDialog from '../dialogs/InvitationsDialog';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 
 const res = Resources.get()
 
@@ -95,24 +94,20 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, justifyContent: 'flex-start' }}>
-      <Animated.View
-        style={{
-          marginTop: StatusBar.currentHeight,
-          flexDirection: 'row',
-          overflow: "hidden",
-          maxHeight: avatarSectionSize.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 150]
-          })
-        }}>
-        <View style={{ flex: 1 }} >
-          <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => navigate.goBack()}>
+    <SafeAreaView style={styles.safeAreaView}>
+      <Animated.View style={[styles.avatarSection, {
+        marginTop: StatusBar.currentHeight,
+        maxHeight: avatarSectionSize.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 150]
+        })
+      }]}>
+        <View style={styles.flexOne} >
+          <TouchableOpacity style={styles.marginLeft10} onPress={() => navigate.goBack()}>
             <FontAwesomeIcon icon={faArrowLeft} size={20} />
           </TouchableOpacity>
         </View>
-        <View
-          style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.avatarContainer}>
           <Avatar
             colors={res.getColors().AvatarColors}
             size={70}
@@ -128,38 +123,18 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
             onChange={e => {
               setUpdatedSelfData({ userName: e.nativeEvent.text })
             }}
-            style={{
-              fontSize: 20,
-              fontFamily: "Avenir",
-              letterSpacing: 1,
-              fontWeight: 'bold',
-              marginTop: 10,
-              textAlign: "center",
-              backgroundColor: res.getColors().DarkBeige,
-              borderRadius: 10,
-              paddingVertical: 3,
-              paddingHorizontal: 8,
-              color: "white"
-            }}>
+            style={styles.userNameInput}>
             {updatedSelfData?.userName ?? user.userName}
           </TextInput>
         </View>
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            paddingRight: 8,
-            paddingBottom: 4,
-          }}>
-
+        <View style={styles.menuContainer}>
           <Menu
             visible={isMoreMenuVisible}
             anchor={<TouchableOpacity onPress={() => setIsMoreMenuVisible(true)}>
               <FontAwesomeIcon icon={faEllipsisV} size={20} />
             </TouchableOpacity>}
             onRequestClose={() => setIsMoreMenuVisible(false)}
-            style={{ marginTop: StatusBar.currentHeight }}>
+            style={styles.menu}>
             <MenuItem onPress={() => {
               setIsMoreMenuVisible(false)
             }}>Zmień hasło</MenuItem>
@@ -180,64 +155,44 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
         </View>
       </Animated.View>
 
-      <View
-        style={{
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          justifyContent: 'center',
-        }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            marginTop: 10,
-            justifyContent: 'space-between',
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-            <FontAwesomeIcon icon={faAt} size={18} />
-            <Text
-              style={{
-                fontSize: 12,
-                fontWeight: 'bold',
-                marginLeft: 10,
-              }}>
-              {user.email}
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ marginRight: 6, fontWeight: 'bold' }}>
-              {api.calculateUserRank(user)}
-            </Text>
-            <WisbIcon icon={IconType.Crown} size={12} />
-          </View>
+      <View style={styles.emailContainer}>
+        <View style={styles.emailSubContainer}>
+          <FontAwesomeIcon icon={faAt} size={18} />
+          <Text style={styles.emailText}>
+            {user.email}
+          </Text>
+        </View>
+        <View style={styles.rankContainer}>
+          <Text style={styles.rankText}>
+            {api.calculateUserRank(user)}
+          </Text>
+          <WisbIcon icon={IconType.Crown} size={12} />
         </View>
       </View>
 
-      <View style={{ flex: 1, justifyContent: data.items.length == 0 ? "center" : undefined, alignItems: data.items.length == 0 ? "center" : undefined }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 10, width: "100%" }}>
-          <TouchableOpacity onPress={() => setIndex(index => index - 1)} style={{ opacity: index > 0 ? 1 : 0.5, pointerEvents: index > 0 ? "auto" : "none" }}>
+      <View style={[styles.flexOne, data.items.length == 0 ? styles.centeredContainer : undefined]}>
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity onPress={() => setIndex(index => index - 1)} style={[styles.navigationButton, index > 0 ? undefined : styles.disabledNavigationButton]}>
             <FontAwesomeIcon icon={faArrowLeft} size={20} />
           </TouchableOpacity>
 
-          <View style={{ flexDirection: "row" }}>
+          <View style={styles.rangeTextContainer}>
             <Text>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
           </View>
 
-          <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={{ opacity: data.hasMore ? 1 : 0.5, pointerEvents: data.hasMore ? "auto" : "none" }}>
+          <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={[styles.navigationButton, data.hasMore ? undefined : styles.disabledNavigationButton]}>
             <FontAwesomeIcon icon={faArrowRight} size={20} />
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={{ flex: 1, }} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
-          <View style={{ alignItems: "center" }}>
-            {data.items.map((item, i) => <UserItem widthCoeff={0.9} style={{ marginTop: 10 }} item={item} position={index * RecordsPerPage + i + 1} />)}
+        <ScrollView style={styles.flexOne} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
+          <View style={styles.itemsContainer}>
+            {data.items.map((item, i) => (
+              <UserItem widthCoeff={0.9} style={styles.userItem} item={item} position={index * RecordsPerPage + i + 1} key={i} />
+            ))}
 
             {isLoading ? (
-              <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
+              <View style={styles.spinnerContainer}>
                 <Spinner
                   isVisible={isLoading}
                   color={res.getColors().Primary}
@@ -248,7 +203,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
             ) : null}
           </View>
 
-          <View style={{ height: 50 }} />
+          <View style={styles.bottomSpacer} />
         </ScrollView>
 
         {data.items.length == 0 ? <Text>Brak wpisów</Text> : null}
@@ -257,12 +212,9 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
       <InvitationsDialog visible={isInvitationDialogVisible} onDismiss={() => setIsInvitationDialogVisible(false)} />
 
       {updatedSelfData != null && updatedSelfData.userName != user.userName ? (
-        <View
-          style={{
-            position: "absolute", right: 145, bottom: 200,
-          }}>
+        <View style={styles.saveCancelButtonsContainer}>
           <TouchableOpacity
-            style={styles.editButton}
+            style={styles.saveButton}
             onPress={() => {
               api.updateOne({ type: WisbObjectType.User, id: api.getCurrentUser()!.id }, { userName: updatedSelfData.userName }).then(result => {
                 if (result.data != null) {
@@ -276,12 +228,12 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
               })
               setUpdatedSelfData(null)
             }} >
-            <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Zapisz</Text>
+            <Text style={styles.buttonText}>Zapisz</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.editButton, { backgroundColor: res.getColors().Red }]}
+            style={styles.cancelButton}
             onPress={() => setUpdatedSelfData(null)}>
-            <Text style={{ color: "white", fontFamily: "Avenir", fontSize: 20, fontWeight: "900" }}>Anuluj</Text>
+            <Text style={styles.buttonText}>Anuluj</Text>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -290,7 +242,112 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
 }
 
 const styles = StyleSheet.create({
-  editButton: {
+  safeAreaView: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  avatarSection: {
+    flexDirection: 'row',
+    overflow: "hidden",
+  },
+  flexOne: {
+    flex: 1,
+  },
+  marginLeft10: {
+    marginLeft: 10,
+  },
+  avatarContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userNameInput: {
+    fontSize: 20,
+    fontFamily: "Avenir",
+    letterSpacing: 1,
+    fontWeight: 'bold',
+    marginTop: 10,
+    textAlign: "center",
+    backgroundColor: res.getColors().DarkBeige,
+    borderRadius: 10,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    color: "white"
+  },
+  menuContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingRight: 8,
+    paddingBottom: 4,
+  },
+  menu: {
+    marginTop: StatusBar.currentHeight,
+  },
+  emailContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    justifyContent: 'center',
+  },
+  emailSubContainer: {
+    flexDirection: 'row',
+    marginTop: 10,
+    justifyContent: 'space-between',
+  },
+  emailText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  rankContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rankText: {
+    marginRight: 6,
+    fontWeight: 'bold',
+  },
+  centeredContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  navigationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    width: "100%",
+  },
+  navigationButton: {
+    opacity: 1,
+    pointerEvents: "auto",
+  },
+  disabledNavigationButton: {
+    opacity: 0.5,
+    pointerEvents: "none",
+  },
+  rangeTextContainer: {
+    flexDirection: "row",
+  },
+  itemsContainer: {
+    alignItems: "center",
+  },
+  userItem: {
+    marginTop: 10,
+  },
+  spinnerContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bottomSpacer: {
+    height: 50,
+  },
+  saveCancelButtonsContainer: {
+    position: "absolute",
+    right: 145,
+    bottom: 200,
+  },
+  saveButton: {
     backgroundColor: res.getColors().Primary,
     padding: 10,
     borderRadius: 10,
@@ -302,7 +359,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.34,
     shadowRadius: 3,
     marginTop: 10,
-
     elevation: 10,
-  }
+  },
+  cancelButton: {
+    backgroundColor: res.getColors().Red,
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: res.getColors().Black,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 3,
+    marginTop: 10,
+    elevation: 10,
+  },
+  buttonText: {
+    color: "white",
+    fontFamily: "Avenir",
+    fontSize: 20,
+    fontWeight: "900",
+  },
 })

@@ -1,12 +1,10 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import Resources from '../../res/Resources';
 import getAPI from '../API/getAPI';
 import BlurryView from '../components/BlurryView';
-import Logo from '../components/Logo';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 
 const res = Resources.get()
 const api = getAPI()
@@ -37,9 +35,14 @@ export default function SplashScreen({ route: { params: { navigate } } }: Props)
       isBlurred={isBlurred}
       style={styles.root}>
       <StatusBar backgroundColor={res.getColors().Transparent} translucent />
+
       <View
         style={styles.logoContainer}>
-        <Logo withMotto />
+        <View style={styles.logo}>
+          <Text style={styles.text}>Wisb</Text>
+          <Text style={styles.motto}>Let's clean up the planet!</Text>
+        </View>
+
       </View>
     </BlurryView>
   );
@@ -59,5 +62,18 @@ const styles = StyleSheet.create({
     backgroundColor: res.getColors().Primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  text: {
+    fontFamily: res.getFonts().Primary,
+    color: res.getColors().White,
+    fontSize: 80
+  },
+  motto: {
+    fontFamily: res.getFonts().Primary,
+    color: res.getColors().White,
   }
 })

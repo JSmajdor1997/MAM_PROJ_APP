@@ -8,7 +8,7 @@ import {
     ViewStyle,
 } from 'react-native';
 import Spinner from 'react-native-spinkit';
-import Resources from '../../res/Resources';
+import Resources from '../../../res/Resources';
 
 const res = Resources.get()
 
@@ -16,21 +16,15 @@ interface Props {
     style?: ViewStyle
     inputStyle?: ViewStyle
     inputContainerStyle?: ViewStyle
-
-
     readonly?: boolean
     onPress?: () => void
     phrase: string
     onPhraseChanged?: (newPhrase: string) => void
-
     placeholder: string
     leftIcon?: React.ReactElement
     rightIcon?: React.ReactElement
-
     onLayout?: (event: LayoutChangeEvent) => void
-
     focused?: boolean
-
     loading?: boolean
 }
 
@@ -52,37 +46,29 @@ export default function SearchBar({ focused, style, inputStyle, inputContainerSt
     return (
         <View
             onLayout={onLayout}
-            style={{
-                ...styles.root,
-                ...style
-            }}>
+            style={[styles.root, style]}>
             <View
-                style={{
-                    ...styles.inputContainer,
-                    ...inputContainerStyle
-                }}>
+                style={[styles.inputContainer, inputContainerStyle]}>
                 {leftIcon}
                 {loading ? (
                     <TouchableOpacity onPress={onPress} style={{ justifyContent: "center", alignItems: "center", width: 30, aspectRatio: 1 }}>
                         <Spinner type="Circle" size={15} color={res.getColors().DarkBeige} style={{ left: 6, top: 6, position: "absolute" }} />
                         <Spinner type="Pulse" size={12} color={res.getColors().DarkBeige} style={{ left: 9, top: 10, position: "absolute" }} />
                     </TouchableOpacity>
-                ) : <TextInput
-                    ref={inputRef}
-                    contextMenuHidden={true}
-                    numberOfLines={1}
-                    autoCapitalize="none"
-                    value={phrase}
-                    placeholderTextColor={res.getColors().DarkBeige}
-                    placeholder={placeholder}
-                    onChangeText={text => onPhraseChanged?.(text)}
-                    onPress={onPress}
-                    readOnly={readonly}
-                    style={{
-                        ...styles.input,
-                        ...inputStyle,
-                    }} />}
-
+                ) : (
+                    <TextInput
+                        ref={inputRef}
+                        contextMenuHidden={true}
+                        numberOfLines={1}
+                        autoCapitalize="none"
+                        value={phrase}
+                        placeholderTextColor={res.getColors().DarkBeige}
+                        placeholder={placeholder}
+                        onChangeText={text => onPhraseChanged?.(text)}
+                        onPress={onPress}
+                        readOnly={readonly}
+                        style={[styles.input, inputStyle]} />
+                )}
                 {rightIcon}
             </View>
         </View>

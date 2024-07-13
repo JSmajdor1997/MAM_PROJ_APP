@@ -16,15 +16,14 @@ import WisbObjectType from '../API/WisbObjectType';
 import getAPI from '../API/getAPI';
 import { WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
 import { Notification } from '../API/notifications';
-import QueryInput from '../components/QueryInput/QueryInput';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import ListDialog from '../dialogs/ListDialog';
 import GeoHelper from '../utils/GeoHelper';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import { Place } from '../utils/GooglePlacesAPI/searchPlaces';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
+import QueryInput from '../components/inputs/QueryInput';
 const map_style = require('../../res/map_style.json');
 
 const api = getAPI()
@@ -37,9 +36,7 @@ const MarkerIdSeparator = '-'
 
 const UserMarkerId = 'USER-MARKER'
 
-interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> {
-
-}
+interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MapScreen> {}
 
 const InitialRegion = {
   ...res.getLastLocation(),
@@ -54,7 +51,6 @@ interface Query {
 
 export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser } } }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
-
   const mapRef = React.useRef<MapView>(null)
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
   const [isReverseGeocoding, setIsReverseGeocoding] = React.useState(true)
@@ -72,13 +68,10 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     })
   }
 
-  const onNewNotification = (n: Notification) => {
-
-  }
+  const onNewNotification = (n: Notification) => {}
 
   React.useEffect(() => {
     api.notifications.registerListener(onNewNotification, { location: InitialRegion })
-
     setCurrentRegionName(InitialRegion)
 
     const unregister = res.registerUserLocationListener(newLocation => {
@@ -148,8 +141,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   }
 
   return (
-    <View
-      style={styles.root}>
+    <View style={styles.root}>
       <MapView
         ref={mapRef}
         mapType={res.getSettings().mapType == MapType.Default ? "standard" : "hybrid"}
@@ -160,22 +152,19 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
           }
 
           setCurrentRegionName(newRegion)
-
-          setDisplayedRegion(region => newRegion)
+          setDisplayedRegion(newRegion)
         }}
         onRegionChange={newRegion => {
           const trackingIconPosition = getTrackingIconPosition(newRegion)
 
           if (trackingIconPosition == null) {
             trackingIconRef.current?.setNativeProps({
-              style: {
-                display: "none"
-              }
+              style: styles.hiddenTrackingIcon
             })
           } else {
             trackingIconRef.current?.setNativeProps({
               style: {
-                display: "flex",
+                ...styles.visibleTrackingIcon,
                 transform: [
                   { rotate: `${-trackingIconPosition.angle}rad` },
                 ]
@@ -261,11 +250,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
         </View>
       </View>
 
-      <View
-        style={{
-          ...styles.mapQueryInputContainer,
-          marginTop: (StatusBar.currentHeight ?? 35) + 5,
-        }}>
+      <View style={[styles.mapQueryInputContainer, { marginTop: (StatusBar.currentHeight ?? 35) + 5 }]}>
         <QueryInput
           loading={!isSearchDialogVisible && query.phrase.length == 0 && isReverseGeocoding}
           placeholder={res.getStrings().Components.MapQueryInput.Placeholder}
@@ -365,7 +350,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.51,
     shadowRadius: 13.16,
-
     elevation: 20,
     backgroundColor: res.getColors().White,
     borderRadius: 10,
@@ -409,6 +393,12 @@ const styles = StyleSheet.create({
   },
   trackingIconChild: {
     transform: [{ rotate: "90deg" }]
+  },
+  hiddenTrackingIcon: {
+    display: "none"
+  },
+  visibleTrackingIcon: {
+    display: "flex"
   },
   searchedPlaceMarker: {
     alignItems: "center"

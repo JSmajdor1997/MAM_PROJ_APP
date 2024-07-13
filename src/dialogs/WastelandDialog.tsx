@@ -1,7 +1,7 @@
 import { faBroom, faCalendar, faGripLines, faShare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Dimensions, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions, Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
 import { LatLng } from "react-native-maps";
 import Share from 'react-native-share';
 import Resources from "../../res/Resources";
@@ -10,10 +10,10 @@ import getAPI from "../API/getAPI";
 import { WisbUser, WisbWasteland } from "../API/interfaces";
 import { isObjectCRUDNotification } from "../API/notifications";
 import { isWasteland } from "../API/type_guards";
-import ImagesGallery from "../components/ImagesGallery";
-import LocationInput from "../components/LocationInput";
+import LocationInput from "../components/inputs/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
 import WisbDialog, { Mode, Section } from "./WisbDialog";
+import ImagesGallery from "../components/inputs/ImagesGallery";
 
 const res = Resources.get()
 
@@ -94,10 +94,10 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                 {
                     enabled: () => workingWasteland.place != null && workingWasteland.description != null && workingWasteland.description.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 15 }}>
+                        <View key={index} style={styles.sectionContainer}>
                             <LocationInput
                                 readonly={mode == Mode.Viewing}
-                                style={{ width: "100%", height: 300 }}
+                                style={styles.locationInput}
                                 apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
                                 onLocationChanged={(latLng, asText) => setWorkingWasteland({ ...workingWasteland, place: { coords: latLng, asText } })}
@@ -106,18 +106,18 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                     asText: "Obecna"
                                 }} />
 
-                            <View style={{ flexDirection: "row", padding: 10, justifyContent: "space-between" }}>
+                            <View style={styles.infoRow}>
                                 <FontAwesomeIcon icon={faCalendar} size={15} />
-                                <View style={{ flexDirection: "row" }}>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1 }}>{res.getStrings().Dialogs.WastelandDialog.ReportedLabel}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{(workingWasteland.creationDate ?? new Date()).toLocaleDateString(res.getLocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5 }}>{res.getStrings().Dialogs.WastelandDialog.ByLabel}</Text>
-                                    <Text style={{ fontStyle: "italic", letterSpacing: 1, marginLeft: 5, fontWeight: "bold" }}>{workingWasteland.reportedBy?.userName ?? currentUser.userName}</Text>
+                                <View style={styles.infoSubRow}>
+                                    <Text style={styles.italicText}>{res.getStrings().Dialogs.WastelandDialog.ReportedLabel}</Text>
+                                    <Text style={[styles.italicText, styles.boldText, styles.marginLeft5]}>{(workingWasteland.creationDate ?? new Date()).toLocaleDateString(res.getLocale(), { year: "numeric", month: "2-digit", day: "2-digit" })}</Text>
+                                    <Text style={[styles.italicText, styles.marginLeft5]}>{res.getStrings().Dialogs.WastelandDialog.ByLabel}</Text>
+                                    <Text style={[styles.italicText, styles.boldText, styles.marginLeft5]}>{workingWasteland.reportedBy?.userName ?? currentUser.userName}</Text>
                                 </View>
                             </View>
 
                             <View>
-                                <Text style={{ fontWeight: "bold" }}>Opis</Text>
+                                <Text style={styles.boldText}>Opis</Text>
                                 <TextInput
                                     placeholder="Opis"
                                     readOnly={mode == Mode.Viewing}
@@ -127,7 +127,7 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                         description: e.nativeEvent.text
                                     })}
                                     multiline
-                                    style={{ backgroundColor: res.getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
+                                    style={styles.descriptionInput} />
                             </View>
                         </View>
                     )
@@ -135,10 +135,10 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                 {
                     enabled: () => workingWasteland.photos != null && workingWasteland.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().Lime, name: res.getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 15 }}>
-                            <Text style={{ fontWeight: "bold" }}>Zdjęcia z przed sprzątnięcia</Text>
+                        <View key={index} style={styles.sectionContainer}>
+                            <Text style={styles.boldText}>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
-                                style={{ marginTop: 10 }}
+                                style={styles.imagesGallery}
                                 images={workingWasteland.photos ?? []}
                                 nrOfImagesPerRow={4}
                                 interImagesSpace={5}
@@ -154,16 +154,12 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                     color: res.getColors().DarkBeige,
                     name: res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel,
                     renderPage: ({ shake, startConfetti, block, setLoading }, index) => (
-                        <View key={index} style={{ flex: 1 }}>
-                            <View style={{
-                                width: "100%",
-                                marginTop: 40,
-                                padding: 15
-                            }}>
-                                <Text style={{ fontWeight: "bold" }}>{res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
+                        <View key={index} style={styles.sectionContainer}>
+                            <View style={styles.afterCleaningContainer}>
+                                <Text style={styles.boldText}>{res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
                                 <ImagesGallery
                                     images={workingWasteland.afterCleaningData?.photos ?? []}
-                                    style={{ marginTop: 10 }}
+                                    style={styles.imagesGallery}
                                     nrOfImagesPerRow={4}
                                     interImagesSpace={5}
                                     onAddRequest={() => { }}
@@ -171,7 +167,7 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                     rowWidth={Dimensions.get("window").width * 0.9} />
                             </View>
 
-                            <TouchableOpacity onPress={() => {
+                            <TouchableOpacity style={styles.addButton} onPress={() => {
                                 if (isWasteland({ ...workingWasteland, id: -1 })) {
                                     setLoading("Trwa dodawanie")
                                     api.createOne(WisbObjectType.Wasteland, workingWasteland as Omit<WisbWasteland, "id">).then(() => {
@@ -190,3 +186,52 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
             ]} />
     )
 }
+
+const styles = StyleSheet.create({
+    sectionContainer: {
+        flex: 1,
+        padding: 15
+    },
+    locationInput: {
+        width: "100%",
+        height: 300
+    },
+    infoRow: {
+        flexDirection: "row",
+        padding: 10,
+        justifyContent: "space-between"
+    },
+    infoSubRow: {
+        flexDirection: "row"
+    },
+    italicText: {
+        fontStyle: "italic",
+        letterSpacing: 1
+    },
+    boldText: {
+        fontWeight: "bold"
+    },
+    marginLeft5: {
+        marginLeft: 5
+    },
+    descriptionInput: {
+        backgroundColor: res.getColors().Beige,
+        padding: 5,
+        minHeight: 100,
+        borderRadius: 15,
+        fontWeight: "400",
+        fontFamily: "Avenir",
+        letterSpacing: 2
+    },
+    imagesGallery: {
+        marginTop: 10
+    },
+    afterCleaningContainer: {
+        width: "100%",
+        marginTop: 40,
+        padding: 15
+    },
+    addButton: {
+        marginTop: 20
+    }
+});

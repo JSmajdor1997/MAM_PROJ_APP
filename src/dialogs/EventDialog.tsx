@@ -14,12 +14,12 @@ import getAPI from "../API/getAPI";
 import { WisbEvent, WisbUser } from "../API/interfaces";
 import { isObjectCRUDNotification } from "../API/notifications";
 import { isEvent, isUser, isWasteland } from "../API/type_guards";
-import ImageInput from "../components/ImageInput";
-import LocationInput from "../components/LocationInput";
+import ImageInput from "../components/inputs/ImageInput";
+import LocationInput from "../components/inputs/LocationInput";
 import ObjectsList from "../components/ObjectsList";
-import SearchBar from "../components/SearchBar";
 import IconType from "../components/WisbIcon/IconType";
 import WisbDialog, { Mode } from "./WisbDialog";
+import SearchBar from "../components/inputs/SearchBar";
 
 const res = Resources.get()
 
@@ -110,11 +110,11 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                 {
                     enabled: () => workingEvent.name != null && workingEvent.iconUrl != null && workingEvent.dateRange != null && workingEvent.dateRange[0] instanceof Date && workingEvent.dateRange[1] instanceof Date && workingEvent.description != null && workingEvent.description.length != null,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: "Podstawowe informacje", renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 10 }}>
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: 120 }}>
+                        <View key={index} style={styles.basicInfoContainer}>
+                            <View style={styles.basicInfoHeader}>
                                 <ImageInput
                                     readonly={mode == Mode.Viewing}
-                                    style={{ height: "100%", aspectRatio: 1 }}
+                                    style={styles.imageInput}
                                     image={workingEvent?.iconUrl}
                                     onImageSelected={image => {
                                         setWorkingEvent({
@@ -123,60 +123,53 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                         })
                                     }} />
 
-                                <View style={{ flex: 1, justifyContent: "center", height: "100%", alignItems: "center" }}>
+                                <View style={styles.nameContainer}>
                                     <TextInput
                                         readOnly={mode == Mode.Viewing}
                                         placeholder="Nazwa"
                                         placeholderTextColor={"white"}
-                                        style={{ fontSize: 20, padding: 2, textAlign: "center", fontWeight: "500", letterSpacing: 1, fontStyle: "italic", fontFamily: "Avenir", backgroundColor: res.getColors().DarkBeige, width: "100%", marginLeft: 4, borderRadius: 15 }}
+                                        style={styles.nameInput}
                                         onChange={e => setWorkingEvent({ ...workingEvent, name: e.nativeEvent.text })}>
                                         {workingEvent.name}
                                     </TextInput>
 
-                                    <Text style={{ position: "absolute", right: 5, bottom: 5, fontSize: 12 }}>by {currentUser.userName}</Text>
+                                    <Text style={styles.createdByText}>by {currentUser.userName}</Text>
                                 </View>
                             </View>
 
-                            <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
-                                <View style={{ justifyContent: "space-around", flexDirection: "row", alignItems: "center" }}>
-                                    <FontAwesomeIcon icon={faClock} color={res.getColors().DarkBeige} style={{ flex: 1 }} />
-
-                                    <Text style={{ fontSize: 12, fontFamily: "Avenir", marginTop: 3, marginLeft: 10 }}>OD</Text>
+                            <View style={styles.dateTimeContainer}>
+                                <View style={styles.dateTimeRow}>
+                                    <FontAwesomeIcon icon={faClock} color={res.getColors().DarkBeige} style={styles.clockIcon} />
+                                    <Text style={styles.dateTimeLabel}>OD</Text>
+                                    <RNDateTimePicker
+                                        value={workingEvent?.dateRange?.[0] ?? new Date()}
+                                        onChange={(_, date) => {
+                                            if (date != null) {
+                                                setWorkingEvent({
+                                                    ...workingEvent,
+                                                    dateRange: [date, workingEvent.dateRange?.[1]!]
+                                                })
+                                            }
+                                        }}
+                                        mode="datetime"
+                                        minimumDate={new Date()} />
                                 </View>
-
-                                <RNDateTimePicker
-                                    value={workingEvent?.dateRange?.[0] ?? new Date()}
-                                    onChange={(_, date) => {
-                                        if (date != null) {
-                                            setWorkingEvent({
-                                                ...workingEvent,
-                                                dateRange: [date, workingEvent.dateRange?.[1]!]
-                                            })
-                                        }
-                                    }}
-                                    mode="datetime"
-                                    minimumDate={new Date()} />
-                            </View>
-
-                            <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
-                                <View style={{ justifyContent: "space-around", flexDirection: "row", alignItems: "center" }}>
-                                    <FontAwesomeIcon icon={faClock} color={res.getColors().DarkBeige} style={{ flex: 1 }} />
-
-                                    <Text style={{ fontSize: 12, fontFamily: "Avenir", marginTop: 3, marginLeft: 10 }}>OD</Text>
+                                <View style={styles.dateTimeRow}>
+                                    <FontAwesomeIcon icon={faClock} color={res.getColors().DarkBeige} style={styles.clockIcon} />
+                                    <Text style={styles.dateTimeLabel}>OD</Text>
+                                    <RNDateTimePicker
+                                        value={workingEvent?.dateRange?.[1] ?? new Date()}
+                                        onChange={(_, date) => {
+                                            if (date != null) {
+                                                setWorkingEvent({
+                                                    ...workingEvent,
+                                                    dateRange: [workingEvent.dateRange?.[0]!, date]
+                                                })
+                                            }
+                                        }}
+                                        mode="datetime"
+                                        minimumDate={workingEvent?.dateRange?.[0] ?? new Date()} />
                                 </View>
-
-                                <RNDateTimePicker
-                                    value={workingEvent?.dateRange?.[1] ?? new Date()}
-                                    onChange={(_, date) => {
-                                        if (date != null) {
-                                            setWorkingEvent({
-                                                ...workingEvent,
-                                                dateRange: [workingEvent.dateRange?.[0]!, date]
-                                            })
-                                        }
-                                    }}
-                                    mode="datetime"
-                                    minimumDate={workingEvent?.dateRange?.[0] ?? new Date()} />
                             </View>
 
                             <TextInput
@@ -194,11 +187,11 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                 {
                     enabled: () => workingEvent.place != null,
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Lime, name: res.getStrings().Dialogs.EventDialog.MeetPlaceLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 15 }}>
+                        <View key={index} style={styles.meetPlaceContainer}>
                             <LocationInput
                                 readonly={mode == Mode.Viewing}
                                 iconColor={res.getColors().DarkBeige}
-                                style={{ width: "100%", height: 300 }}
+                                style={styles.locationInput}
                                 userLocation={userLocation}
                                 apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                 onLocationChanged={(latLng, asText) => setWorkingEvent({ ...workingEvent, place: { coords: latLng, asText } })}
@@ -212,7 +205,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                 {
                     enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0,
                     icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().DarkBeige, name: res.getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, minHeight: 50 }}>
+                        <View key={index} style={styles.wastelandsContainer}>
                             <Text>Co sprzątamy?</Text>
 
                             {mode == Mode.Adding ? <SearchBar
@@ -256,7 +249,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                 {
                     enabled: () => true,
                     icon: <FontAwesomeIcon icon={faPerson} />, color: res.getColors().Purple, name: res.getStrings().Dialogs.EventDialog.MembersLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1 }}>
+                        <View key={index} style={styles.membersContainer}>
                             <Text>Zaproś uczestników</Text>
 
                             {mode == Mode.Adding ? <SearchBar
@@ -293,9 +286,9 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                     renderPage: ({ startConfetti, setLoading, currentIndex, block }, index) => {
                         if (mode == Mode.Adding) {
                             return (
-                                <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
+                                <View style={styles.addButtonContainer}>
                                     <TouchableOpacity
-                                        style={{ padding: 10, borderRadius: 15, backgroundColor: res.getColors().Beige }}
+                                        style={styles.addButton}
                                         onPress={() => {
                                             if (isEvent({ ...workingEvent, id: -1 })) {
                                                 setLoading("Trwa dodawanie")
@@ -313,23 +306,23 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                                 })
                                             }
                                         }}>
-                                        <Text style={{ fontWeight: "bold", fontSize: 25, color: res.getColors().Primary }}>DODAJ</Text>
+                                        <Text style={styles.addButtonText}>DODAJ</Text>
                                     </TouchableOpacity>
                                 </View>
                             )
                         }
 
                         return (
-                            <View key={index} style={{ flex: 1 }}>
+                            <View key={index} style={styles.sharingContainer}>
                                 <Text>{res.getStrings().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
 
-                                <View style={{ justifyContent: "center", alignItems: "center", flex: 2 }}>
+                                <View style={styles.qrCodeContainer}>
                                     <QRCode color={res.getColors().Blue} value="AAA123" />
                                 </View>
 
-                                <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                                <View style={styles.shareButtonContainer}>
                                     <TouchableOpacity
-                                        style={{ backgroundColor: res.getColors().DarkBeige, padding: 20, borderRadius: 15 }}
+                                        style={styles.shareButton}
                                         onPress={() => {
                                             Share.open({
                                                 title: "Share",
@@ -342,7 +335,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                                     err && console.log(err);
                                                 });
                                         }}>
-                                        <Text style={{ fontFamily: "Avenir", color: "white", fontWeight: "600", letterSpacing: 1, fontSize: 15 }}>Share on Social Media</Text>
+                                        <Text style={styles.shareButtonText}>Share on Social Media</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -354,8 +347,127 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
 }
 
 const styles = StyleSheet.create({
+    basicInfoContainer: {
+        flex: 1, 
+        padding: 10 
+    },
+    basicInfoHeader: {
+        flexDirection: "row", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        height: 120 
+    },
+    imageInput: {
+        height: "100%", 
+        aspectRatio: 1 
+    },
+    nameContainer: {
+        flex: 1, 
+        justifyContent: "center", 
+        height: "100%", 
+        alignItems: "center" 
+    },
+    nameInput: {
+        fontSize: 20, 
+        padding: 2, 
+        textAlign: "center", 
+        fontWeight: "500", 
+        letterSpacing: 1, 
+        fontStyle: "italic", 
+        fontFamily: "Avenir", 
+        backgroundColor: res.getColors().DarkBeige, 
+        width: "100%", 
+        marginLeft: 4, 
+        borderRadius: 15 
+    },
+    createdByText: {
+        position: "absolute", 
+        right: 5, 
+        bottom: 5, 
+        fontSize: 12 
+    },
+    dateTimeContainer: {
+        flexDirection: "row", 
+        justifyContent: "space-around", 
+        marginTop: 10 
+    },
+    dateTimeRow: {
+        justifyContent: "space-around", 
+        flexDirection: "row", 
+        alignItems: "center" 
+    },
+    clockIcon: {
+        flex: 1 
+    },
+    dateTimeLabel: {
+        fontSize: 12, 
+        fontFamily: "Avenir", 
+        marginTop: 3, 
+        marginLeft: 10 
+    },
     textField: {
         overflow: "hidden",
-        marginTop: 10, backgroundColor: res.getColors().Beige, padding: 5, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2
+        marginTop: 10, 
+        backgroundColor: res.getColors().Beige, 
+        padding: 5, 
+        borderRadius: 15, 
+        fontWeight: "400", 
+        fontFamily: "Avenir", 
+        letterSpacing: 2 
+    },
+    meetPlaceContainer: {
+        flex: 1, 
+        padding: 15 
+    },
+    locationInput: {
+        width: "100%", 
+        height: 300 
+    },
+    wastelandsContainer: {
+        flex: 1, 
+        minHeight: 50 
+    },
+    membersContainer: {
+        flex: 1 
+    },
+    addButtonContainer: {
+        justifyContent: "center", 
+        alignItems: "center", 
+        flex: 1 
+    },
+    addButton: {
+        padding: 10, 
+        borderRadius: 15, 
+        backgroundColor: res.getColors().Beige 
+    },
+    addButtonText: {
+        fontWeight: "bold", 
+        fontSize: 25, 
+        color: res.getColors().Primary 
+    },
+    sharingContainer: {
+        flex: 1 
+    },
+    qrCodeContainer: {
+        justifyContent: "center", 
+        alignItems: "center", 
+        flex: 2 
+    },
+    shareButtonContainer: {
+        flex: 1, 
+        justifyContent: "center", 
+        alignItems: "center" 
+    },
+    shareButton: {
+        backgroundColor: res.getColors().DarkBeige, 
+        padding: 20, 
+        borderRadius: 15 
+    },
+    shareButtonText: {
+        fontFamily: "Avenir", 
+        color: "white", 
+        fontWeight: "600", 
+        letterSpacing: 1, 
+        fontSize: 15 
     }
-})
+});

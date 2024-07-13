@@ -1,7 +1,7 @@
 import { faQrcode } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Animated, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Modal, Pressable, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { RNCamera } from 'react-native-camera';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import Spinner from "react-native-spinkit";
@@ -33,14 +33,14 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
             visible={visible}
             onDismiss={onDismiss}>
             <Pressable
-                style={{ height: "100%", display: "flex", backgroundColor: res.getColors().BackdropBlack, justifyContent: "center", alignItems: "center" }}
+                style={styles.pressable}
                 onPress={onDismiss} >
-                <Animated.View style={{ borderRadius: 15, width: "90%", height: "90%", backgroundColor: "white", alignItems: "center", flexDirection: "column", transform: [{ translateX: translationX }] }}>
-                    <View style={{ justifyContent: "center", padding: 15 }}>
+                <Animated.View style={[styles.animatedView, { transform: [{ translateX: translationX }] }]}>
+                    <View style={styles.iconContainer}>
                         <FontAwesomeIcon icon={faQrcode} size={40} />
                     </View>
 
-                    <View style={{ alignItems: "center", justifyContent: "center" }}>
+                    <View style={styles.qrCodeContainer}>
                         <QRCodeScanner
                             reactivate={!isLoading}
                             reactivateTimeout={1500}
@@ -57,21 +57,21 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
                                     shake()
                                 }
                             }}
-                            containerStyle={{ maxWidth: "100%", maxHeight: 400 }}
-                            cameraStyle={{ width: "100%", alignSelf: "center" }}
+                            containerStyle={styles.qrCodeScannerContainer}
+                            cameraStyle={styles.qrCodeCamera}
                             flashMode={RNCamera.Constants.FlashMode.auto}
                         />
 
-                        {isLoading ? <Spinner type="Circle" style={{ position: "absolute" }} color={res.getColors().Primary} /> : null}
+                        {isLoading ? <Spinner type="Circle" style={styles.spinner} color={res.getColors().Primary} /> : null}
                     </View>
 
-                    <View style={{ flex: 1 }} />
+                    <View style={styles.flexOne} />
 
-                    <View style={{ padding: 15 }}>
-                        <Text style={{ fontWeight: "400", letterSpacing: 1, fontFamily: "Avenir" }}>Sprzątanie Gliwic, Gliwice Zimnej Wody 15</Text>
+                    <View style={styles.descriptionContainer}>
+                        <Text style={styles.descriptionText}>Sprzątanie Gliwic, Gliwice Zimnej Wody 15</Text>
                     </View>
 
-                    <TouchableOpacity style={{ padding: 10 }} onPress={onDismiss}>
+                    <TouchableOpacity style={styles.okButton} onPress={onDismiss}>
                         <Text>OK</Text>
                     </TouchableOpacity>
                 </Animated.View>
@@ -79,3 +79,54 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
         </Modal>
     )
 }
+
+const styles = StyleSheet.create({
+    pressable: {
+        height: "100%",
+        display: "flex",
+        backgroundColor: res.getColors().BackdropBlack,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    animatedView: {
+        borderRadius: 15,
+        width: "90%",
+        height: "90%",
+        backgroundColor: "white",
+        alignItems: "center",
+        flexDirection: "column"
+    },
+    iconContainer: {
+        justifyContent: "center",
+        padding: 15
+    },
+    qrCodeContainer: {
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    qrCodeScannerContainer: {
+        maxWidth: "100%",
+        maxHeight: 400
+    },
+    qrCodeCamera: {
+        width: "100%",
+        alignSelf: "center"
+    },
+    spinner: {
+        position: "absolute"
+    },
+    flexOne: {
+        flex: 1
+    },
+    descriptionContainer: {
+        padding: 15
+    },
+    descriptionText: {
+        fontWeight: "400",
+        letterSpacing: 1,
+        fontFamily: "Avenir"
+    },
+    okButton: {
+        padding: 10
+    }
+});

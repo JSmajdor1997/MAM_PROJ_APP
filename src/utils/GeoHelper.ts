@@ -32,6 +32,10 @@ export default class GeoHelper {
     }
 
     static isLatLng(obj: any): obj is LatLng {
+        if(obj == null) {
+            return false
+        }
+        
         return typeof (obj as LatLng).latitude == "number" && typeof (obj as LatLng).longitude == "number"
     }
 

@@ -8,8 +8,6 @@ import IconType from "./IconType";
 import Modificator from "./Modificator";
 import ModificatorType from "./ModificatorType";
 
-const res = Resources.get()
-
 export interface Props {
     style?: ViewStyle
     icon: IconType

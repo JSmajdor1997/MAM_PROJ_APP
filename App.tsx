@@ -1,44 +1,39 @@
-import React from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import Resources from './res/Resources';
-import SplashScreen from './src/screens/SplashScreen';
-import MapScreen from './src/screens/MapScreen';
-import NavBar from './src/components/NavBar/NavBar';
-import LoginScreen from './src/screens/LoginScreen';
-import Toast from 'react-native-simple-toast';
-import ChatScreen from './src/screens/ChatScreen';
+import { faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { PortalProvider } from '@gorhom/portal';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import WisbScreens from './src/screens/WisbScreens';
-import LeaderboardScreen from './src/screens/LeaderBoardScreen';
-import SettingsScreen from './src/screens/SettingsScreen';
-import MyEventsScreen from './src/screens/MyEventsScreen';
-import NavigationParamsList, { WisbNavigateFunction } from './src/screens/NavigationParamsList';
+import React from 'react';
+import {
+  LogBox,
+  StyleSheet,
+  View
+} from 'react-native';
+import { ClickOutsideProvider } from 'react-native-click-outside';
+import Snackbar from 'react-native-snackbar';
+import Resources from './res/Resources';
+import WisbObjectType from './src/API/WisbObjectType';
+import getAPI from './src/API/getAPI';
+import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from './src/API/interfaces';
+import { CRUD, Notification, isNewInvitationNotification, isNewMessageNotification, isObjectCRUDNotification } from './src/API/notifications';
+import { isDumpster, isEvent, isWasteland } from './src/API/type_guards';
+import NavBar from './src/components/NavBar/NavBar';
+import QRCodeDialog from './src/dialogs/QRCodeDialog';
+import IconType from './src/components/WisbIcon/IconType';
+import ModificatorType from './src/components/WisbIcon/ModificatorType';
 import WisbIcon from './src/components/WisbIcon/WisbIcon';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 import DumpsterDialog from './src/dialogs/DumpsterDialog';
 import EventDialog from './src/dialogs/EventDialog';
 import WastelandDialog from './src/dialogs/WastelandDialog';
 import { Mode } from './src/dialogs/WisbDialog';
-import { PortalProvider } from '@gorhom/portal';
-import { ClickOutsideProvider } from 'react-native-click-outside';
-import { isDumpster, isEvent, isWasteland } from './src/API/type_guards';
-import { LogBox } from 'react-native';
-import IconType from './src/components/WisbIcon/IconType';
-import ModificatorType from './src/components/WisbIcon/ModificatorType';
-import QRCodeDialog from './src/components/QRCodeDialog';
-import getAPI from './src/API/getAPI';
-import WisbObjectType from './src/API/WisbObjectType';
-import { NotificationType } from './src/API/ListenersManager';
-import { WisbEvent, WisbDumpster, WisbWasteland, WisbUser } from './src/API/interfaces';
-import { CRUD, NewMessageNotification, Notification, isNewInvitationNotification, isNewMessageNotification, isObjectCRUDNotification } from './src/API/notifications';
-import Snackbar from 'react-native-snackbar';
+import ChatScreen from './src/screens/ChatScreen';
+import LeaderboardScreen from './src/screens/LeaderBoardScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import MapScreen from './src/screens/MapScreen';
+import MyEventsScreen from './src/screens/MyEventsScreen';
+import NavigationParamsList, { WisbNavigateFunction, WisbScreens } from './src/screens/NavigationParamsList';
+import SettingsScreen from './src/screens/SettingsScreen';
+import SplashScreen from './src/screens/SplashScreen';
 
 LogBox.ignoreAllLogs();
 
@@ -278,7 +273,9 @@ export default function App() {
                 getCurrentUser: () => api.getCurrentUser()!,
                 onItemSelected
               }} />
-              <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} />
+              <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} initialParams={{
+                navigate: { go: navigate, goBack }
+              }}/>
               <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
                 onItemSelected,
                 getCurrentUser: () => api.getCurrentUser()!
@@ -313,7 +310,7 @@ export default function App() {
                 bubbles: [
                   {
                     component: (
-                      <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
+                      <WisbIcon style={styles.bubbleIcon} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
                     ),
                     onPress: () => {
                       setDialogData({
@@ -325,7 +322,7 @@ export default function App() {
                   },
                   {
                     component: (
-                      <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
+                      <WisbIcon style={styles.bubbleIcon} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
                     ),
                     onPress: () => {
                       setDialogData({
@@ -337,7 +334,7 @@ export default function App() {
                   },
                   {
                     component: (
-                      <WisbIcon style={{ width: 28, height: 28, borderRadius: 100 }} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
+                      <WisbIcon style={styles.bubbleIcon} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
                     ),
                     onPress: () => {
                       setDialogData({
@@ -415,4 +412,9 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between"
   },
+  bubbleIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 100
+  }
 });

@@ -32,7 +32,7 @@ export default function api_endpoint<T extends (...args: any[]) => Promise<any>>
 
             if (result.error == null && currentUser != null) {
                 if (config.altersData) {
-                    this.syncToDB();
+                    this.storage.syncToDB();
                 }
 
                 if (config.notification) {

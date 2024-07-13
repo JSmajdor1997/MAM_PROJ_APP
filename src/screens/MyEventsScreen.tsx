@@ -9,9 +9,8 @@ import {
 import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
 import ObjectsList from '../components/ObjectsList';
-import QueryInput from '../components/QueryInput/QueryInput';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
+import QueryInput from '../components/inputs/QueryInput';
 
 const res = Resources.get()
 
@@ -23,24 +22,14 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
   const [onlyCurrentEvents, setOnlyCurrentEvents] = React.useState(true)
 
   return (
-    <View
-      style={{
-        ...styles.root,
-        paddingTop: StatusBar.currentHeight
-          ? StatusBar.currentHeight - 8
-          : 20,
-      }}>
+    <View style={[styles.root, { paddingTop: StatusBar.currentHeight ? StatusBar.currentHeight - 8 : 20 }]}>
       <StatusBar
         backgroundColor={res.getColors().Transparent}
         translucent
         barStyle="dark-content"
       />
 
-      <View
-        style={{
-          ...styles.mapQueryInputContainer,
-          marginTop: (StatusBar.currentHeight ?? 20),
-        }}>
+      <View style={[styles.mapQueryInputContainer, { marginTop: (StatusBar.currentHeight ?? 20) }]}>
         <QueryInput
           placeholder='Szukaj swoich wydarzeń'
           onPress={() => {
@@ -88,18 +77,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
         googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
       />
 
-      <View style={{
-        position: "absolute", width: "120%", left: -20, height: 120, bottom: -120,
-        shadowColor: "#000000",
-        backgroundColor: "black",
-        borderRadius: 100,
-        shadowOffset: {
-          width: 0,
-          height: -110,
-        },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
-      }} />
+      <View style={styles.shadowView} />
     </View>
   );
 }
@@ -123,7 +101,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.51,
     shadowRadius: 13.16,
-
     elevation: 20,
     backgroundColor: res.getColors().White,
     borderRadius: 10,
@@ -131,4 +108,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-})
+  shadowView: {
+    position: "absolute",
+    width: "120%",
+    left: -20,
+    height: 120,
+    bottom: -120,
+    shadowColor: "#000000",
+    backgroundColor: "black",
+    borderRadius: 100,
+    shadowOffset: {
+      width: 0,
+      height: -110,
+    },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
+});

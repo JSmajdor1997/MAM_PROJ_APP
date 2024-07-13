@@ -17,8 +17,7 @@ import WisbObjectType from '../API/WisbObjectType';
 import getAPI from '../API/getAPI';
 import { WisbMessage } from '../API/interfaces';
 import Avatar from '../components/Avatar';
-import NavigationParamsList from './NavigationParamsList';
-import WisbScreens from './WisbScreens';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 
 const res = Resources.get();
 
@@ -71,42 +70,18 @@ export default function ChatScreen({ route: { params: { event, navigate } } }: P
   }, [updateMessages]);
 
   return (
-    <View style={{ ...StyleSheet.absoluteFillObject, paddingBottom: 8 }}>
+    <View style={styles.container}>
       <StatusBar
         backgroundColor={res.getColors().Transparent}
         barStyle="light-content"
         translucent
       />
-      <View style={{ minHeight: "100%" }}>
-        <View
-          style={{
-            width: '100%',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: 6,
-            padding: 10,
-            paddingTop: 20,
-            backgroundColor: res.getColors().White,
-            borderBottomLeftRadius: 15,
-            borderBottomRightRadius: 15,
-            shadowColor: res.getColors().Black,
-            shadowOffset: { width: 0, height: 7 },
-            shadowOpacity: 0.41,
-            shadowRadius: 9.11,
-            elevation: 14,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
+      <View style={styles.chatContainer}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
             <TouchableOpacity
               onPress={() => navigate.goBack()}
-              style={{ marginLeft: 8 }}
+              style={styles.backButton}
             >
               <FontAwesomeIcon
                 color={res.getColors().Primary}
@@ -117,24 +92,11 @@ export default function ChatScreen({ route: { params: { event, navigate } } }: P
               image={event.iconUrl}
               username={event.name}
               size={40}
-              style={{
-                height: 50,
-                width: 50,
-                borderRadius: 50,
-                borderWidth: 1.6,
-                marginLeft: 14,
-              }}
+              style={styles.avatar}
               fontSize={10}
               colors={["black"]}
             />
-            <Text
-              style={{
-                marginLeft: 10,
-                fontSize: 16.5,
-                fontWeight: 'bold',
-                color: res.getColors().Primary,
-              }}
-            >
+            <Text style={styles.headerText}>
               {event.name}
             </Text>
           </View>
@@ -145,33 +107,13 @@ export default function ChatScreen({ route: { params: { event, navigate } } }: P
             data.hasMore ? (
               <TouchableOpacity
                 onPress={e.onLoadEarlier}
-                style={{
-                  marginTop: 20,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  alignSelf: "center",
-                  padding: 10,
-                  backgroundColor: res.getColors().DarkBeige,
-                  borderRadius: 15
-                }}
+                style={styles.loadEarlierButton}
               >
-                <Text
-                  style={{
-                    color: res.getColors().White,
-                    letterSpacing: 2,
-                    fontWeight: '500',
-                    marginLeft: 20,
-                    shadowColor: res.getColors().Black,
-                    shadowOffset: { width: 0, height: 10 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 13.16,
-                    elevation: 8,
-                  }}
-                >
+                <Text style={styles.loadEarlierText}>
                   Pokaż wcześniejsze wiadomości
                 </Text>
                 <Spinner
-                  style={{ marginLeft: 5, marginTop: -5, opacity: e.isLoadingEarlier ? 1 : 0, width: 20 }}
+                  style={styles.loadEarlierSpinner}
                   size={16}
                   type="Circle"
                   color={res.getColors().Primary}
@@ -197,50 +139,23 @@ export default function ChatScreen({ route: { params: { event, navigate } } }: P
               avatar: it.sender.photoUrl
             }
           }))}
-          messagesContainerStyle={{ height: "100%" }}
+          messagesContainerStyle={styles.messagesContainer}
           renderMessage={renderMessage}
           renderInputToolbar={() => null}
           user={{ _id: currentUser.id }}
         />
-        <View
-          style={{
-            backgroundColor: res.getColors().White,
-            alignItems: 'center',
-            width: '96%',
-            marginBottom: 15,
-            alignSelf: 'center',
-            paddingVertical: 8,
-            paddingHorizontal: 8,
-            justifyContent: 'space-between',
-            borderRadius: 20,
-            flexDirection: 'row',
-            shadowColor: res.getColors().Black,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.41,
-            shadowRadius: 9.11,
-            elevation: 10,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: res.getColors().Beige,
-              borderRadius: 20,
-              paddingStart: 10,
-              marginStart: 4,
-              marginEnd: 4,
-            }}
-          >
+        <View style={styles.inputContainer}>
+          <View style={styles.textInputContainer}>
             <TextInput
               value={inputMessage}
               onChange={e => setInputMessage(e.nativeEvent.text)}
               placeholder="Wpisz wiadomość..."
               placeholderTextColor={res.getColors().DarkBeige}
-              style={{ flex: 1, padding: 0 }}
+              style={styles.textInput}
             />
           </View>
           <TouchableOpacity
-            style={{ justifyContent: 'center', alignContent: 'center', padding: 4 }}
+            style={styles.sendButton}
             disabled={inputMessage.length == 0}
             onPress={async () => {
               await api.sendEventMessage({
@@ -260,4 +175,113 @@ export default function ChatScreen({ route: { params: { event, navigate } } }: P
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    paddingBottom: 8,
+  },
+  chatContainer: {
+    minHeight: "100%",
+  },
+  header: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 6,
+    padding: 10,
+    paddingTop: 20,
+    backgroundColor: res.getColors().White,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    shadowColor: res.getColors().Black,
+    shadowOffset: { width: 0, height: 7 },
+    shadowOpacity: 0.41,
+    shadowRadius: 9.11,
+    elevation: 14,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    marginLeft: 8,
+  },
+  avatar: {
+    height: 50,
+    width: 50,
+    borderRadius: 50,
+    borderWidth: 1.6,
+    marginLeft: 14,
+  },
+  headerText: {
+    marginLeft: 10,
+    fontSize: 16.5,
+    fontWeight: 'bold',
+    color: res.getColors().Primary,
+  },
+  loadEarlierButton: {
+    marginTop: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    padding: 10,
+    backgroundColor: res.getColors().DarkBeige,
+    borderRadius: 15,
+  },
+  loadEarlierText: {
+    color: res.getColors().White,
+    letterSpacing: 2,
+    fontWeight: '500',
+    marginLeft: 20,
+    shadowColor: res.getColors().Black,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 13.16,
+    elevation: 8,
+  },
+  loadEarlierSpinner: {
+    marginLeft: 5,
+    marginTop: -5,
+    opacity: 1,
+    width: 20,
+  },
+  messagesContainer: {
+    height: "100%",
+  },
+  inputContainer: {
+    backgroundColor: res.getColors().White,
+    alignItems: 'center',
+    width: '96%',
+    marginBottom: 15,
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    justifyContent: 'space-between',
+    borderRadius: 20,
+    flexDirection: 'row',
+    shadowColor: res.getColors().Black,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.41,
+    shadowRadius: 9.11,
+    elevation: 10,
+  },
+  textInputContainer: {
+    flex: 1,
+    backgroundColor: res.getColors().Beige,
+    borderRadius: 20,
+    paddingStart: 10,
+    marginStart: 4,
+    marginEnd: 4,
+  },
+  textInput: {
+    flex: 1,
+    padding: 0,
+  },
+  sendButton: {
+    justifyContent: 'center',
+    alignContent: 'center',
+    padding: 4,
+  },
+});

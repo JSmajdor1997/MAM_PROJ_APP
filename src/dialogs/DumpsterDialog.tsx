@@ -1,18 +1,18 @@
 import { faGripLines, faImage, faMapPin } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Dimensions, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { LatLng } from "react-native-maps";
 import Resources from "../../res/Resources";
 import WisbObjectType from "../API/WisbObjectType";
 import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";
 import { isObjectCRUDNotification } from "../API/notifications";
-import { isDumpster } from "../API/type_guards";
-import ImagesGallery from "../components/ImagesGallery";
-import LocationInput from "../components/LocationInput";
+import { isDumpster } from "../API/type_guards";;
+import LocationInput from "../components/inputs/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
 import WisbDialog, { Mode } from "./WisbDialog";
+import ImagesGallery from "../components/inputs/ImagesGallery";
 
 const res = Resources.get()
 
@@ -65,10 +65,10 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                 {
                     enabled: () => workingDumpster.place != null,
                     icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Green, name: res.getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 15 }}>
+                        <View key={index} style={styles.locationContainer}>
                             <LocationInput
                                 readonly={mode == Mode.Viewing}
-                                style={{ flex: 1, height: 300 }}
+                                style={styles.locationInput}
                                 apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
                                 onLocationChanged={(latLng, asText) => setWorkingDumpster({ ...workingDumpster, place: { coords: latLng, asText } })}
@@ -82,9 +82,9 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                 {
                     enabled: () => workingDumpster.description != null && workingDumpster.description.length > 0,
                     icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
-                        <View key={index} style={{ flex: 1, padding: 10 }}>
+                        <View key={index} style={styles.basicDataContainer}>
                             <View>
-                                <Text style={{ fontWeight: "bold" }}>Opis</Text>
+                                <Text style={styles.sectionTitle}>Opis</Text>
 
                                 <TextInput
                                     placeholder="Opis"
@@ -92,12 +92,12 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                                     readOnly={mode == Mode.Viewing}
                                     onChange={e => setWorkingDumpster({ ...workingDumpster, description: e.nativeEvent.text })}
                                     value={workingDumpster.description ?? ""}
-                                    style={{ backgroundColor: res.getColors().Beige, padding: 5, minHeight: 100, borderRadius: 15, fontWeight: 400, fontFamily: "Avenir", letterSpacing: 2 }} />
+                                    style={styles.descriptionInput} />
                             </View>
 
-                            <View style={{ marginTop: 10, flexDirection: "row", justifyContent: "space-between" }}>
-                                <Text style={{ fontWeight: "bold" }}>Dodane przez</Text>
-                                <Text style={{}}>{currentUser.userName}</Text>
+                            <View style={styles.addedByContainer}>
+                                <Text style={styles.sectionTitle}>Dodane przez</Text>
+                                <Text style={styles.addedByText}>{currentUser.userName}</Text>
                             </View>
                         </View>
                     )
@@ -109,9 +109,9 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                     name: "Zdjęcia",
                     renderPage: ({ block, startConfetti, setLoading }, index) => {
                         return (
-                            <View>
-                                <View key={index} style={{ flex: 1, padding: 10 }}>
-                                    <Text style={{ fontWeight: "bold" }}>
+                            <View style={styles.photosContainer}>
+                                <View key={index} style={styles.photosSection}>
+                                    <Text style={styles.sectionTitle}>
                                         Zdjęcia
                                     </Text>
 
@@ -119,14 +119,12 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                                         images={workingDumpster.photos ?? []}
                                         rowWidth={Dimensions.get("window").width * 0.9}
                                         interImagesSpace={5}
-                                        style={{ width: "100%" }}
+                                        style={styles.gallery}
                                         onAddRequest={() => { }}
                                         onRemoveRequest={() => { }}
                                         nrOfImagesPerRow={4} />
-
-
                                 </View>
-                                <TouchableOpacity onPress={() => {
+                                <TouchableOpacity style={styles.addButton} onPress={() => {
                                     if (isDumpster({ ...workingDumpster, id: -1 })) {
                                         setLoading("Trwa dodawanie")
 
@@ -135,7 +133,7 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                                         })
                                     }
                                 }}>
-                                    <Text>DODAJ</Text>
+                                    <Text style={styles.addButtonText}>DODAJ</Text>
                                 </TouchableOpacity>
                             </View>
                         )
@@ -144,3 +142,48 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
             ]} />
     )
 }
+
+const styles = StyleSheet.create({
+    locationContainer: {
+        flex: 1,
+        padding: 15
+    },
+    locationInput: {
+        flex: 1,
+        height: 300
+    },
+    basicDataContainer: {
+        flex: 1,
+        padding: 10
+    },
+    sectionTitle: {
+        fontWeight: "bold"
+    },
+    descriptionInput: {
+        backgroundColor: res.getColors().Beige,
+        padding: 5,
+        minHeight: 100,
+        borderRadius: 15,
+        fontWeight: "400",
+        fontFamily: "Avenir",
+        letterSpacing: 2
+    },
+    addedByContainer: {
+        marginTop: 10,
+        flexDirection: "row",
+        justifyContent: "space-between"
+    },
+    addedByText: {},
+    photosContainer: {},
+    photosSection: {
+        flex: 1,
+        padding: 10
+    },
+    gallery: {
+        width: "100%"
+    },
+    addButton: {
+        padding: 10
+    },
+    addButtonText: {}
+});

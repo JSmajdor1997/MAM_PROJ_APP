@@ -13,11 +13,11 @@ import { isDumpster, isEvent, isUser, isWasteland } from "../API/type_guards";
 import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
 import DumpsterItem from "./DumpsterItem";
 import EventItem from "./EventItem";
-import LocationItem from "./LocationItem";
+import LocationItem from "./inputs/LocationItem";
 import UserItem from "./UserItem";
 import WastelandItem from "./WastelandItem";
 
-const res = Resources.get()
+const res = Resources.get();
 
 export type Multiple<MultiSelect extends boolean, T> = MultiSelect extends true ? T[] : T;
 
@@ -83,7 +83,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
 
         setIsLoading(true);
 
-        const range: [number, number] = [index * PageSize, (index + 1) * PageSize]
+        const range: [number, number] = [index * PageSize, (index + 1) * PageSize];
 
         const result = await api.getMany(type, { phrase, ...filter?.[type] as QueryMap<ItemType> }, range);
         if (result.error != null) {
@@ -115,7 +115,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
 
     useEffect(() => {
         updateItems(0);
-    }, Object.values(filter ?? {}))
+    }, Object.values(filter ?? {}));
 
     useEffect(() => {
         updateItems(0);
@@ -174,7 +174,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     );
 
     return (
-        <View style={{ flex: 1, ...style }}>
+        <View style={[{ flex: 1 }, style]}>
             <FlatList
                 ref={flatListRef}
                 onEndReached={() => {
@@ -203,7 +203,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 ListFooterComponent={renderFooter}
                 data={data.items}
             />
-            {isLoading && <View style={{ backgroundColor: "#00000055", ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" }}>
+            {isLoading && <View style={[{ backgroundColor: "#00000055", justifyContent: "center", alignItems: "center" }, StyleSheet.absoluteFillObject]}>
                 <Spinner type="FadingCircle" color={res.getColors().Primary} size={80} />
             </View>}
         </View>

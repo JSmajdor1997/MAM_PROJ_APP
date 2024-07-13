@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Animated, Easing, Pressable, StyleSheet, View, ViewStyle } from "react-native";
-import Resources from "../../res/Resources";
+import Resources from "../../../res/Resources";
 
 const res = Resources.get()
 
@@ -91,21 +91,20 @@ export default function ProgressInput({ style, selectedOptionIndex, options, onS
     return (
         <View
             onLayout={e => setContainerWidth(e.nativeEvent.layout.width)}
-            style={{ ...styles.root, paddingTop: circleBorderWidth, ...style }}>
+            style={[styles.root, style]}>
             {options.map((option, index) => (
-                <Fragment>
-                    {index == 0 ? null : <View key={`track-${index}`} style={{ ...styles.optionContainer, height: trackPadHeight, marginTop: circlesDiameter / 2 - trackPadHeight / 2 }} />}
+                <Fragment key={index}>
+                    {index == 0 ? null : <View style={[styles.optionContainer, { height: trackPadHeight, marginTop: circlesDiameter / 2 - trackPadHeight / 2 }]} />}
 
-                    <Pressable disabled={option.disabled} key={`circle-${index}`} style={{ ...styles.optionPressable, opacity: option.disabled ? 0.4 : 1 }} onPress={() => onSelectedOptionChanged?.(index)}>
-                        <View style={{ ...styles.optionContent, borderWidth: circleBorderWidth, height: circlesDiameter, width: circlesDiameter }} />
-                        {option.icon == null ? null : <View style={{ ...styles.optionIcon, top: circlesDiameter + circleBorderWidth * 2 }}>{option.icon}</View>}
+                    <Pressable disabled={option.disabled} style={[styles.optionPressable, { opacity: option.disabled ? 0.4 : 1 }]} onPress={() => onSelectedOptionChanged?.(index)}>
+                        <View style={[styles.optionContent, { borderWidth: circleBorderWidth, height: circlesDiameter, width: circlesDiameter }]} />
+                        {option.icon == null ? null : <View style={[styles.optionIcon, { top: circlesDiameter + circleBorderWidth * 2 }]}>{option.icon}</View>}
                     </Pressable>
                 </Fragment>
             ))}
 
             <Animated.View
-                style={{
-                    ...styles.movingCircle,
+                style={[styles.movingCircle, {
                     height: circlesDiameter,
                     width: circlesDiameter,
                     top: circleBorderWidth,
@@ -114,7 +113,7 @@ export default function ProgressInput({ style, selectedOptionIndex, options, onS
                         outputRange: options.map((item) => item.color)
                     }),
                     transform: [{ translateX: indicatorPosition }, { scale: indicatorScale }]
-                }} />
+                }]} />
         </View>
     )
 }

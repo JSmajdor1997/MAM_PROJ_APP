@@ -41,14 +41,11 @@ function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
           flexDirection: "column"
         }}
       >
-
-        <View style={{ flex: 1 }}>
+        <View style={styles.imageContainer}>
           {
             item.iconUrl
               ? <FastImage
-                style={{
-                  flex: 1,
-                }}
+                style={styles.image}
                 resizeMode="cover"
                 source={{
                   uri: item.iconUrl,
@@ -57,24 +54,24 @@ function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
               : <WisbIcon size={22} icon={IconType.Earth} />
           }
 
-          <View style={{ position: "absolute", borderRadius: 15, padding: 3, flexDirection: "row", bottom: 10, left: 10, backgroundColor: "white", alignItems: "center" }}>
+          <View style={styles.mapPinContainer}>
             <FontAwesomeIcon icon={faMapPin} size={10} />
-            <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 500 }}>{item.place.asText}</Text>
+            <Text style={styles.mapPinText}>{item.place.asText}</Text>
           </View>
 
           {isAdmin ? (
-            <View style={{ position: "absolute", borderRadius: 15, padding: 3, flexDirection: "row", top: 10, right: 10, backgroundColor: "white", alignItems: "center" }}>
+            <View style={styles.adminContainer}>
               <FontAwesomeIcon icon={faUnlock} size={10} color={res.getColors().Red} />
-              <Text style={{ fontSize: 8, marginLeft: 5, fontWeight: 900, letterSpacing: 1, color: res.getColors().Red }}>jesteś administratorem</Text>
+              <Text style={styles.adminText}>jesteś administratorem</Text>
             </View>
           ) : null}
         </View>
 
-        <View style={{ height: 40, width: "100%", backgroundColor: "white", justifyContent: "space-between", flexDirection: "row", alignItems: "center", paddingHorizontal: 10 }}>
-          <Text style={{ letterSpacing: 1, flex: 1, fontWeight: "400", fontSize: 14, textTransform: "capitalize" }} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.eventName} numberOfLines={1} ellipsizeMode="tail">{item.name}</Text>
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 5 }}>
-            <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.dateRange[0].toLocaleDateString(res.getLocale(), { year: "numeric", month: "long", day: "2-digit" })}</Text>
+          <View style={styles.dateContainer}>
+            <Text style={styles.dateText}>{item.dateRange[0].toLocaleDateString(res.getLocale(), { year: "numeric", month: "long", day: "2-digit" })}</Text>
             <FontAwesomeIcon icon={faCalendarAlt} size={10} color={res.getColors().DarkBeige} />
           </View>
         </View>
@@ -99,5 +96,69 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.2,
     shadowRadius: 12,
+  },
+  imageContainer: {
+    flex: 1
+  },
+  image: {
+    flex: 1
+  },
+  mapPinContainer: {
+    position: "absolute",
+    borderRadius: 15,
+    padding: 3,
+    flexDirection: "row",
+    bottom: 10,
+    left: 10,
+    backgroundColor: "white",
+    alignItems: "center"
+  },
+  mapPinText: {
+    fontSize: 8,
+    marginLeft: 5,
+    fontWeight: '500'
+  },
+  adminContainer: {
+    position: "absolute",
+    borderRadius: 15,
+    padding: 3,
+    flexDirection: "row",
+    top: 10,
+    right: 10,
+    backgroundColor: "white",
+    alignItems: "center"
+  },
+  adminText: {
+    fontSize: 8,
+    marginLeft: 5,
+    fontWeight: '900',
+    letterSpacing: 1,
+    color: res.getColors().Red
+  },
+  infoContainer: {
+    height: 40,
+    width: "100%",
+    backgroundColor: "white",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10
+  },
+  eventName: {
+    letterSpacing: 1,
+    flex: 1,
+    fontWeight: '400',
+    fontSize: 14,
+    textTransform: "capitalize"
+  },
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 5
+  },
+  dateText: {
+    fontSize: 8,
+    marginRight: 5,
+    fontWeight: '500'
   }
 })

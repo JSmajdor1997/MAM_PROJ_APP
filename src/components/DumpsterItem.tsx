@@ -40,10 +40,7 @@ function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
         }}
       >
         <GoogleStaticMapNext
-          style={{
-            height: "100%",
-            aspectRatio: 1
-          }}
+          style={styles.map}
           mapType='hybrid'
           zoom={18}
           location={{
@@ -54,11 +51,11 @@ function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
           apiKey={googleMapsAPIKey}
         />
 
-        <View style={{ flex: 1, flexDirection: "column", padding: 5 }}>
-          <Text style={{ flex: 1, fontSize: 14, fontFamily: "Avenir", fontWeight: "900", letterSpacing: 1, textAlign: "right", marginTop: 10, marginRight: 10 }}>{item.description}</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.description}>{item.description}</Text>
 
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={{ fontSize: 8, marginRight: 5, fontWeight: 500 }}>{item.place.asText}</Text>
+          <View style={styles.locationContainer}>
+            <Text style={styles.locationText}>{item.place.asText}</Text>
             <FontAwesomeIcon icon={faMapPin} size={10} color={res.getColors().Red} />
           </View>
         </View>
@@ -87,5 +84,33 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
 
     elevation: 5,
+  },
+  map: {
+    height: "100%",
+    aspectRatio: 1
+  },
+  infoContainer: {
+    flex: 1,
+    flexDirection: "column",
+    padding: 5
+  },
+  description: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "Avenir",
+    fontWeight: "900",
+    letterSpacing: 1,
+    textAlign: "right",
+    marginTop: 10,
+    marginRight: 10
+  },
+  locationContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  locationText: {
+    fontSize: 8,
+    marginRight: 5,
+    fontWeight: '500'
   }
 })

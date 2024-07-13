@@ -1,4 +1,4 @@
-import WisbScreens from "../src/screens/WisbScreens"
+import { WisbScreens } from "../src/screens/NavigationParamsList"
 
 export default interface Translation {
     code: string

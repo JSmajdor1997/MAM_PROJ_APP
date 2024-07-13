@@ -1,5 +1,14 @@
 import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces"
-import WisbScreens from "./WisbScreens"
+
+export enum WisbScreens {
+    ChatScreen = "ChatScreen",
+    LeaderBoardScreen = "LeaderBoardScreen",
+    LoginScreen = "LoginScreen",
+    MapScreen = "MapScreen",
+    MyEventsScreen = "MyEventsScreen",
+    SettingsScreen = "SettingsScreen",
+    SplashScreen = "SplashScreen"
+}
 
 export type WisbNavigateFunction<T extends WisbScreens> = (screen: T, data: T extends WisbScreens.ChatScreen ? { event: WisbEvent } : {}) => void
 

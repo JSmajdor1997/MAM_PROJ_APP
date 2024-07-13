@@ -11,7 +11,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import Resources from '../../../res/Resources';
 import BubbleItem from './BubbleItem';
 
-const res = Resources.get()
+const res = Resources.get();
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -22,7 +22,7 @@ interface Bubble {
 }
 
 interface Item {
-  render: (isActive: boolean) => ReactElement
+  render: (isActive: boolean) => ReactElement;
   bubbles?: Array<Bubble>;
   onPress: () => void;
 }
@@ -31,8 +31,8 @@ interface Props {
   style?: ViewStyle;
   visible: boolean;
   items: Array<Item>;
-  selectedIndex: number
-  enabled: boolean
+  selectedIndex: number;
+  enabled: boolean;
 }
 
 interface State {
@@ -43,12 +43,11 @@ interface State {
   pathY: string;
   pathA: string;
   pathB: string;
-
   bubbleAnim: Animated.Value;
 }
 
 export default function NavBar({ style, visible, items, selectedIndex, enabled }: Props) {
-  const circleRef = React.useRef<Circle>(null)
+  const circleRef = React.useRef<Circle>(null);
 
   const [state, setState] = React.useState<State>({
     circleRadius: new Animated.Value(546),
@@ -58,9 +57,8 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
     pathA: '689',
     pathB: '706',
     showIcon: true,
-
     bubbleAnim: new Animated.Value(0)
-  })
+  });
 
   const showBubbles = (show: boolean) => {
     if (show) {
@@ -71,9 +69,8 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
     } else {
       state.bubbleAnim.setValue(0);
     }
-  }
+  };
 
-  //componentDidMount
   React.useEffect(() => {
     state.circleRadius.addListener(circleRadius => {
       circleRef.current &&
@@ -91,16 +88,15 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
     });
 
     showBubbles(true);
-  }, [])
+  }, []);
 
-  //componentDidUpdate
   React.useEffect(() => {
     showBubbles(false);
 
     setState(state => ({
       ...state,
       showIcon: false
-    }))
+    }));
 
     if (selectedIndex == 0) {
       Animated.spring(state.pathD, {
@@ -145,10 +141,10 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
     setTimeout(() => {
       setState(state => ({ ...state, showIcon: true }));
     }, 80);
-  }, [selectedIndex])
+  }, [selectedIndex]);
 
   const renderBubbles = () => {
-    if (!enabled) return null
+    if (!enabled) return null;
 
     const bubbles = items[selectedIndex].bubbles;
 
@@ -184,19 +180,18 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
           } else if (index == 1) {
             style = {
               marginBottom: 20
-            }
+            };
           }
         }
 
         return (
           <BubbleItem key={index} onPress={bubble.onPress} style={style} component={bubble.component} bubbleAnim={state.bubbleAnim} />
-        )
+        );
       });
     }
 
     return null;
-  }
-
+  };
 
   const showIcon = enabled ? state.showIcon : false;
 
@@ -299,7 +294,6 @@ export default function NavBar({ style, visible, items, selectedIndex, enabled }
     )
   );
 }
-
 
 const styles = StyleSheet.create({
   content: {

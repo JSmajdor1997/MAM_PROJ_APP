@@ -6,16 +6,15 @@ import { useClickOutside } from "react-native-click-outside";
 import { GoogleStaticMapNext } from "react-native-google-static-map-next";
 import MapView, { LatLng } from "react-native-maps";
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
-import Resources from "../../res/Resources";
-import reverseGeoCode from "../utils/GooglePlacesAPI/reverseGeoCode";
-import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces";
-import openMapsAndNavigate from "../utils/openMapsAndNavigate";
-import FAB from "./FAB";
+import Resources from "../../../res/Resources";
+import reverseGeoCode from "../../utils/GooglePlacesAPI/reverseGeoCode";
+import searchPlaces, { Place } from "../../utils/GooglePlacesAPI/searchPlaces";
+import openMapsAndNavigate from "../../utils/openMapsAndNavigate";
+import FAB from "../FAB";
 import LocationItem from "./LocationItem";
+import IconType from "../WisbIcon/IconType";
+import WisbIcon from "../WisbIcon/WisbIcon";
 import SearchBar from "./SearchBar";
-import Separator from "./Separator";
-import IconType from "./WisbIcon/IconType";
-import WisbIcon from "./WisbIcon/WisbIcon";
 
 const res = Resources.get()
 
@@ -176,7 +175,6 @@ export default function LocationInput({ style, readonly, onLocationChanged, user
             {readonly ? null : <Animated.FlatList
                 style={{ width: "100%", backgroundColor: res.getColors().DarkBeige, maxHeight: heightAnim, height: "100%" }}
                 data={places}
-                ItemSeparatorComponent={Separator}
                 keyExtractor={place => place.id}
                 ListEmptyComponent={
                     <View style={{ justifyContent: "center" }}>

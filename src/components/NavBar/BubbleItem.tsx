@@ -2,7 +2,7 @@ import React from "react";
 import { Animated, StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 import Resources from "../../../res/Resources";
 
-const res = Resources.get()
+const res = Resources.get();
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-
     shadowColor: res.getColors().Black,
     shadowOffset: {
       width: 0,
@@ -43,4 +42,4 @@ const styles = StyleSheet.create({
     shadowRadius: 13.16,
     elevation: 8,
   }
-})
+});

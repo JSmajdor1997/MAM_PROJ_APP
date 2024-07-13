@@ -1,27 +1,15 @@
 import { LatLng } from "react-native-maps";
 import Ref from "./Ref";
 import WisbObjectType from "./WisbObjectType";
-import { Invitation, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "./interfaces";
-
-export interface SimplePlace {
-    coords: LatLng
-    asText: string
-}
-
-export function isLatLng(obj: any | LatLng): obj is LatLng {
-    if (obj == null) {
-        return false
-    }
-
-    return typeof (obj as LatLng).latitude == "number" && typeof (obj as LatLng).longitude == "number"
-}
+import { Invitation, SimplePlace, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "./interfaces";
+import GeoHelper from "../utils/GeoHelper";
 
 export function isSimplePlace(obj: any | SimplePlace): obj is LatLng {
     if (obj == null) {
         return false
     }
 
-    return typeof (obj as SimplePlace).asText == "string" && isLatLng((obj as SimplePlace).coords)
+    return typeof (obj as SimplePlace).asText == "string" && GeoHelper.isLatLng((obj as SimplePlace).coords)
 }
 
 export function isRef<T extends WisbObjectType>(obj: any | Ref<T>, type: T): obj is Ref<T> {
