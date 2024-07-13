@@ -125,6 +125,7 @@ export default function App() {
                   ""
           ),
           duration: Snackbar.LENGTH_SHORT,
+          fontFamily: res.getFonts().Secondary,
           backgroundColor: res.getColors().Blue,
           textColor: res.getColors().Primary,
           marginBottom: 180,
@@ -149,6 +150,7 @@ export default function App() {
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: res.getColors().Beige,
           textColor: res.getColors().Primary,
+          fontFamily: res.getFonts().Secondary,
           marginBottom: 180,
           action: {
             text: 'POKAŻ',
@@ -166,6 +168,7 @@ export default function App() {
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: res.getColors().Yellow,
           textColor: res.getColors().Primary,
+          fontFamily: res.getFonts().Secondary,
           marginBottom: 180,
           action: {
             text: 'POKAŻ',
@@ -288,7 +291,7 @@ export default function App() {
           <NavBar
             enabled
             selectedIndex={ScreensNavbarMap[currentScreen].navBarIndex ?? 1}
-            visible={ScreensNavbarMap[currentScreen].navBarIndex != null}
+            visible={ScreensNavbarMap[currentScreen].navBarIndex !== null }
             items={[
               {
                 render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,

@@ -351,7 +351,8 @@ const styles = StyleSheet.create({
         paddingLeft: 10
     },
     menuItemText: {
-        flex: 1
+        flex: 1,
+        fontFamily: res.getFonts().Secondary,
     },
     progressInputContainer: {
         width: "100%",
@@ -366,7 +367,8 @@ const styles = StyleSheet.create({
     },
     sectionName: {
         fontWeight: "bold",
-        fontStyle: "italic"
+        fontStyle: "italic",
+        fontFamily: res.getFonts().Secondary
     },
     progressInput: {
         width: "95%"
@@ -404,6 +406,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         letterSpacing: 1,
         color: "white",
-        fontSize: 20
+        fontSize: 20,
+        fontFamily: res.getFonts().Secondary,
     }
 });

@@ -56,7 +56,7 @@ export default function InvitationsDialog({ visible, onDismiss }: Props) {
           >
             <FontAwesomeIcon icon={faEnvelope} />
 
-            <Text>{invitation.event.name}</Text>
+            <Text style={{fontFamily: res.getFonts().Secondary}}>{invitation.event.name}</Text>
 
             <TouchableOpacity
               style={styles.joinButtonContainer}
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20, 
     fontWeight: "600", 
-    fontFamily: "Avenir", 
+    fontFamily: res.getFonts().Secondary, 
     color: "white", 
     letterSpacing: 2
   },
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   joinText: {
     color: "white", 
-    fontFamily: "Avenir", 
+    fontFamily: res.getFonts().Secondary,
     fontWeight: "500", 
     letterSpacing: 1
   },

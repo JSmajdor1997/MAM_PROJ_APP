@@ -405,6 +405,7 @@ const styles = StyleSheet.create({
   searchedPlaceMarkerLabel: {
     marginBottom: 5,
     backgroundColor: res.getColors().Primary,
+    fontFamily: res.getFonts().Secondary,
     color: res.getColors().White,
     padding: 5,
     borderRadius: 5,

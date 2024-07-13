@@ -9,8 +9,8 @@ import {
 import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
 import ObjectsList from '../components/ObjectsList';
-import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 import QueryInput from '../components/inputs/QueryInput';
+import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 
 const res = Resources.get()
 
@@ -45,14 +45,14 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
           items={[
             {
               isSelected: onlyCurrentEvents,
-              component: <Text>Obecne</Text>,
+              component: <Text style={{ fontFamily: res.getFonts().Secondary }}>Obecne</Text>,
               onClick: () => {
                 setOnlyCurrentEvents(true)
               }
             },
             {
               isSelected: !onlyCurrentEvents,
-              component: <Text>Przeszłe</Text>,
+              component: <Text style={{ fontFamily: res.getFonts().Secondary }}>Przeszłe</Text>,
               onClick: () => {
                 setOnlyCurrentEvents(false)
               }
@@ -61,7 +61,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
         />
       </View>
 
-      <ObjectsList
+      <ObjectsList<false, WisbObjectType.Event>
         style={styles.flatList}
         currentUser={getCurrentUser()}
         type={WisbObjectType.Event}
@@ -74,7 +74,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
         multi={false}
         phrase={phrase}
         onSelected={onItemSelected}
-        googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
+        googleMapsAPIKey={res.getEnv().GOOGLE_MAPS_API_KEY}
       />
 
       <View style={styles.shadowView} />

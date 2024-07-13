@@ -61,7 +61,8 @@ const styles = StyleSheet.create({
         color: "blue", 
         fontWeight: "bold", 
         letterSpacing: 1, 
-        textAlign: "center"
+        textAlign: "center",
+        fontFamily: res.getFonts().Secondary
     },
     distanceInfo: {
         color: res.getColors().Black, 

@@ -100,7 +100,7 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                 style={styles.locationInput}
                                 apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
-                                onLocationChanged={(latLng, asText) => setWorkingWasteland({ ...workingWasteland, place: { coords: latLng, asText } })}
+                                onLocationChanged={place => setWorkingWasteland({ ...workingWasteland, place })}
                                 location={workingWasteland.place ?? {
                                     coords: userLocation,
                                     asText: "Obecna"
@@ -177,7 +177,7 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                     })
                                 }
                             }}>
-                                <Text>DODAJ</Text>
+                                <Text style={{fontFamily: res.getFonts().Secondary}}>DODAJ</Text>
                             </TouchableOpacity>
                         </View>
                     )
@@ -206,10 +206,12 @@ const styles = StyleSheet.create({
     },
     italicText: {
         fontStyle: "italic",
-        letterSpacing: 1
+        letterSpacing: 1,
+        fontFamily: res.getFonts().Secondary,
     },
     boldText: {
-        fontWeight: "bold"
+        fontWeight: "bold",
+        fontFamily: res.getFonts().Secondary,
     },
     marginLeft5: {
         marginLeft: 5
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
         minHeight: 100,
         borderRadius: 15,
         fontWeight: "400",
-        fontFamily: "Avenir",
+        fontFamily: res.getFonts().Secondary,
         letterSpacing: 2
     },
     imagesGallery: {

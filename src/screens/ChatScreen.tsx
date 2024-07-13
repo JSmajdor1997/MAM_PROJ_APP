@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 16.5,
     fontWeight: 'bold',
     color: res.getColors().Primary,
+    fontFamily: res.getFonts().Secondary,
   },
   loadEarlierButton: {
     marginTop: 20,
@@ -240,6 +241,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 13.16,
     elevation: 8,
+    fontFamily: res.getFonts().Secondary,
   },
   loadEarlierSpinner: {
     marginLeft: 5,
@@ -278,6 +280,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     padding: 0,
+    fontFamily: res.getFonts().Secondary,
   },
   sendButton: {
     justifyContent: 'center',

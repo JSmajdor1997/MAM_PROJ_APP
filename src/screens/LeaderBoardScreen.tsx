@@ -177,7 +177,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
           </TouchableOpacity>
 
           <View style={styles.rangeTextContainer}>
-            <Text>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
+            <Text style={{fontFamily: res.getFonts().Secondary}}>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
           </View>
 
           <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={[styles.navigationButton, data.hasMore ? undefined : styles.disabledNavigationButton]}>
@@ -188,8 +188,11 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
         <ScrollView style={styles.flexOne} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
           <View style={styles.itemsContainer}>
             {data.items.map((item, i) => (
-              <UserItem widthCoeff={0.9} style={styles.userItem} item={item} position={index * RecordsPerPage + i + 1} key={i} />
+              <UserItem 
+                widthCoeff={0.9} style={styles.userItem} item={item} position={index * RecordsPerPage + i + 1} key={i} />
             ))}
+
+            <View style={{ height: 100 }} />
 
             {isLoading ? (
               <View style={styles.spinnerContainer}>
@@ -206,7 +209,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
           <View style={styles.bottomSpacer} />
         </ScrollView>
 
-        {data.items.length == 0 ? <Text>Brak wpisów</Text> : null}
+        {data.items.length == 0 ? <Text style={{fontFamily: res.getFonts().Secondary}}>Brak wpisów</Text> : null}
       </View>
 
       <InvitationsDialog visible={isInvitationDialogVisible} onDismiss={() => setIsInvitationDialogVisible(false)} />
@@ -244,6 +247,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
+    paddingTop: 20,
     justifyContent: 'flex-start',
   },
   avatarSection: {
@@ -262,7 +266,7 @@ const styles = StyleSheet.create({
   },
   userNameInput: {
     fontSize: 20,
-    fontFamily: "Avenir",
+    fontFamily: res.getFonts().Secondary,
     letterSpacing: 1,
     fontWeight: 'bold',
     marginTop: 10,
@@ -296,6 +300,7 @@ const styles = StyleSheet.create({
   emailText: {
     fontSize: 12,
     fontWeight: 'bold',
+    fontFamily: res.getFonts().Secondary,
     marginLeft: 10,
   },
   rankContainer: {
@@ -305,6 +310,7 @@ const styles = StyleSheet.create({
   rankText: {
     marginRight: 6,
     fontWeight: 'bold',
+    fontFamily: res.getFonts().Secondary,
   },
   centeredContainer: {
     justifyContent: "center",
@@ -377,7 +383,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontFamily: "Avenir",
+    fontFamily: res.getFonts().Secondary,
     fontSize: 20,
     fontWeight: "900",
   },

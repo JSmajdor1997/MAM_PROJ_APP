@@ -147,7 +147,7 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
 
       <View style={styles.bottomContainer}>
         <View style={styles.switchModeContainer}>
-          <Text style={{ color: res.getColors().Beige }}>
+          <Text style={{ color: res.getColors().Beige, fontFamily: res.getFonts().Secondary }}>
             {mode == Mode.SignUp ? res.getStrings().Screens.LoginScreen.AlreadyHaveAccountQuestion : res.getStrings().Screens.LoginScreen.DontYouHaveAccountQuestion}
           </Text>
           <TouchableOpacity onPress={() => setMode(mode == Mode.Login ? Mode.SignUp : Mode.Login)}>
@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 15,
     color: res.getColors().DarkBeige,
+    fontFamily: res.getFonts().Secondary,
   },
   submitButton: {
     borderRadius: 50,
@@ -239,5 +240,6 @@ const styles = StyleSheet.create({
   login: {
     marginLeft: 8,
     color: res.getColors().White,
+    fontFamily: res.getFonts().Secondary,
   },
 });

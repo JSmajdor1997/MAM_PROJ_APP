@@ -71,7 +71,7 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                                 style={styles.locationInput}
                                 apiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                                 userLocation={userLocation}
-                                onLocationChanged={(latLng, asText) => setWorkingDumpster({ ...workingDumpster, place: { coords: latLng, asText } })}
+                                onLocationChanged={place => setWorkingDumpster({ ...workingDumpster, place })}
                                 location={workingDumpster.place ?? {
                                     coords: userLocation,
                                     asText: "Obecna"
@@ -157,7 +157,8 @@ const styles = StyleSheet.create({
         padding: 10
     },
     sectionTitle: {
-        fontWeight: "bold"
+        fontWeight: "bold",
+        fontFamily: res.getFonts().Secondary
     },
     descriptionInput: {
         backgroundColor: res.getColors().Beige,
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
         minHeight: 100,
         borderRadius: 15,
         fontWeight: "400",
-        fontFamily: "Avenir",
+        fontFamily: res.getFonts().Secondary,
         letterSpacing: 2
     },
     addedByContainer: {
@@ -173,7 +174,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between"
     },
-    addedByText: {},
+    addedByText: {
+        fontFamily: res.getFonts().Secondary
+    },
     photosContainer: {},
     photosSection: {
         flex: 1,
@@ -185,5 +188,7 @@ const styles = StyleSheet.create({
     addButton: {
         padding: 10
     },
-    addButtonText: {}
+    addButtonText: {
+        fontFamily: res.getFonts().Secondary
+    }
 });

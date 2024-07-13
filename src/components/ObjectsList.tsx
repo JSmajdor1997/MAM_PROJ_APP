@@ -114,18 +114,10 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     }, [phrase]);
 
     const renderFooter = () => {
-        if (isLoading) {
-            return (
-                <View style={{ width: "100%", height: 50, justifyContent: "center", alignItems: "center" }}>
-                    <Spinner type="FadingCircle" color={res.getColors().Primary} />
-                </View>
-            );
-        }
-
         if (!data.hasMore) {
             return (
                 <View>
-                    <Text>{res.getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
+                    <Text style={{fontFamily: res.getFonts().Secondary}}>{res.getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
                 </View>
             );
         }
@@ -170,7 +162,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 keyExtractor={(item) => (item as any).id.toString()}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}><Text>Brak wyników</Text></View>}
+                ListEmptyComponent={<View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}><Text style={{fontFamily: res.getFonts().Secondary}}>Brak wyników</Text></View>}
                 ListFooterComponent={renderFooter}
                 data={data.items}
             />

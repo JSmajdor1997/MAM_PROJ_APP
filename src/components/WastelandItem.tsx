@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     fontWeight: "bold",
     fontSize: 10,
+    fontFamily: res.getFonts().Secondary
   },
   textContainer: {
     flex: 1,
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     flex: 1,
-    fontFamily: "Avenir",
+    fontFamily: res.getFonts().Secondary,
     fontWeight: "900",
     letterSpacing: 1,
     textAlign: "right",
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     marginRight: 5,
     fontWeight: "500",
+    fontFamily: res.getFonts().Secondary
   },
   cleanedBanner: {
     justifyContent: "center",
@@ -160,9 +162,9 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "22deg" }, { scale: 1.2 }],
   },
   cleanedText: {
-    fontFamily: "Avenir",
     letterSpacing: 1,
     fontWeight: "400",
     marginHorizontal: 10,
+    fontFamily: res.getFonts().Secondary
   },
 });

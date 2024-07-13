@@ -20,6 +20,7 @@ export interface Props {
 
 export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
     const [isLoading, setIsLoading] = React.useState(false)
+    const [event, setEvent] = React.useState<WisbEvent | null>(null)
 
     const { shake, translationX } = useShaky({
         durationMs: 40,
@@ -52,7 +53,7 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
                                 setIsLoading(false)
 
                                 if (event != null) {
-                                    onEvent(event)
+                                    setEvent(event)
                                 } else {
                                     shake()
                                 }
@@ -68,11 +69,11 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
                     <View style={styles.flexOne} />
 
                     <View style={styles.descriptionContainer}>
-                        <Text style={styles.descriptionText}>Sprzątanie Gliwic, Gliwice Zimnej Wody 15</Text>
+                        <Text style={styles.descriptionText}>{event?.description}</Text>
                     </View>
 
                     <TouchableOpacity style={styles.okButton} onPress={onDismiss}>
-                        <Text>OK</Text>
+                        <Text style={{fontFamily: res.getFonts().Secondary}}>OK</Text>
                     </TouchableOpacity>
                 </Animated.View>
             </Pressable>
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     descriptionText: {
         fontWeight: "400",
         letterSpacing: 1,
-        fontFamily: "Avenir"
+        fontFamily: res.getFonts().Secondary
     },
     okButton: {
         padding: 10

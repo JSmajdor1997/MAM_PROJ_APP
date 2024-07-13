@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   description: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Avenir",
+    fontFamily: res.getFonts().Secondary,
     fontWeight: "900",
     letterSpacing: 1,
     textAlign: "right",
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 8,
     marginRight: 5,
-    fontWeight: '500'
+    fontWeight: '500',
+    fontFamily: res.getFonts().Secondary
   }
 })

@@ -68,8 +68,11 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
 
 const styles = StyleSheet.create({
   dialogStyle: {
+    borderRadius: 25,
+    paddingTop: 10,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
+    overflow: "hidden",
     top: 140,
     bottom: 0,
     height: Dimensions.get("screen").height - 140,

@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingRight: 12,
         paddingLeft: 6,
+        fontFamily: res.getFonts().Secondary
     },
     clearButton: {
         paddingLeft: 4, paddingTop: 4, paddingBottom: 4

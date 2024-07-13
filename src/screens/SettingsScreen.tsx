@@ -58,7 +58,7 @@ export default function SettingsScreen({ route: { params: { navigate } } }: Prop
           label='Język'
           selectedValue={settings.languageCode}
           onSelected={item => res.setSettings({ languageCode: item.value })}
-          data={res.getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text>{language.flagEmoji}</Text>, value: language.code }))}
+          data={res.getSupportedLanguages().map(language => ({ label: language.nativeName, icon: () => <Text style={{fontFamily: res.getFonts().Secondary}}>{language.flagEmoji}</Text>, value: language.code }))}
           icon={<FontAwesomeIcon icon={faLanguage} size={20} color={res.getColors().Green} />} />
         <BooleanItem label='Powiadomienia o nowych wydarzeniach' icon={<WisbIcon icon={IconType.Calendar} size={20} />} value={settings.notifications.newEventInArea} onValueChanged={item => res.setSettings({ notifications: { newEventInArea: item } })} />
         <BooleanItem label='Powiadomienia o nowych śmietnikach' icon={<WisbIcon icon={IconType.Dumpster} size={20} />} value={settings.notifications.newDumpsterInArea} onValueChanged={item => res.setSettings({ notifications: { newDumpsterInArea: item } })} />
@@ -158,7 +158,7 @@ function DropDownItem<T extends { label: string, value: string, icon?: () => JSX
         value={selectedValue}
         labelField={"label"}
         valueField={"value"}
-        renderItem={(item) => <View><Text>{item.label}</Text></View>}
+        renderItem={(item) => <View><Text style={{fontFamily: res.getFonts().Secondary,}}>{item.label}</Text></View>}
         onChange={onSelected} />
     </ItemTemplate>
   )
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   locationText: {
     marginLeft: 10,
     fontWeight: "800",
-    fontFamily: "Avenir",
+    fontFamily: res.getFonts().Secondary,
     letterSpacing: 0.5,
     fontSize: 13,
     color: res.getColors().DarkBeige
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     maxWidth: 100,
     fontWeight: "800",
-    fontFamily: "Avenir",
+    fontFamily: res.getFonts().Secondary,
     letterSpacing: 0.5,
     fontSize: 13,
     color: res.getColors().DarkBeige

@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
     },
     label: {
         textAlign: 'center',
-        letterSpacing: 1
+        letterSpacing: 1,
+        fontFamily: res.getFonts().Secondary
     }
 })

@@ -65,6 +65,7 @@ export default function Avatar({ colors, onPress, size, fontSize, image, style, 
           style={{
             ...styles.initialsText,
             fontSize: fontSize,
+            fontFamily: res.getFonts().Secondary
           }}>
           {getInitials(username)}
         </Text>

@@ -116,7 +116,8 @@ const styles = StyleSheet.create({
   mapPinText: {
     fontSize: 8,
     marginLeft: 5,
-    fontWeight: '500'
+    fontWeight: '500',
+    fontFamily: res.getFonts().Secondary
   },
   adminContainer: {
     position: "absolute",
@@ -133,7 +134,8 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontWeight: '900',
     letterSpacing: 1,
-    color: res.getColors().Red
+    color: res.getColors().Red,
+    fontFamily: res.getFonts().Secondary
   },
   infoContainer: {
     height: 40,
@@ -149,7 +151,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '400',
     fontSize: 14,
-    textTransform: "capitalize"
+    textTransform: "capitalize",
+    fontFamily: res.getFonts().Secondary
   },
   dateContainer: {
     flexDirection: "row",
@@ -159,6 +162,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 8,
     marginRight: 5,
-    fontWeight: '500'
+    fontWeight: '500',
+    fontFamily: res.getFonts().Secondary
   }
 })

@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { Neomorph } from "react-native-neomorph-shadows-fixes";
 import Resources from "../../res/Resources";
 import getAPI from "../API/getAPI";
@@ -11,7 +11,7 @@ export interface Props {
   item: WisbUser
   position?: number
   onPress?: () => void
-  style?: React.CSSProperties
+  style?: Omit<ViewStyle, "width" | "height" | "borderRadius" | "backgroundColor">
   widthCoeff: number
 }
 
@@ -22,7 +22,7 @@ export default function UserItem({ item, position, style, onPress, widthCoeff }:
     <TouchableOpacity
       onPress={onPress}
       style={{ flexDirection: "row", borderRadius: 15, alignItems: "center" }}>
-      {position != null ? <Text style={{ ...styles.placeText, paddingRight: 10, marginTop: 10, fontFamily: "Avenir", fontWeight: "500" }}>
+      {position != null ? <Text style={{ ...styles.placeText, paddingRight: 10, marginTop: 10, fontFamily: res.getFonts().Secondary, fontWeight: "500" }}>
         {position}
       </Text> : null}
       <Neomorph
@@ -38,7 +38,8 @@ export default function UserItem({ item, position, style, onPress, widthCoeff }:
           backgroundColor: "#EEE",
           alignItems: 'center',
           justifyContent: 'space-between',
-          width: Dimensions.get("window").width * widthCoeff
+          width: Dimensions.get("window").width * widthCoeff,
+          ...style
         }}
       >
         <View style={styles.userInfo}>
@@ -69,6 +70,7 @@ const styles = StyleSheet.create({
   nameText: {
     marginHorizontal: 15,
     fontSize: 17,
+    fontFamily: res.getFonts().Secondary
   },
   placeText: {
     fontSize: 15,
@@ -79,6 +81,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
     fontSize: 17,
     fontWeight: 'bold',
+    fontFamily: res.getFonts().Secondary
   },
   avatar: {
     height: 30,

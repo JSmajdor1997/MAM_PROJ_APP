@@ -165,7 +165,8 @@ export default class Resources {
 
     getFonts() {
         return {
-            Primary: "leafy"
+            Primary: "leafy",
+            Secondary: "Avenir"
         }
     }
 
