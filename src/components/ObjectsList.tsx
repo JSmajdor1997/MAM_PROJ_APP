@@ -14,6 +14,7 @@ import DumpsterItem from "./DumpsterItem";
 import EventItem from "./EventItem";
 import UserItem from "./UserItem";
 import WastelandItem from "./WastelandItem";
+import WisbFlatList from "./WisbFlatList";
 
 const res = Resources.get();
 
@@ -117,7 +118,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
         if (!data.hasMore) {
             return (
                 <View>
-                    <Text style={{fontFamily: res.getFonts().Secondary}}>{res.getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
+                    <Text style={{ fontFamily: res.getFonts().Secondary }}>{res.getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
                 </View>
             );
         }
@@ -145,7 +146,9 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
 
     return (
         <View style={[{ flex: 1 }, style]}>
-            <FlatList
+            <WisbFlatList
+                isLoading={false}
+                hasMore={false}
                 ref={flatListRef}
                 onEndReached={() => {
                     if (data.hasMore) {
@@ -162,7 +165,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
                 keyExtractor={(item) => (item as any).id.toString()}
                 showsHorizontalScrollIndicator={false}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}><Text style={{fontFamily: res.getFonts().Secondary}}>Brak wyników</Text></View>}
+                ListEmptyComponent={<View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}><Text style={{ fontFamily: res.getFonts().Secondary }}>Brak wyników</Text></View>}
                 ListFooterComponent={renderFooter}
                 data={data.items}
             />

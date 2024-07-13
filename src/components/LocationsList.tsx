@@ -7,6 +7,7 @@ import searchPlaces, { Place } from "../utils/GooglePlacesAPI/searchPlaces"
 import LocationItem from "./inputs/LocationItem"
 import { LatLng } from "react-native-maps"
 import GeoHelper from "../utils/GeoHelper"
+import WisbFlatList from "./WisbFlatList"
 
 const res = Resources.get()
 
@@ -46,7 +47,9 @@ export default function LocationsList({ phrase, style, apiKey, userLocation, onS
     }, [phrase])
 
     return (
-        <FlatList
+        <WisbFlatList<Place>
+            isLoading={false}
+            hasMore={false}
             style={{ width: "100%", backgroundColor: "white", height: "100%", ...style }}
             data={places}
             keyExtractor={place => place.id}

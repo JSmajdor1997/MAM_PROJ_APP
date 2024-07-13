@@ -8,6 +8,8 @@ enum IconType {
     Dumpster = require('../../../res/images/recycle-bin.png'),
     MapPin = require('../../../res/images/map-pin.png'),
     Crown = require('../../../res/images/crown.png'),
+    EmptyList = require('../../../res/images/empty_list_icon.png'),
+    NoMoreItems = require('../../../res/images/no_more_items.png'),
 }
 
 export default IconType

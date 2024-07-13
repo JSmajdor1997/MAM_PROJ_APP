@@ -23,6 +23,7 @@ import GeoHelper from '../utils/GeoHelper';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 import QueryInput from '../components/inputs/QueryInput';
+import Sraka from '../components/WisbFlatList';
 const map_style = require('../../res/map_style.json');
 
 const api = getAPI()
