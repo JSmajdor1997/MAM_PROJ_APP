@@ -150,16 +150,16 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
 
       <View style={styles.emailContainer}>
         <View style={styles.emailSubContainer}>
-          <FontAwesomeIcon icon={faAt} size={18} />
+          <FontAwesomeIcon icon={faAt} size={14} />
           <Text style={styles.emailText}>
             {user.email}
           </Text>
         </View>
         <View style={styles.rankContainer}>
+          <WisbIcon icon={IconType.Crown} size={12} />
           <Text style={styles.rankText}>
             {api.calculateUserRank(user)}
           </Text>
-          <WisbIcon icon={IconType.Crown} size={12} />
         </View>
       </View>
 
@@ -295,11 +295,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   rankContainer: {
+    marginTop: 5,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: "space-between"
   },
   rankText: {
-    marginRight: 6,
+    fontSize: 12,
     fontWeight: 'bold',
     fontFamily: res.getFonts().Secondary,
   },

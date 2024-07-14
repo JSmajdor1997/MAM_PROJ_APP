@@ -27,6 +27,8 @@ import ModificatorType from '../components/WisbIcon/ModificatorType';
 import WisbIcon from "../components/WisbIcon/WisbIcon";
 import useShaky from '../hooks/useShaky';
 import ProgressInput from '../components/inputs/ProgressInput';
+import { CRUD, Notification, isObjectCRUDNotification } from '../API/notifications';
+import Toast from 'react-native-simple-toast';
 
 const res = Resources.get()
 const api = getAPI()
@@ -67,6 +69,7 @@ type ObjectType = WisbObjectType.Dumpster | WisbObjectType.Wasteland | WisbObjec
 
 export interface Props<Type extends ObjectType> {
     type: Type
+    id: number | null
     workingItem: Partial<TypeMap<Type>>
     mode: Mode
     currentUser: WisbUser
@@ -81,6 +84,8 @@ export interface Props<Type extends ObjectType> {
     actions?: Action<Type>[]
 
     onModeChanged: (newMode: Mode) => void
+
+    onItemUpdated: (obj: Partial<TypeMap<Type>>) => void
 }
 
 const ShakeOffset = 15
@@ -97,7 +102,7 @@ function isAllowedToManage(user: WisbUser, item: Partial<WisbDumpster | WisbEven
     } else return false
 }
 
-export default function WisbDialog<Type extends ObjectType>({ currentUser, type, workingItem, mode, onDismiss, visible, sections, actions, mainIcon, onModeChanged }: Props<Type>) {
+export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated, currentUser, type, workingItem, mode, onDismiss, visible, sections, actions, mainIcon, onModeChanged }: Props<Type>) {
     const shadowAnim = React.useRef(new Animated.Value(0)).current;
     const swiperRef = React.useRef<Swiper>(null)
     const [currentIndex, setCurrentIndex] = React.useState<number>(0)
@@ -105,6 +110,27 @@ export default function WisbDialog<Type extends ObjectType>({ currentUser, type,
     const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
     const [isBlocked, setIsBlocked] = React.useState(false)
     const [loadingMessage, setLoadingMessage] = React.useState<string | null>(null)
+
+    React.useEffect(()=>{
+        const listener = (n: Notification) => {
+            if(isObjectCRUDNotification(n)) {
+                if(n.action == CRUD.Deleted) {
+                    Toast.show(`Obiekt został usunięty przez innego użytkownika!`, Toast.SHORT);
+                    onDismiss()
+                } else if(n.action == CRUD.Updated) {
+                    onItemUpdated(n.updatedFields)
+                }
+            }
+        }
+
+        if((mode == Mode.Editing || mode == Mode.Viewing) && id != null) {
+            api.notifications.registerListener(listener, {observedIds: [{type, id}]})
+        }
+
+        return ()=>{
+            api.notifications.unregisterListener(listener)
+        }
+    }, [id, type, mode])
 
     const { shake, translationX } = useShaky({
         durationMs: ShakingDuration,

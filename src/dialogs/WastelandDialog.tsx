@@ -53,6 +53,8 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
 
     return (
         <WisbDialog
+            onItemUpdated={update => setWorkingWasteland({ ...workingWasteland, ...update })}
+            id={workingWasteland.id ?? null}
             type={WisbObjectType.Wasteland}
             visible={visible}
             mainIcon={IconType.WastelandIcon}
@@ -177,7 +179,7 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                     })
                                 }
                             }}>
-                                <Text style={{fontFamily: res.getFonts().Secondary}}>DODAJ</Text>
+                                <Text style={{ fontFamily: res.getFonts().Secondary }}>DODAJ</Text>
                             </TouchableOpacity>
                         </View>
                     )

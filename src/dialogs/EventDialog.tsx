@@ -68,6 +68,8 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
 
     return (
         <WisbDialog
+            onItemUpdated={update => setWorkingEvent({ ...workingEvent, ...update })}
+            id={workingEvent.id ?? null}
             type={WisbObjectType.Event}
             currentUser={currentUser}
             onModeChanged={setMode}
@@ -206,7 +208,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                     enabled: () => workingEvent.wastelands != null && workingEvent.wastelands.length > 0,
                     icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().DarkBeige, name: res.getStrings().Dialogs.EventDialog.WastelandsLabel, renderPage: (props, index) => (
                         <View key={index} style={styles.wastelandsContainer}>
-                            <Text style={{fontFamily: res.getFonts().Secondary}}>Co sprzątamy?</Text>
+                            <Text style={{ fontFamily: res.getFonts().Secondary }}>Co sprzątamy?</Text>
 
                             {mode == Mode.Adding ? <SearchBar
                                 phrase={phrase}
@@ -250,7 +252,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                     enabled: () => true,
                     icon: <FontAwesomeIcon icon={faPerson} />, color: res.getColors().Purple, name: res.getStrings().Dialogs.EventDialog.MembersLabel, renderPage: (props, index) => (
                         <View key={index} style={styles.membersContainer}>
-                            <Text style={{fontFamily: res.getFonts().Secondary}}>Zaproś uczestników</Text>
+                            <Text style={{ fontFamily: res.getFonts().Secondary }}>Zaproś uczestników</Text>
 
                             {mode == Mode.Adding ? <SearchBar
                                 phrase={phrase}
@@ -314,7 +316,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
 
                         return (
                             <View key={index} style={styles.sharingContainer}>
-                                <Text style={{fontFamily: res.getFonts().Secondary}}>{res.getStrings().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
+                                <Text style={{ fontFamily: res.getFonts().Secondary }}>{res.getStrings().Dialogs.EventDialog.InviteMorePeopleMessage}</Text>
 
                                 <View style={styles.qrCodeContainer}>
                                     <QRCode color={res.getColors().Blue} value="AAA123" />
@@ -348,128 +350,129 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
 
 const styles = StyleSheet.create({
     basicInfoContainer: {
-        flex: 1, 
-        padding: 10 
+        flex: 1,
+        padding: 10
     },
     basicInfoHeader: {
-        flexDirection: "row", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
-        height: 120 
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        height: 120
     },
     imageInput: {
-        height: "100%", 
-        aspectRatio: 1 
+        height: "100%",
+        aspectRatio: 1
     },
     nameContainer: {
-        flex: 1, 
-        justifyContent: "center", 
-        height: "100%", 
-        alignItems: "center" 
+        flex: 1,
+        justifyContent: "center",
+        height: "100%",
+        alignItems: "center"
     },
     nameInput: {
-        fontSize: 20, 
-        padding: 2, 
-        textAlign: "center", 
-        fontWeight: "500", 
-        letterSpacing: 1, 
-        fontStyle: "italic", 
+        fontSize: 20,
+        padding: 2,
+        textAlign: "center",
+        fontWeight: "500",
+        letterSpacing: 1,
+        fontStyle: "italic",
         fontFamily: res.getFonts().Secondary,
-        backgroundColor: res.getColors().DarkBeige, 
-        width: "100%", 
-        marginLeft: 4, 
-        borderRadius: 15 
+        backgroundColor: res.getColors().DarkBeige,
+        width: "100%",
+        marginLeft: 4,
+        borderRadius: 15
     },
     createdByText: {
-        position: "absolute", 
-        right: 5, 
-        bottom: 5, 
+        position: "absolute",
+        right: 5,
+        bottom: 5,
         fontSize: 12,
         fontFamily: res.getFonts().Secondary
     },
     dateTimeContainer: {
-        flexDirection: "row", 
-        justifyContent: "space-around", 
-        marginTop: 10 
+        flexDirection: "column",
+        justifyContent: "space-around",
+        marginTop: 10
     },
     dateTimeRow: {
-        justifyContent: "space-around", 
-        flexDirection: "row", 
-        alignItems: "center" 
+        justifyContent: "space-around",
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 5
     },
     clockIcon: {
-        flex: 1 
+        flex: 1
     },
     dateTimeLabel: {
-        fontSize: 12, 
+        fontSize: 12,
         fontFamily: res.getFonts().Secondary,
-        marginTop: 3, 
-        marginLeft: 10 
+        marginTop: 3,
+        marginLeft: 10
     },
     textField: {
         overflow: "hidden",
-        marginTop: 10, 
-        backgroundColor: res.getColors().Beige, 
-        padding: 5, 
-        borderRadius: 15, 
-        fontWeight: "400", 
+        marginTop: 10,
+        backgroundColor: res.getColors().Beige,
+        padding: 5,
+        borderRadius: 15,
+        fontWeight: "400",
         fontFamily: res.getFonts().Secondary,
-        letterSpacing: 2 
+        letterSpacing: 2
     },
     meetPlaceContainer: {
-        flex: 1, 
-        padding: 15 
+        flex: 1,
+        padding: 15
     },
     locationInput: {
-        width: "100%", 
-        height: 300 
+        width: "100%",
+        height: 300
     },
     wastelandsContainer: {
-        flex: 1, 
-        minHeight: 50 
+        flex: 1,
+        minHeight: 50
     },
     membersContainer: {
-        flex: 1 
+        flex: 1
     },
     addButtonContainer: {
-        justifyContent: "center", 
-        alignItems: "center", 
-        flex: 1 
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1
     },
     addButton: {
-        padding: 10, 
-        borderRadius: 15, 
-        backgroundColor: res.getColors().Beige 
+        padding: 10,
+        borderRadius: 15,
+        backgroundColor: res.getColors().Beige
     },
     addButtonText: {
-        fontWeight: "bold", 
-        fontSize: 25, 
-        color: res.getColors().Primary ,
+        fontWeight: "bold",
+        fontSize: 25,
+        color: res.getColors().Primary,
         fontFamily: res.getFonts().Secondary
     },
     sharingContainer: {
-        flex: 1 
+        flex: 1
     },
     qrCodeContainer: {
-        justifyContent: "center", 
-        alignItems: "center", 
-        flex: 2 
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 2
     },
     shareButtonContainer: {
-        flex: 1, 
-        justifyContent: "center", 
-        alignItems: "center" 
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
     },
     shareButton: {
-        backgroundColor: res.getColors().DarkBeige, 
-        padding: 20, 
-        borderRadius: 15 
+        backgroundColor: res.getColors().DarkBeige,
+        padding: 20,
+        borderRadius: 15
     },
     shareButtonText: {
-        fontFamily: res.getFonts().Secondary, 
-        color: "white", 
-        fontWeight: "600", 
-        letterSpacing: 1, 
-        fontSize: 15 
+        fontFamily: res.getFonts().Secondary,
+        color: "white",
+        fontWeight: "600",
+        letterSpacing: 1,
+        fontSize: 15
     }
 });

@@ -53,6 +53,8 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
 
     return (
         <WisbDialog
+            id={workingDumpster.id ?? null}
+            onItemUpdated={update => setWorkingDumpster({...workingDumpster, ...update})}
             currentUser={currentUser}
             type={WisbObjectType.Dumpster}
             workingItem={workingDumpster}
