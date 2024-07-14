@@ -1312,6 +1312,27 @@ PODS:
     - React-Core
     - SDWebImage (~> 5.11.1)
     - SDWebImageWebPCoder (~> 0.8.4)
+  - RNGestureHandler (2.17.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNLocalize (3.2.0):
     - React-Core
   - RNPermissions (4.1.5):
@@ -1339,8 +1360,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - RNShare (10.2.1):
-    - React-Core
-  - RNSnackbar (2.6.2):
     - React-Core
   - RNSVG (15.3.0):
     - React-Core
@@ -1429,11 +1448,11 @@ DEPENDENCIES:
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../node_modules/react-native-fast-image`)
+  - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
-  - RNSnackbar (from `../node_modules/react-native-snackbar`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -1595,6 +1614,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
     :path: "../node_modules/react-native-fast-image"
+  RNGestureHandler:
+    :path: "../node_modules/react-native-gesture-handler"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
   RNPermissions:
@@ -1603,8 +1624,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNShare:
     :path: "../node_modules/react-native-share"
-  RNSnackbar:
-    :path: "../node_modules/react-native-snackbar"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -1688,11 +1707,11 @@ SPEC CHECKSUMS:
   RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
   RNDateTimePicker: 430174392d275f0ffefb627d04f0f8677f667fed
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
+  RNGestureHandler: 8dbcccada4a7e702e7dec9338c251b1cf393c960
   RNLocalize: b77875884750cb6a58cd6865863fe2ba2729b72b
   RNPermissions: 5a2dafe37c8e0a3fa1d6e0783a1490b1b7fd92d6
   RNScreens: b32a9ff15bea7fcdbe5dff6477bc503f792b1208
   RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
-  RNSnackbar: 3727b42bf6c4314a53c18185b5203e915a4ab020
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d

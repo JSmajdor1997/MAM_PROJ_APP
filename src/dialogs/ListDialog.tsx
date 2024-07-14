@@ -9,9 +9,9 @@ import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
 import { SimplePlace, WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from '../API/interfaces';
 import { isUser } from '../API/type_guards';
-import ObjectsList from '../components/ObjectsList';
+import LocationsList from '../components/lists/LocationsList';
+import ObjectsList from '../components/lists/ObjectsList';
 import Dialog, { Position } from './Dialog';
-import LocationsList from '../components/LocationsList';
 
 const res = Resources.get()
 
@@ -42,15 +42,16 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       dialogStyle={styles.dialogStyle}
       dismissOnBackdropPress={false}>
       <View style={styles.container}>
-        <LocationsList
-          userLocation={userLocation}
-          maxNrOfPlaces={3}
-          phrase={query.phrase}
-          style={{ width: "100%", backgroundColor: "white", height: "100%" }}
-          apiKey={googleMapsApiKey}
-          onSelected={onPlaceSelected} />
-
         <ObjectsList
+          ListHeaderComponent={(
+            <LocationsList
+              userLocation={userLocation}
+              maxNrOfPlaces={4}
+              phrase={query.phrase}
+              style={{ width: "100%", height: 150, maxHeight: 150 }}
+              apiKey={googleMapsApiKey}
+              onSelected={onPlaceSelected} />
+          )}
           type={query.type}
           multi={false}
           onPressed={(item: WisbEvent | WisbWasteland | WisbDumpster | WisbUser) => {
@@ -69,7 +70,6 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
 const styles = StyleSheet.create({
   dialogStyle: {
     borderRadius: 25,
-    paddingTop: 10,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     overflow: "hidden",

@@ -1,22 +1,17 @@
-import React, { useEffect, useRef, useState } from "react";
-import { FlatList, ListRenderItemInfo, StyleSheet, Text, View, ViewStyle } from "react-native";
+import React, { ComponentType, JSXElementConstructor, ReactElement, useEffect, useRef, useState } from "react";
+import { FlatList, ListRenderItemInfo, View, ViewStyle } from "react-native";
 import CheckBox from 'react-native-check-box';
-import { LatLng } from "react-native-maps";
 import Toast from 'react-native-simple-toast';
-import Spinner from "react-native-spinkit";
-import Resources from "../../res/Resources";
-import { QueryMap, TypeMap } from "../API/API";
-import WisbObjectType from "../API/WisbObjectType";
-import getAPI from "../API/getAPI";
-import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../API/interfaces";
-import { isDumpster, isEvent, isUser, isWasteland } from "../API/type_guards";
-import DumpsterItem from "./DumpsterItem";
-import EventItem from "./EventItem";
-import UserItem from "./UserItem";
-import WastelandItem from "./WastelandItem";
+import { QueryMap, TypeMap } from "../../API/API";
+import WisbObjectType from "../../API/WisbObjectType";
+import getAPI from "../../API/getAPI";
+import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from "../../API/interfaces";
+import { isDumpster, isEvent, isUser, isWasteland } from "../../API/type_guards";
+import DumpsterItem from "../DumpsterItem";
+import EventItem from "../EventItem";
+import UserItem from "../UserItem";
+import WastelandItem from "../WastelandItem";
 import WisbFlatList from "./WisbFlatList";
-
-const res = Resources.get();
 
 export type Multiple<MultiSelect extends boolean, T> = MultiSelect extends true ? T[] : T;
 
@@ -38,6 +33,7 @@ export interface Props<MultiSelect extends boolean, ItemType extends WisbObjectT
     phrase?: string;
     currentUser: WisbUser;
     googleMapsAPIKey: string
+    ListHeaderComponent?: ComponentType<any> | ReactElement<any, string | JSXElementConstructor<any>> | null
 }
 
 const PageSize = 10;
@@ -54,7 +50,8 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     phrase,
     selectedItemsIds,
     googleMapsAPIKey,
-    filter
+    filter,
+    ListHeaderComponent
 }: Props<MultiSelect, ItemType>) {
     const flatListRef = useRef<FlatList>(null);
 
@@ -98,7 +95,7 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
         setIsLoading(false);
 
         if (index != 0) {
-            flatListRef.current?.scrollToOffset({ animated: true, offset: 0 });
+            flatListRef.current?.scrollToEnd({ animated: true });
         }
     };
 
@@ -113,18 +110,6 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     useEffect(() => {
         updateItems(0);
     }, [phrase]);
-
-    const renderFooter = () => {
-        if (!data.hasMore) {
-            return (
-                <View>
-                    <Text style={{ fontFamily: res.getFonts().Secondary }}>{res.getStrings().Dialogs.ListDialog.NoMoreDataMessage}</Text>
-                </View>
-            );
-        }
-
-        return null;
-    };
 
     const renderItem = ({ item }: ListRenderItemInfo<TypeMap<WisbObjectType>>) => (
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -145,33 +130,27 @@ export default function ObjectsList<MultiSelect extends boolean, ItemType extend
     );
 
     return (
-        <View style={[{ flex: 1 }, style]}>
-            <WisbFlatList
-                isLoading={false}
-                hasMore={false}
-                ref={flatListRef}
-                onEndReached={() => {
-                    if (data.hasMore) {
-                        updateItems(data.index + 1);
-                    }
-                }}
-                onEndReachedThreshold={0.5}
-                initialNumToRender={PageSize}
-                maxToRenderPerBatch={PageSize}
-                extraData={data.items}
-                removeClippedSubviews
-                style={{ flex: 1 }}
-                renderItem={renderItem}
-                keyExtractor={(item) => (item as any).id.toString()}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}><Text style={{ fontFamily: res.getFonts().Secondary }}>Brak wyników</Text></View>}
-                ListFooterComponent={renderFooter}
-                data={data.items}
-            />
-            {isLoading && <View style={[{ backgroundColor: "#00000055", justifyContent: "center", alignItems: "center" }, StyleSheet.absoluteFillObject]}>
-                <Spinner type="FadingCircle" color={res.getColors().Primary} size={80} />
-            </View>}
-        </View>
+        <WisbFlatList
+            isLoading={isLoading}
+            ListHeaderComponent={ListHeaderComponent}
+            hasMore={data.hasMore}
+            ref={flatListRef}
+            onEndReached={() => {
+                if (data.hasMore) {
+                    updateItems(data.index + 1);
+                }
+            }}
+            onEndReachedThreshold={0.5}
+            initialNumToRender={PageSize}
+            maxToRenderPerBatch={PageSize}
+            extraData={data.items}
+            removeClippedSubviews
+            style={{ flex: 1, ...style }}
+            renderItem={renderItem}
+            keyExtractor={(item) => (item as any).id.toString()}
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+            data={data.items}
+        />
     );
 }

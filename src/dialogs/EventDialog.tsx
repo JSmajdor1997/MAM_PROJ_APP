@@ -16,7 +16,7 @@ import { isObjectCRUDNotification } from "../API/notifications";
 import { isEvent, isUser, isWasteland } from "../API/type_guards";
 import ImageInput from "../components/inputs/ImageInput";
 import LocationInput from "../components/inputs/LocationInput";
-import ObjectsList from "../components/ObjectsList";
+import ObjectsList from "../components/lists/ObjectsList";
 import IconType from "../components/WisbIcon/IconType";
 import WisbDialog, { Mode } from "./WisbDialog";
 import SearchBar from "../components/inputs/SearchBar";

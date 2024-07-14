@@ -18,12 +18,12 @@ import { SimplePlace, WisbDumpster, WisbEvent, WisbWasteland } from '../API/inte
 import { Notification } from '../API/notifications';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
+import QueryInput from '../components/inputs/QueryInput';
+import NotificationsList from '../components/lists/NotificationsList';
 import ListDialog from '../dialogs/ListDialog';
 import GeoHelper from '../utils/GeoHelper';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
-import QueryInput from '../components/inputs/QueryInput';
-import Sraka from '../components/WisbFlatList';
 const map_style = require('../../res/map_style.json');
 
 const api = getAPI()
@@ -49,9 +49,10 @@ interface Query {
   type: WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland
 }
 
-export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser } } }: Props) {
+export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser, navigate } } }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
   const mapRef = React.useRef<MapView>(null)
+  const [isNotificationsListExpanded, setIsNotificationsListExpanded] = React.useState(false)
   const [displayedRegion, setDisplayedRegion] = React.useState(InitialRegion)
   const [isReverseGeocoding, setIsReverseGeocoding] = React.useState(true)
   const [currentLocationAsText, setCurrentLocationAsText] = React.useState<string | null>(null)
@@ -312,6 +313,20 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             }
           ]}
         />
+        {!isSearchDialogVisible ? <NotificationsList
+          expanded={isNotificationsListExpanded}
+          onExpandedChange={setIsNotificationsListExpanded}
+          userPosition={userPosition}
+          style={{ marginBottom: 4, marginTop: -6, width: "100%" }}
+          onOpenChat={async id=>{
+            const event = await api.getOne(id)
+            navigate.go(WisbScreens.ChatScreen, {event: event.data})
+          }}
+          onItemSelected={async id=>{
+            const event = await api.getOne(id)
+
+            onItemSelected(event.data!)
+          }} /> : null}
       </View>
 
       <ListDialog
@@ -354,7 +369,6 @@ const styles = StyleSheet.create({
     backgroundColor: res.getColors().White,
     borderRadius: 10,
     marginHorizontal: 10,
-    flexDirection: 'row',
     alignItems: 'center',
     position: 'absolute',
   },

@@ -25,7 +25,6 @@ import Avatar from '../components/Avatar';
 import UserItem from '../components/UserItem';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
-import InvitationsDialog from '../dialogs/InvitationsDialog';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 
 const res = Resources.get()
@@ -42,8 +41,6 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
   const avatarSectionSize = React.useRef(new Animated.Value(200)).current;
   const [isLoading, setIsLoading] = React.useState(true)
   const [index, setIndex] = React.useState(0)
-
-  const [isInvitationDialogVisible, setIsInvitationDialogVisible] = React.useState(false)
 
   const [user, setUser] = React.useState<WisbUser | null>(api.getCurrentUser())
 
@@ -147,10 +144,6 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
               navigate.go(WisbScreens.SettingsScreen, {})
               setIsMoreMenuVisible(false)
             }}>{res.getStrings().Screens.LeaderBoardScreen.GoToSettings}</MenuItem>
-            <MenuItem onPress={() => {
-              setIsInvitationDialogVisible(true)
-              setIsMoreMenuVisible(false)
-            }}>Zaproszenia</MenuItem>
           </Menu>
         </View>
       </Animated.View>
@@ -177,7 +170,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
           </TouchableOpacity>
 
           <View style={styles.rangeTextContainer}>
-            <Text style={{fontFamily: res.getFonts().Secondary}}>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
+            <Text style={{ fontFamily: res.getFonts().Secondary }}>{index * RecordsPerPage + 1} .. {index * RecordsPerPage + RecordsPerPage}</Text>
           </View>
 
           <TouchableOpacity onPress={() => setIndex(index => index + 1)} style={[styles.navigationButton, data.hasMore ? undefined : styles.disabledNavigationButton]}>
@@ -188,7 +181,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
         <ScrollView style={styles.flexOne} onScroll={e => Animated.timing(avatarSectionSize, { toValue: e.nativeEvent.contentOffset.y > 10 ? 0 : 1, easing: Easing.linear, duration: 100, useNativeDriver: false }).start()}>
           <View style={styles.itemsContainer}>
             {data.items.map((item, i) => (
-              <UserItem 
+              <UserItem
                 widthCoeff={0.9} style={styles.userItem} item={item} position={index * RecordsPerPage + i + 1} key={i} />
             ))}
 
@@ -209,10 +202,8 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
           <View style={styles.bottomSpacer} />
         </ScrollView>
 
-        {data.items.length == 0 ? <Text style={{fontFamily: res.getFonts().Secondary}}>Brak wpisów</Text> : null}
+        {data.items.length == 0 ? <Text style={{ fontFamily: res.getFonts().Secondary }}>Brak wpisów</Text> : null}
       </View>
-
-      <InvitationsDialog visible={isInvitationDialogVisible} onDismiss={() => setIsInvitationDialogVisible(false)} />
 
       {updatedSelfData != null && updatedSelfData.userName != user.userName ? (
         <View style={styles.saveCancelButtonsContainer}>

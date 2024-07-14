@@ -108,7 +108,7 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
           ) : null}
 
           <TouchableOpacity
-            disabled={credentials.email.length == 0 && credentials.password.length == 0}
+            disabled={credentials.email.length == 0 || credentials.password.length == 0}
             onPress={() => {
               const { email, password } = credentials
 

@@ -1,22 +1,19 @@
 import { faChevronDown, faChevronUp, faEarth, faExpand, faLocationArrow } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Animated, Dimensions, Easing, FlatList, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
+import { Animated, Easing, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import { useClickOutside } from "react-native-click-outside";
 import { GoogleStaticMapNext } from "react-native-google-static-map-next";
 import MapView, { LatLng, Marker } from "react-native-maps";
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Resources from "../../../res/Resources";
+import { SimplePlace } from "../../API/interfaces";
 import reverseGeoCode from "../../utils/GooglePlacesAPI/reverseGeoCode";
-import searchPlaces, { Place } from "../../utils/GooglePlacesAPI/searchPlaces";
 import openMapsAndNavigate from "../../utils/openMapsAndNavigate";
 import FAB from "../FAB";
-import LocationItem from "./LocationItem";
 import IconType from "../WisbIcon/IconType";
 import WisbIcon from "../WisbIcon/WisbIcon";
 import SearchBar from "./SearchBar";
-import LocationsList from "../LocationsList";
-import { SimplePlace } from "../../API/interfaces";
+import LocationsList from "../lists/LocationsList";
 
 const res = Resources.get()
 

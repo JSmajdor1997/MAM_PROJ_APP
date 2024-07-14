@@ -10,20 +10,19 @@ import {
   View
 } from 'react-native';
 import { ClickOutsideProvider } from 'react-native-click-outside';
-import Snackbar from 'react-native-snackbar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Resources from './res/Resources';
 import WisbObjectType from './src/API/WisbObjectType';
 import getAPI from './src/API/getAPI';
 import { WisbDumpster, WisbEvent, WisbUser, WisbWasteland } from './src/API/interfaces';
-import { CRUD, Notification, isNewInvitationNotification, isNewMessageNotification, isObjectCRUDNotification } from './src/API/notifications';
 import { isDumpster, isEvent, isWasteland } from './src/API/type_guards';
 import NavBar from './src/components/NavBar/NavBar';
-import QRCodeDialog from './src/dialogs/QRCodeDialog';
 import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
 import WisbIcon from './src/components/WisbIcon/WisbIcon';
 import DumpsterDialog from './src/dialogs/DumpsterDialog';
 import EventDialog from './src/dialogs/EventDialog';
+import QRCodeDialog from './src/dialogs/QRCodeDialog';
 import WastelandDialog from './src/dialogs/WastelandDialog';
 import { Mode } from './src/dialogs/WisbDialog';
 import ChatScreen from './src/screens/ChatScreen';
@@ -96,115 +95,14 @@ export default function App() {
   const [userLocation, setUserLocation] = React.useState(res.getLastLocation())
   const [currentUser, setCurrentUser] = React.useState<WisbUser | null>()
 
-  const onNotification = async (n: Notification) => {
-    if (![WisbScreens.MapScreen, WisbScreens.MyEventsScreen].includes(currentScreen) || isQrCodeDialogVisible) {
-      return
-    }
-
-    if (
-      dialogData[WisbObjectType.Dumpster] != null ||
-      dialogData[WisbObjectType.Wasteland] != null ||
-      dialogData[WisbObjectType.Event] != null
-    ) {
-      return
-    }
-
-    const settings = res.getSettings()
-    if (isObjectCRUDNotification(n) && n.action == CRUD.Created) {
-
-      if (
-        (settings.notifications.newDumpsterInArea && n.type == WisbObjectType.Dumpster) ||
-        (settings.notifications.newEventInArea && n.type == WisbObjectType.Event) ||
-        (settings.notifications.newWastelandInArea && n.type == WisbObjectType.Wasteland)
-      ) {
-        Snackbar.show({
-          text: (
-            n.type == WisbObjectType.Dumpster ? "Nowy śmietnik w twojej okolicy" :
-              n.type == WisbObjectType.Event ? "Nowe wydarzenie w twojej okolicy" :
-                n.type == WisbObjectType.Wasteland ? "Nowe wysypisko w twojej okolicy" :
-                  ""
-          ),
-          duration: Snackbar.LENGTH_SHORT,
-          fontFamily: res.getFonts().Secondary,
-          backgroundColor: res.getColors().Blue,
-          textColor: res.getColors().Primary,
-          marginBottom: 180,
-          action: {
-            text: 'POKAŻ',
-            textColor: res.getColors().Primary,
-            onPress: async () => {
-              setDialogData({
-                [n.type]: {
-                  mode: Mode.Viewing,
-                  item: (await api.getOne(n.ref!)).data! as any
-                }
-              })
-            },
-          },
-        });
-      }
-    } else if (isNewMessageNotification(n)) {
-      if (settings.notifications.newMessage) {
-        Snackbar.show({
-          text: `Nowa wiadomość w wydarzeniu: ${n.message.content}`,
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: res.getColors().Beige,
-          textColor: res.getColors().Primary,
-          fontFamily: res.getFonts().Secondary,
-          marginBottom: 180,
-          action: {
-            text: 'POKAŻ',
-            textColor: res.getColors().Primary,
-            onPress: async () => {
-              navigate(WisbScreens.ChatScreen, { event: (await api.getOne(n.message.event)).data! })
-            },
-          },
-        });
-      }
-    } else if (isNewInvitationNotification(n)) {
-      if (settings.notifications.newInvitation) {
-        Snackbar.show({
-          text: `Otrzymałeś zaproszenie do wydarzenia: ${n.invitation.event.name}`,
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: res.getColors().Yellow,
-          textColor: res.getColors().Primary,
-          fontFamily: res.getFonts().Secondary,
-          marginBottom: 180,
-          action: {
-            text: 'POKAŻ',
-            textColor: res.getColors().Primary,
-            onPress: async () => {
-              setDialogData({
-                [WisbObjectType.Event]: {
-                  mode: Mode.Viewing,
-                  item: (await api.getOne(n.invitation.event)).data!
-                }
-              })
-            },
-          },
-        });
-      }
-    }
-  }
-
   const onUserLoggedIn = (user: WisbUser) => {
     res.registerUserLocationListener(newLocation => {
       setUserLocation(newLocation)
-      api.notifications.updateListener(onNotification, { location: newLocation })
     })
 
     setCurrentUser(user)
-
     navigate(WisbScreens.MapScreen, {})
   }
-
-  React.useEffect(() => {
-    api.notifications.registerListener(onNotification, { location: userLocation })
-
-    return () => {
-      api.notifications.unregisterListener(onNotification)
-    }
-  }, [])
 
   const onItemSelected = (item: WisbEvent | WisbWasteland | WisbDumpster) => {
     if (isDumpster(item)) {
@@ -253,158 +151,160 @@ export default function App() {
   }
 
   return (
-    <ClickOutsideProvider>
-      <PortalProvider>
-        <View style={styles.root}>
-          <NavigationContainer ref={navigationRef} onStateChange={state => {
-            const currentScreen = state?.routes[state.index].name
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ClickOutsideProvider>
+        <PortalProvider>
+          <View style={styles.root}>
+            <NavigationContainer ref={navigationRef} onStateChange={state => {
+              const currentScreen = state?.routes[state.index].name
 
-            if (currentScreen == null) {
-              return
+              if (currentScreen == null) {
+                return
+              }
+
+              setCurrentScreen(currentScreen as WisbScreens)
+            }}>
+              <Stack.Navigator
+                initialRouteName={currentScreen}
+                screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500, gestureEnabled: false }}>
+                <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
+                <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} initialParams={{
+                  onUserLoggedIn
+                }} />
+                <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
+                  getCurrentUser: () => api.getCurrentUser()!,
+                  onItemSelected
+                }} />
+                <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} initialParams={{
+                  navigate: { go: navigate, goBack }
+                }} />
+                <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
+                  onItemSelected,
+                  getCurrentUser: () => api.getCurrentUser()!
+                }} />
+                <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
+                <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+
+            <NavBar
+              enabled
+              selectedIndex={ScreensNavbarMap[currentScreen].navBarIndex ?? 1}
+              visible={ScreensNavbarMap[currentScreen].navBarIndex !== null}
+              items={[
+                {
+                  render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
+                  onPress: () => {
+                    navigate(WisbScreens.MyEventsScreen, {})
+                  },
+                  bubbles: [
+                    {
+                      component: <FontAwesomeIcon icon={faQrcode} />,
+                      onPress: () => setIsQrCodeDialogVisible(true),
+                    },
+                  ],
+                },
+                {
+                  render: () => <WisbIcon icon={IconType.Earth} size={30} />,
+                  onPress: () => {
+                    navigate(WisbScreens.MapScreen, {})
+                  },
+                  bubbles: [
+                    {
+                      component: (
+                        <WisbIcon style={styles.bubbleIcon} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
+                      ),
+                      onPress: () => {
+                        setDialogData({
+                          [WisbObjectType.Event]: {
+                            mode: Mode.Adding,
+                          }
+                        })
+                      },
+                    },
+                    {
+                      component: (
+                        <WisbIcon style={styles.bubbleIcon} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
+                      ),
+                      onPress: () => {
+                        setDialogData({
+                          [WisbObjectType.Dumpster]: {
+                            mode: Mode.Adding,
+                          }
+                        })
+                      },
+                    },
+                    {
+                      component: (
+                        <WisbIcon style={styles.bubbleIcon} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
+                      ),
+                      onPress: () => {
+                        setDialogData({
+                          [WisbObjectType.Wasteland]: {
+                            mode: Mode.Adding,
+                          }
+                        })
+                      },
+                    },
+                  ],
+                },
+                {
+                  render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
+                  onPress: () => {
+                    navigate(WisbScreens.LeaderBoardScreen, {})
+                  },
+                },
+              ]} />
+
+            {
+              currentUser == null ? null : (
+                <>
+                  {dialogData[WisbObjectType.Event] != null ? <EventDialog
+                    visible={dialogData[WisbObjectType.Event] != null}
+                    googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
+                    event={dialogData[WisbObjectType.Event]?.item}
+                    mode={dialogData[WisbObjectType.Event]?.mode ?? Mode.Viewing}
+                    userLocation={userLocation}
+                    currentUser={currentUser}
+                    onDismiss={() => setDialogData({})}
+                    onOpenChat={event => {
+                      navigate(WisbScreens.ChatScreen, { event })
+                      setDialogData({})
+                    }} /> : null}
+                  {dialogData[WisbObjectType.Wasteland] != null ? <WastelandDialog
+                    visible={dialogData[WisbObjectType.Wasteland] != null}
+                    wasteland={dialogData[WisbObjectType.Wasteland]?.item}
+                    mode={dialogData[WisbObjectType.Wasteland]?.mode ?? Mode.Viewing}
+                    userLocation={userLocation}
+                    currentUser={currentUser}
+                    onDismiss={() => setDialogData({})} /> : null}
+                  {dialogData[WisbObjectType.Dumpster] != null ? <DumpsterDialog
+                    currentUser={currentUser}
+                    visible={dialogData[WisbObjectType.Dumpster] != null}
+                    dumpster={dialogData[WisbObjectType.Dumpster]?.item}
+                    mode={dialogData[WisbObjectType.Dumpster]?.mode ?? Mode.Viewing}
+                    userLocation={userLocation}
+                    onDismiss={() => setDialogData({})} /> : null}
+                </>
+              )
             }
 
-            setCurrentScreen(currentScreen as WisbScreens)
-          }}>
-            <Stack.Navigator
-              initialRouteName={currentScreen}
-              screenOptions={{ headerShown: false, animation: "fade_from_bottom", animationDuration: 500, gestureEnabled: false }}>
-              <Stack.Screen name={WisbScreens.ChatScreen} component={ChatScreen} />
-              <Stack.Screen name={WisbScreens.LoginScreen} component={LoginScreen} initialParams={{
-                onUserLoggedIn
-              }} />
-              <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
-                getCurrentUser: () => api.getCurrentUser()!,
-                onItemSelected
-              }} />
-              <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} initialParams={{
-                navigate: { go: navigate, goBack }
-              }}/>
-              <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
-                onItemSelected,
-                getCurrentUser: () => api.getCurrentUser()!
-              }} />
-              <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
-              <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />
-            </Stack.Navigator>
-          </NavigationContainer>
-
-          <NavBar
-            enabled
-            selectedIndex={ScreensNavbarMap[currentScreen].navBarIndex ?? 1}
-            visible={ScreensNavbarMap[currentScreen].navBarIndex !== null }
-            items={[
-              {
-                render: (isActive) => <WisbIcon icon={IconType.Calendar} size={isActive ? 30 : 25} />,
-                onPress: () => {
-                  navigate(WisbScreens.MyEventsScreen, {})
-                },
-                bubbles: [
-                  {
-                    component: <FontAwesomeIcon icon={faQrcode} />,
-                    onPress: () => setIsQrCodeDialogVisible(true),
-                  },
-                ],
-              },
-              {
-                render: () => <WisbIcon icon={IconType.Earth} size={30} />,
-                onPress: () => {
-                  navigate(WisbScreens.MapScreen, {})
-                },
-                bubbles: [
-                  {
-                    component: (
-                      <WisbIcon style={styles.bubbleIcon} icon={IconType.Calendar} size={22} modificator={ModificatorType.Add} />
-                    ),
-                    onPress: () => {
-                      setDialogData({
-                        [WisbObjectType.Event]: {
-                          mode: Mode.Adding,
-                        }
-                      })
-                    },
-                  },
-                  {
-                    component: (
-                      <WisbIcon style={styles.bubbleIcon} icon={IconType.Dumpster} size={22} modificator={ModificatorType.Add} />
-                    ),
-                    onPress: () => {
-                      setDialogData({
-                        [WisbObjectType.Dumpster]: {
-                          mode: Mode.Adding,
-                        }
-                      })
-                    },
-                  },
-                  {
-                    component: (
-                      <WisbIcon style={styles.bubbleIcon} icon={IconType.WastelandIcon} size={50} modificator={ModificatorType.Add} />
-                    ),
-                    onPress: () => {
-                      setDialogData({
-                        [WisbObjectType.Wasteland]: {
-                          mode: Mode.Adding,
-                        }
-                      })
-                    },
-                  },
-                ],
-              },
-              {
-                render: () => <WisbIcon icon={IconType.Chevron} size={30} />,
-                onPress: () => {
-                  navigate(WisbScreens.LeaderBoardScreen, {})
-                },
-              },
-            ]} />
-
-          {
-            currentUser == null ? null : (
-              <>
-                {dialogData[WisbObjectType.Event] != null ? <EventDialog
-                  visible={dialogData[WisbObjectType.Event] != null}
-                  googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
-                  event={dialogData[WisbObjectType.Event]?.item}
-                  mode={dialogData[WisbObjectType.Event]?.mode ?? Mode.Viewing}
-                  userLocation={userLocation}
-                  currentUser={currentUser}
-                  onDismiss={() => setDialogData({})}
-                  onOpenChat={event => {
-                    navigate(WisbScreens.ChatScreen, { event })
-                    setDialogData({})
-                  }} /> : null}
-                {dialogData[WisbObjectType.Wasteland] != null ? <WastelandDialog
-                  visible={dialogData[WisbObjectType.Wasteland] != null}
-                  wasteland={dialogData[WisbObjectType.Wasteland]?.item}
-                  mode={dialogData[WisbObjectType.Wasteland]?.mode ?? Mode.Viewing}
-                  userLocation={userLocation}
-                  currentUser={currentUser}
-                  onDismiss={() => setDialogData({})} /> : null}
-                {dialogData[WisbObjectType.Dumpster] != null ? <DumpsterDialog
-                  currentUser={currentUser}
-                  visible={dialogData[WisbObjectType.Dumpster] != null}
-                  dumpster={dialogData[WisbObjectType.Dumpster]?.item}
-                  mode={dialogData[WisbObjectType.Dumpster]?.mode ?? Mode.Viewing}
-                  userLocation={userLocation}
-                  onDismiss={() => setDialogData({})} /> : null}
-              </>
-            )
-          }
-
-          {isQrCodeDialogVisible ? <QRCodeDialog
-            visible={isQrCodeDialogVisible}
-            onDismiss={() => setIsQrCodeDialogVisible(false)}
-            onEvent={event => {
-              setIsQrCodeDialogVisible(false)
-              setDialogData({
-                [WisbObjectType.Event]: {
-                  mode: Mode.Viewing,
-                  item: event
-                }
-              })
-            }} /> : null}
-        </View>
-      </PortalProvider>
-    </ClickOutsideProvider>
+            {isQrCodeDialogVisible ? <QRCodeDialog
+              visible={isQrCodeDialogVisible}
+              onDismiss={() => setIsQrCodeDialogVisible(false)}
+              onEvent={event => {
+                setIsQrCodeDialogVisible(false)
+                setDialogData({
+                  [WisbObjectType.Event]: {
+                    mode: Mode.Viewing,
+                    item: event
+                  }
+                })
+              }} /> : null}
+          </View>
+        </PortalProvider>
+      </ClickOutsideProvider>
+    </GestureHandlerRootView>
   );
 }
 

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
-import ObjectsList from '../components/ObjectsList';
+import ObjectsList from '../components/lists/ObjectsList';
 import QueryInput from '../components/inputs/QueryInput';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
 

@@ -1,9 +1,10 @@
 import React from 'react';
-import { FlatList, FlatListProps, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { Dimensions, FlatList, FlatListProps, StyleSheet, Text, View, ViewStyle } from "react-native";
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Spinner from "react-native-spinkit";
-import Resources from "../../res/Resources";
-import WisbIcon from "./WisbIcon/WisbIcon";
-import IconType from "./WisbIcon/IconType";
+import Resources from '../../../res/Resources';
+import IconType from '../WisbIcon/IconType';
+import WisbIcon from '../WisbIcon/WisbIcon';
 
 const res = Resources.get();
 
@@ -33,6 +34,20 @@ const WisbFlatList = <T,>(
                         <WisbIcon icon={IconType.EmptyList} size={50} />
                         <Text style={styles.noMoreText}>No results</Text>
                     </View>
+                ) : isLoading ? (
+                    <View style={{ justifyContent: "center" }}>
+                    {Array.from({ length: 3 }, () => (
+                        <SkeletonPlaceholder borderRadius={4} backgroundColor="white">
+                            <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" width={"90%"} height={50}>
+                                <SkeletonPlaceholder.Item width={20} height={20} borderRadius={100} left={10} />
+                                <SkeletonPlaceholder.Item marginLeft={20}>
+                                    <SkeletonPlaceholder.Item width={Dimensions.get("window").width - 100} height={20} />
+                                    <SkeletonPlaceholder.Item marginTop={6} width={80} height={20} />
+                                </SkeletonPlaceholder.Item>
+                            </SkeletonPlaceholder.Item>
+                        </SkeletonPlaceholder>
+                    ))}
+                </View>
                 ) : null}
                 ListFooterComponent={showNoMoreItemsIcon ? (
                     <View style={styles.footerContainer}>
@@ -86,7 +101,7 @@ const styles = StyleSheet.create({
         marginTop: 20
     },
     loadingContainer: {
-        backgroundColor: "#00000055",
+        backgroundColor: "#00000011",
         justifyContent: "center",
         alignItems: "center",
         ...StyleSheet.absoluteFillObject,

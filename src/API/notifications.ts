@@ -10,21 +10,21 @@ export enum CRUD {
     Deleted
 }
 
-export type ObjectCRUDNotification<T extends WisbObjectType> = {
+export type ObjectCRUDNotification<T extends WisbObjectType, Action extends CRUD> = Action extends CRUD.Deleted ?{
     author: Ref<WisbObjectType.User>
     type?: never
     ref: Ref<T>
     location?: never
     action: CRUD.Deleted
     updatedFields?: never
-} | {
+} : Action extends CRUD.Updated ? {
     author: Ref<WisbObjectType.User>
     type?: never
     ref: Ref<T>
     location?: never
     action: CRUD.Updated
     updatedFields: { [key in keyof TypeMap<T>]?: TypeMap<T>[key] }
-} | {
+} : {
     author: Ref<WisbObjectType.User>
     ref?: never
     type: WisbObjectType
@@ -43,16 +43,16 @@ export interface NewInvitationNotification {
     invitation: Invitation
 }
 
-export function isObjectCRUDNotification(n: ObjectCRUDNotification<any> | NewMessageNotification | NewInvitationNotification): n is ObjectCRUDNotification<any> {
-    return (n as ObjectCRUDNotification<any>).action != null
+export function isObjectCRUDNotification(n: ObjectCRUDNotification<any, CRUD> | NewMessageNotification | NewInvitationNotification | any): n is ObjectCRUDNotification<any, CRUD> {
+    return (n as ObjectCRUDNotification<any, CRUD>).action != null
 }
 
-export function isNewMessageNotification(n: ObjectCRUDNotification<any> | NewMessageNotification | NewInvitationNotification): n is NewMessageNotification {
+export function isNewMessageNotification(n: ObjectCRUDNotification<any, CRUD> | NewMessageNotification | NewInvitationNotification | any): n is NewMessageNotification {
     return (n as NewMessageNotification).message != null
 }
 
-export function isNewInvitationNotification(n: ObjectCRUDNotification<any> | NewMessageNotification | NewInvitationNotification): n is NewInvitationNotification {
+export function isNewInvitationNotification(n: ObjectCRUDNotification<any, CRUD> | NewMessageNotification | NewInvitationNotification | any): n is NewInvitationNotification {
     return (n as NewInvitationNotification).invitation != null
 }
 
-export type Notification = NewInvitationNotification | NewMessageNotification | ObjectCRUDNotification<any>
+export type Notification = NewInvitationNotification | NewMessageNotification | ObjectCRUDNotification<any, CRUD>
