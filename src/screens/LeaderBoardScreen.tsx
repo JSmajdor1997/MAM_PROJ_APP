@@ -99,11 +99,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
           outputRange: [0, 150]
         })
       }]}>
-        <View style={styles.flexOne} >
-          <TouchableOpacity style={styles.marginLeft10} onPress={() => navigate.goBack()}>
-            <FontAwesomeIcon icon={faArrowLeft} size={20} />
-          </TouchableOpacity>
-        </View>
+        <View style={styles.flexOne} />
         <View style={styles.avatarContainer}>
           <Avatar
             colors={res.getColors().AvatarColors}

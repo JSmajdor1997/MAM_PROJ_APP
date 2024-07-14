@@ -73,8 +73,11 @@ export default function QRCodeDialog({ visible, onEvent, onDismiss }: Props) {
                     </View>
 
                     <TouchableOpacity style={styles.okButton} onPress={onDismiss}>
-                        <Text style={{fontFamily: res.getFonts().Secondary}}>OK</Text>
+                        <Text style={{ fontFamily: res.getFonts().Secondary }}>OK</Text>
                     </TouchableOpacity>
+                    {event != null ? <TouchableOpacity style={styles.okButton} onPress={() => onEvent(event)}>
+                        <Text style={{ fontFamily: res.getFonts().Secondary }}>Otwórz</Text>
+                    </TouchableOpacity> : null}
                 </Animated.View>
             </Pressable>
         </Modal>
