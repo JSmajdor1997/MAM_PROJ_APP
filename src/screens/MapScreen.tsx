@@ -15,7 +15,7 @@ import Resources from '../../res/Resources';
 import WisbObjectType from '../API/WisbObjectType';
 import getAPI from '../API/getAPI';
 import { SimplePlace, WisbDumpster, WisbEvent, WisbWasteland } from '../API/interfaces';
-import { Notification } from '../API/notifications';
+import { CRUD, Notification, isObjectCRUDNotification } from '../API/notifications';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import QueryInput from '../components/inputs/QueryInput';
@@ -69,11 +69,16 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     })
   }
 
-  const onNewNotification = (n: Notification) => { }
+  const onNewNotification = (n: Notification) => { 
+    if(isObjectCRUDNotification(n) && n.action == CRUD.Created) {
+      updateMapObjects(displayedRegion)
+    }
+  }
 
   React.useEffect(() => {
     api.notifications.registerListener(onNewNotification, { location: InitialRegion })
     setCurrentRegionName(InitialRegion)
+    updateMapObjects(InitialRegion)
 
     const unregister = res.registerUserLocationListener(newLocation => {
       setUserPosition(newLocation)
@@ -82,7 +87,6 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
 
     return () => {
       unregister()
-      updateMapObjects(InitialRegion)
     }
   }, [])
 
