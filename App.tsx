@@ -90,10 +90,10 @@ const res = Resources.get()
 
 export default function App() {
   const [dialogData, setDialogData] = React.useState<DialogData>({})
-  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.LoginScreen)
+  const [currentScreen, setCurrentScreen] = React.useState<WisbScreens>(WisbScreens.SplashScreen)
   const [isQrCodeDialogVisible, setIsQrCodeDialogVisible] = React.useState(false)
   const [userLocation, setUserLocation] = React.useState(res.getLastLocation())
-  const [currentUser, setCurrentUser] = React.useState<WisbUser | null>()
+  const [currentUser, setCurrentUser] = React.useState<WisbUser | null>(api.getCurrentUser())
 
   const onUserLoggedIn = (user: WisbUser) => {
     res.registerUserLocationListener(newLocation => {
@@ -133,7 +133,7 @@ export default function App() {
     if (navigationRef.canGoBack()) {
       navigationRef.goBack()
     } else {
-      navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected, getCurrentUser: () => api.getCurrentUser()!, navigate: { go: navigate, goBack } })
+      navigationRef.navigate(WisbScreens.MapScreen, { onItemSelected, navigate: { go: navigate, goBack } })
     }
   }
 
@@ -172,7 +172,6 @@ export default function App() {
                   onUserLoggedIn
                 }} />
                 <Stack.Screen name={WisbScreens.MyEventsScreen} component={MyEventsScreen} initialParams={{
-                  getCurrentUser: () => api.getCurrentUser()!,
                   onItemSelected
                 }} />
                 <Stack.Screen name={WisbScreens.SplashScreen} component={SplashScreen} initialParams={{
@@ -180,7 +179,6 @@ export default function App() {
                 }} />
                 <Stack.Screen name={WisbScreens.MapScreen} component={MapScreen} initialParams={{
                   onItemSelected,
-                  getCurrentUser: () => api.getCurrentUser()!
                 }} />
                 <Stack.Screen name={WisbScreens.SettingsScreen} component={SettingsScreen} />
                 <Stack.Screen name={WisbScreens.LeaderBoardScreen} component={LeaderboardScreen} />

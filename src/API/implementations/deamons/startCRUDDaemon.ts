@@ -9,7 +9,7 @@ import getRandomNonCurrentUser from "./getRandomNonCurrentUser"
 import Config from "./Config"
 
 export default function startCRUDDaemon({storage, interval, broadcastNotifications}: Config) {
-    setInterval(() => {
+    return setInterval(() => {
         const currentUser = storage.get().currentUser
         if (currentUser == null) {
             return
@@ -19,6 +19,7 @@ export default function startCRUDDaemon({storage, interval, broadcastNotificatio
 
         let type: WisbObjectType
         let location: LatLng
+        let id: number
 
         if (faker.datatype.boolean()) {
             const randomWasteland = {
@@ -26,16 +27,19 @@ export default function startCRUDDaemon({storage, interval, broadcastNotificatio
                 id: Math.max(...[...storage.get().wastelands.values()].map(it => it.id)) + 1,
             }
 
+            id = randomWasteland.id
+
             type = WisbObjectType.Wasteland
             location = randomWasteland.place.coords
 
             storage.get().wastelands.set(randomWasteland.id.toString(), randomWasteland)
-
         } else if (faker.datatype.boolean()) {
             const randomDumpster = {
                 ...[...getMockupDumpsters(storage.get().users, 1).values()][0],
                 id: Math.max(...[...storage.get().dumpsters.values()].map(it => it.id)) + 1,
             }
+
+            id = randomDumpster.id
 
             type = WisbObjectType.Dumpster
             location = randomDumpster.place.coords
@@ -47,6 +51,8 @@ export default function startCRUDDaemon({storage, interval, broadcastNotificatio
                 id: Math.max(...[...storage.get().events.values()].map(it => it.id)) + 1,
             }
 
+            id = randomEvent.id
+
             type = WisbObjectType.Event
             location = randomEvent.place.coords
 
@@ -57,7 +63,8 @@ export default function startCRUDDaemon({storage, interval, broadcastNotificatio
             author: { type: WisbObjectType.User, id: randomUser.id },
             type,
             action: CRUD.Created,
-            location
+            location,
+            ref: {type, id} as any
         })
     }, interval)
 }

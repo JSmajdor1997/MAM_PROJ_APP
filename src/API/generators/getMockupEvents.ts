@@ -6,18 +6,21 @@ import getRandomDateRangeInRange from './getRandomDateRange';
 import getRandomLatLngInPoland from './getRandomLatLngInPoland';
 import getSeededImage from './getSeededImage';
 
-function getYearDateRange(): [Date, Date] {
-    const nextYearDate = new Date()
-    nextYearDate.setFullYear(nextYearDate.getFullYear() + 1)
+function getDateRange(): [Date, Date] {
+    const previousYearDate = new Date()
+    previousYearDate.setMonth(previousYearDate.getMonth() - 1)
 
-    return [new Date(), nextYearDate]
+    const nextYearDate = new Date()
+    nextYearDate.setMonth(nextYearDate.getMonth() + 1)
+
+    return [previousYearDate, nextYearDate]
 }
 
 export default function getMockupEvents(users: Map<string, WisbUser>, wastelands: Map<string, WisbWasteland>, count: number = 30): Map<string, WisbEvent> {
     const usersList = [...users.values()]
 
     return faker.helpers.multiple(() => {
-        const dateRange = getRandomDateRangeInRange(getYearDateRange())
+        const dateRange = getRandomDateRangeInRange(getDateRange())
 
         const admins = faker.helpers.arrayElements(usersList, { min: 1, max: usersList.length > 1 ? usersList.length / 2 : 1 })
         const name = faker.word.words()

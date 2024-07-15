@@ -11,15 +11,23 @@ import WisbObjectType from '../API/WisbObjectType';
 import ObjectsList from '../components/lists/ObjectsList';
 import QueryInput from '../components/inputs/QueryInput';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
+import getAPI from '../API/getAPI';
 
 const res = Resources.get()
+const api = getAPI()
 
 interface Props extends NativeStackScreenProps<NavigationParamsList, WisbScreens.MyEventsScreen> { }
 
-export default function EventsScreen({ route: { params: { getCurrentUser, onItemSelected } } }: Props) {
+export default function EventsScreen({ route: { params: { onItemSelected } } }: Props) {
   const [phrase, setPhrase] = React.useState("")
   const [isSearching, setIsSearching] = React.useState(false)
   const [onlyCurrentEvents, setOnlyCurrentEvents] = React.useState(true)
+
+  const currentUser = api.getCurrentUser()
+
+  if(currentUser == null) {
+    return <Text>BŁĄD!</Text>
+  }
 
   return (
     <View style={[styles.root, { paddingTop: StatusBar.currentHeight ? StatusBar.currentHeight - 8 : 20 }]}>
@@ -63,7 +71,7 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
 
       <ObjectsList<WisbObjectType.Event, false>
         style={styles.flatList}
-        currentUser={getCurrentUser()}
+        currentUser={currentUser}
         type={WisbObjectType.Event}
         filter={{
           onlyOwn: true,

@@ -10,7 +10,7 @@ export enum CRUD {
     Deleted
 }
 
-export type ObjectCRUDNotification<T extends WisbObjectType, Action extends CRUD> = Action extends CRUD.Deleted ?{
+export type ObjectCRUDNotification<T extends WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland, Action extends CRUD> = Action extends CRUD.Deleted ?{
     author: Ref<WisbObjectType.User>
     type?: never
     ref: Ref<T>
@@ -55,4 +55,4 @@ export function isNewInvitationNotification(n: ObjectCRUDNotification<any, CRUD>
     return (n as NewInvitationNotification).invitation != null
 }
 
-export type Notification = NewInvitationNotification | NewMessageNotification | ObjectCRUDNotification<any, CRUD>
+export type Notification = NewInvitationNotification | NewMessageNotification | ObjectCRUDNotification<WisbObjectType.Wasteland | WisbObjectType.Event | WisbObjectType.Dumpster, CRUD>

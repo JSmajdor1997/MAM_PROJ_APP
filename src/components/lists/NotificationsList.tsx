@@ -16,6 +16,8 @@ import Avatar from "../Avatar";
 import { useClickOutside } from "react-native-click-outside";
 import Ref from "../../API/Ref";
 import PulsingComponent from "../PulsingComponent";
+import { isInvitation } from "../../API/type_guards";
+import { Invitation } from "../../API/interfaces";
 
 const res = Resources.get()
 const api = getAPI()
@@ -31,9 +33,11 @@ export interface Props {
     onItemSelected: (id: Ref<WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland>) => void
 }
 
+const MaxNrNotifications = 10
+
 const NewNotificationCleartimeout = 3000
 
-type ItemType = (Omit<NewInvitationNotification, "author"> | NewMessageNotification | ObjectCRUDNotification<WisbObjectType, CRUD.Created>) & { key: string }
+type ItemType = (Omit<NewInvitationNotification, "author"> | NewMessageNotification | ObjectCRUDNotification<WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland, CRUD.Created>) & { key: string }
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
 
@@ -57,36 +61,8 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
 
     const [newestNotification, setNewestNotification] = React.useState<string | null>()
 
-    const [notifications, setNotifications] = React.useState<ItemType[]>(
-        [
-            {
-                key: "10",
-                "type": WisbObjectType.Wasteland,
-                "action": 0,
-                "location": { "latitude": 50.3264, "longitude": 18.6088 },
-                "author": { "type": WisbObjectType.User, "id": 99999 },
-            },
-            {
-                key: "11",
-                "message": {
-                    "date": new Date("2024-07-13T21:46:01.759Z"),
-                    "content": "misplace",
-                    "sender": { "type": WisbObjectType.User, "id": 99999, "userName": "DefUser1", "photoUrl": "https://www.pngall.com/wp-content/uploads/15/Chad-Meme-PNG-Background.png" },
-                    "event": { "type": WisbObjectType.Event, "id": 0 }
-                },
-                "author": { "type": WisbObjectType.User, "id": 99999 }
-            },
-            {
-                key: "12",
-                "invitation": {
-                    "event": { "type": WisbObjectType.Event, "id": 3, "name": "now sound even" },
-                    "user": { "type": WisbObjectType.User, "id": 99999 },
-                    "asAdmin": false
-                },
-                "author": { "type": WisbObjectType.User, "id": 99999 }
-            }
-        ]
-    )
+    const [invitations, setInvitations] = React.useState<({ invitation: Invitation, key: string })[]>([])
+    const [notifications, setNotifications] = React.useState<ItemType[]>([])
 
     const scrollViewHeight = useRef(new Animated.Value(0)).current;
 
@@ -124,6 +100,13 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
             newestNotificationId = null
         }, NewNotificationCleartimeout)
 
+        if (isNewInvitationNotification(notification) && settings.notifications.newInvitation) {
+            setInvitations(invitations => [
+                notification,
+                ...invitations
+            ])
+        }
+
         if (
             (isObjectCRUDNotification(notification) && notification.action == CRUD.Created && (
                 settings.notifications.newDumpsterInArea && notification.type == WisbObjectType.Dumpster ||
@@ -131,21 +114,26 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
                 settings.notifications.newWastelandInArea && notification.type == WisbObjectType.Wasteland
             )) || (
                 isNewMessageNotification(notification) && settings.notifications.newMessage
-            ) || (
-                isNewInvitationNotification(notification) && settings.notifications.newInvitation
             )
         ) {
-            setNotifications([
-                notification,
-                ...notifications
-            ])
+            setNotifications(notifications => {
+                const toRemove = notifications.length - MaxNrNotifications
+                if (toRemove > 0) {
+                    notifications.splice(notifications.length - 1 - toRemove)
+                }
+
+                return [
+                    notification,
+                    ...notifications
+                ]
+            })
         }
     }
 
     React.useEffect(() => {
         api.getMyInvitations().then(rsp => {
             if (rsp.data != null) {
-                notifications.push(...rsp.data.map(invitation => ({ invitation, key: uuid.v4().toString() })))
+                invitations.push(...rsp.data.map(invitation => ({ invitation, key: uuid.v4().toString() })))
             }
         })
 
@@ -168,9 +156,15 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
         setNotifications(notifications)
     }
 
+    const deleteInvitations = (id: string) => {
+        invitations.splice(invitations.findIndex(it => it.key == id), 1)
+
+        setInvitations(invitations)
+    }
+
     return (
         <View ref={outsideClickRef} style={{ ...style }}>
-            {notifications.length == 0 ? <Text style={{ fontSize: 8, alignSelf: "center" }}>BRAK POWIADOMIEŃ</Text> : (
+            {notifications.length == 0 && invitations.length == 0 ? <Text style={{ fontSize: 8, alignSelf: "center" }}>BRAK POWIADOMIEŃ</Text> : (
                 <TouchableOpacity onPress={() => onExpandedChange(!expanded)} style={{ paddingHorizontal: 10, flexDirection: "row", justifyContent: "center", alignItems: "center", height: 20 }}>
                     <PulsingComponent
                         onDuration={50}
@@ -183,12 +177,13 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
                                 <FontAwesomeIcon icon={faBell} color={res.getColors().DarkBeige} />
                                 : null}
 
-                        {newestNotification == null ? null : <Text style={{ fontFamily: res.getFonts().Secondary, fontSize: 12 }}>{newestNotification}</Text>}
+                        {newestNotification == null || expanded ? null : <Text style={{ fontFamily: res.getFonts().Secondary, fontSize: 12 }}>{newestNotification}</Text>}
                     </PulsingComponent>
                 </TouchableOpacity>
             )}
 
-            <Animated.ScrollView
+            <Animated.FlatList
+                data={[...invitations, ...notifications]}
                 contentContainerStyle={{ alignItems: "center" }}
                 style={{
                     position: "absolute",
@@ -200,8 +195,8 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
                     width: "100%",
                     maxHeight: scrollViewHeight,
                     overflow: "hidden",
-                }}>
-                {notifications.map(n => (
+                }}
+                renderItem={({ item: n }) => (
                     isObjectCRUDNotification(n) ? (
                         <NotificationItem
                             key={n.key}
@@ -248,7 +243,7 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
                                     key={n.key}
                                     onDelete={() => {
                                         api.removeInvitation(n.invitation).then(it => {
-                                            deleteNotification(n.key)
+                                            deleteInvitations(n.key)
                                             Toast.show(`Usunięto zaproszenie`, Toast.SHORT)
                                         })
                                     }}
@@ -265,8 +260,8 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
                                     icon={<FontAwesomeIcon icon={faEnvelope} size={20} color="white" />} />
                             ) :
                                 null
-                ))}
-            </Animated.ScrollView>
+                )} />
+
         </View>
     )
 }
@@ -274,7 +269,7 @@ export default function NotificationsList({ style, userPosition, expanded, onExp
 function NotificationItem({ icon, onDelete, message, actionMessage, onAction }: { icon: React.ReactNode, message: string, actionMessage: string, onDelete: () => void, onAction: () => void }) {
     return (
         <Swipeable
-            onSwipeableOpen={() => onDelete}
+            onSwipeableOpen={onDelete}
             containerStyle={{ marginVertical: 10, borderRadius: 15, overflow: "hidden" }}
             renderRightActions={(
                 _,
@@ -288,7 +283,11 @@ function NotificationItem({ icon, onDelete, message, actionMessage, onAction }: 
 
                 return (
                     <AnimatedTouchableOpacity
-                        onPress={onDelete}
+                        onPress={e => {
+                            e.stopPropagation()
+                            e.preventDefault()
+                            onDelete()
+                        }}
                         style={[{ opacity }, { height: 40, bottom: 0, backgroundColor: res.getColors().Red, flex: 1, justifyContent: "flex-end", alignItems: "center", paddingHorizontal: 5, flexDirection: "row" }]}>
                         <FontAwesomeIcon icon={faTrash} color="white" size={12} />
                         <Text style={{ marginLeft: 10, fontFamily: res.getFonts().Secondary, color: "white", fontWeight: "600" }}>Delete</Text>

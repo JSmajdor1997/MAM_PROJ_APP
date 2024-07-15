@@ -7,7 +7,7 @@ import getRandomNonCurrentUser from "./getRandomNonCurrentUser"
 import Config from "./Config"
 
 export default function startWastelandClearingDaemon({storage, interval, broadcastNotifications}: Config) {
-    setInterval(() => {
+    return setInterval(() => {
         const currentUser = storage.get().currentUser
 
         if (currentUser == null) {
@@ -40,7 +40,7 @@ export default function startWastelandClearingDaemon({storage, interval, broadca
             author: { type: WisbObjectType.User, id: randomUser.id },
             ref: { type: WisbObjectType.Wasteland, id: wasteland.id },
             action: CRUD.Updated,
-            updatedFields: { "afterCleaningData": afterCleaningData }
+            updatedFields: { "afterCleaningData": afterCleaningData } as any
         })
     }, interval)
 }

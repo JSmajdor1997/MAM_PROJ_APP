@@ -1,28 +1,23 @@
-import { faker } from "@faker-js/faker";
-import { LatLng } from "react-native-maps";
-import { MMKV } from "react-native-mmkv";
 import GeoHelper from "../../utils/GeoHelper";
 import compareDates from "../../utils/dates/compareDates";
 import type { APIResponse, CreateMap, QueryMap, TypeMap } from "../API";
 import API, { GeneralError, LogoutError, SignUpError } from "../API";
 import type Ref from "../Ref";
 import WisbObjectType from "../WisbObjectType";
-import getMockupDumpsters from "../generators/getMockupDumpsters";
-import getMockupEvents from "../generators/getMockupEvents";
-import getMockupInvitations from "../generators/getMockupInvitations";
-import getMockupMessages from "../generators/getMockupMessages";
-import getMockupUsers from "../generators/getMockupUsers";
-import getMockupWastelands from "../generators/getMockupWastelands";
-import getSeededImage from "../generators/getSeededImage";
-import type { Invitation, WastelandCleaningData, WisbDumpster, WisbEvent, WisbMessage, WisbUser, WisbWasteland } from "../interfaces";
+import type { Invitation, WastelandCleaningData, WisbEvent, WisbMessage, WisbUser, WisbWasteland } from "../interfaces";
 import { CRUD } from "../notifications";
 import { isEvent, isInvitation } from "../type_guards";
-import api_endpoint from "./api_endpoint";
 import Storage from "./Storage";
+import api_endpoint from "./api_endpoint";
 import startCRUDDaemon from "./deamons/startCRUDDaemon";
 import startInvitationSendingDaemon from "./deamons/startInvitationSendingDaemon";
 import startMessageSendingDaemon from "./deamons/startMessageSendingDaemon";
 import startWastelandClearingDaemon from "./deamons/startWastelandClearingDaemon";
+
+let crudTimeout: NodeJS.Timeout | null = null
+let invitationsTimeout: NodeJS.Timeout | null = null
+let messagesTimeout: NodeJS.Timeout | null = null
+let wastelandClearingTimeout: NodeJS.Timeout | null = null
 
 export default class MockupAPI extends API {
     protected storage = new Storage()
@@ -30,10 +25,23 @@ export default class MockupAPI extends API {
     constructor() {
         super()
 
-        startCRUDDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 30 * 1000 })
-        startInvitationSendingDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 20 * 1000 })
-        startMessageSendingDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 10 * 1000 })
-        startWastelandClearingDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 4000 * 5 + 10 * 1000 })
+        if(crudTimeout != null) {
+            clearInterval(crudTimeout)
+        }
+        if(invitationsTimeout != null) {
+            clearInterval(invitationsTimeout)
+        }
+        if(messagesTimeout != null) {
+            clearInterval(messagesTimeout)
+        }
+        if(wastelandClearingTimeout != null) {
+            clearInterval(wastelandClearingTimeout)
+        }
+
+        crudTimeout = startCRUDDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 30 * 1000 })
+        invitationsTimeout = startInvitationSendingDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 20 * 1000 })
+        messagesTimeout = startMessageSendingDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 10 * 1000 })
+        wastelandClearingTimeout = startWastelandClearingDaemon({ storage: this.storage, broadcastNotifications: this.broadcastNotifications, interval: 4000 * 5 + 10 * 1000 })
     }
 
     @api_endpoint({ checkLogin: true, altersData: true, notification: (_, event) => [{ ref: { type: WisbObjectType.Event, id: event.id }, action: CRUD.Updated, type: WisbObjectType.Event }] })
@@ -202,8 +210,8 @@ export default class MockupAPI extends API {
                     const result = compareDates(event.dateRange[1], new Date(), { year: true, month: true, date: true })
 
                     return !(
-                        (q.activeOnly && !result.firstBigger) ||
-                        (!q.activeOnly && result.firstBigger)
+                        (q.activeOnly && (result.firstBigger || result.equal)) ||
+                        (!q.activeOnly && result.firstSmaller)
                     )
                 }
 
@@ -502,7 +510,13 @@ export default class MockupAPI extends API {
         }
     }
 
-    @api_endpoint({ checkLogin: true, altersData: true, notification: (api, message) => [{ message }] })
+    @api_endpoint({ checkLogin: true, altersData: true, notification: (api, message) => {
+        const currentUser = api.getCurrentUser()!
+
+        return [
+            { message: {...message, sender: {type: WisbObjectType.User, id: currentUser.id, userName: currentUser.userName, photoUrl: currentUser.photoUrl }} }
+        ]
+    } })
     async sendEventMessage(message: Omit<WisbMessage, "date" | "sender">): Promise<APIResponse<GeneralError, {}>> {
         const currentUser = this.getCurrentUser()!
 
@@ -539,6 +553,13 @@ export default class MockupAPI extends API {
 
     @api_endpoint({ checkLogin: true })
     async getEventMessages(event: WisbEvent, indices: [number, number]): Promise<APIResponse<{}, { items: WisbMessage[], totalLength: number }>> {
+        if(!event.members.has(this.getCurrentUser()!.id.toString())) {
+            return {
+                error: GeneralError.UserNotAuthorized,
+                description: "User must be member of an event to read messages"
+            }
+        }
+        
         const messages = this.storage.get().messages
             .get(event.id.toString())
             ?.sort((a, b) => b.date.getTime() - a.date.getTime())
@@ -601,7 +622,6 @@ export default class MockupAPI extends API {
 
         //checking if userName is unique
         if (usersList.some(existing => existing.userName == user.userName)) {
-            console.log("A")
             return {
                 error: SignUpError.InvalidDataProvided,
                 description: "Username already registered"
@@ -610,7 +630,6 @@ export default class MockupAPI extends API {
 
         //checking if email is unique
         if (usersList.some(existing => existing.email == user.email)) {
-            console.log("B")
             return {
                 error: SignUpError.InvalidDataProvided,
                 description: "Email already registered"

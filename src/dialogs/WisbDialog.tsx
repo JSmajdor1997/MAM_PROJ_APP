@@ -118,7 +118,7 @@ export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated,
                     Toast.show(`Obiekt został usunięty przez innego użytkownika!`, Toast.SHORT);
                     onDismiss()
                 } else if(n.action == CRUD.Updated) {
-                    onItemUpdated(n.updatedFields)
+                    onItemUpdated(n.updatedFields as any)
                 }
             }
         }

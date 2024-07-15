@@ -5,7 +5,7 @@ import getRandomNonCurrentUser from "./getRandomNonCurrentUser"
 import Config from "./Config"
 
 export default function startInvitationSendingDaemon({storage, interval, broadcastNotifications}: Config) {
-    setInterval(() => {
+    return setInterval(() => {
         const currentUser = storage.get().currentUser
         if (currentUser == null) {
             return

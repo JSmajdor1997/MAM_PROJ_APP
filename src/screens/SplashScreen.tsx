@@ -21,11 +21,7 @@ export default function SplashScreen({ route: { params: { navigate } } }: Props)
       setIsBlurred(true)
 
       setTimeout(() => {
-        if (api.getCurrentUser != null) {
-          navigate.go(WisbScreens.MapScreen, {})
-        } else {
-          navigate.go(WisbScreens.MapScreen, {})
-        }
+        navigate.go(WisbScreens.LoginScreen, {})
       }, 1000)
     }, 500)
   }, [])

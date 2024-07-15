@@ -40,9 +40,7 @@ export default class ListenersManager {
 
                     if (filter.location != undefined && GeoHelper.isLatLng(location) && GeoHelper.calcApproxDistanceBetweenLatLngInMeters(location, filter.location)) {
                         listener(notification)
-                    }
-
-                    if (filter.observedIds != undefined && isRef(ref) && filter.observedIds.some(it => it.id == ref.id && it.type == ref.type)) {
+                    }else if (filter.observedIds != undefined && isRef(ref) && filter.observedIds.some(it => it.id == ref.id && it.type == ref.type)) {
                         listener(notification)
                     }
                 } else if (isNewMessageNotification(notification)) {
@@ -53,15 +51,11 @@ export default class ListenersManager {
                     }
 
                     if (event.members.has(currentUser.id.toString())) {
-                        [...this.listeners].forEach(it => {
-                            listener(notification)
-                        })
+                        listener(notification)
                     }
                 } else if (isNewInvitationNotification(notification)) {
                     if (notification.invitation.user.id == currentUser.id) {
-                        [...this.listeners].forEach(it => {
-                            listener(notification)
-                        })
+                        listener(notification)
                     }
                 }
             }

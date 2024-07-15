@@ -105,10 +105,14 @@ export default class Resources {
 
     setSettings(setObject: Partial<Omit<Settings, "notifications"> & { notifications?: Partial<Settings["notifications"]> }>) {
         if (setObject.defaultLocation != this.settingsCache.defaultLocation) {
-            if (this.settingsCache.defaultLocation == null) {
+            if (setObject.defaultLocation == null) {
                 this.startGeolocation()
             } else {
                 this.stopGeolocation()
+            }
+
+            if(setObject.defaultLocation != null) {
+                this.userLocationListeners.forEach(it => it(setObject.defaultLocation!))
             }
         }
 

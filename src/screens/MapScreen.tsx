@@ -50,7 +50,7 @@ interface Query {
   type: WisbObjectType.Dumpster | WisbObjectType.Event | WisbObjectType.Wasteland
 }
 
-export default function MapScreen({ route: { params: { onItemSelected, getCurrentUser, navigate } } }: Props) {
+export default function MapScreen({ route: { params: { onItemSelected, navigate } } }: Props) {
   const trackingIconRef = React.useRef<TouchableOpacity>(null)
   const mapRef = React.useRef<MapView>(null)
   const [isNotificationsListExpanded, setIsNotificationsListExpanded] = React.useState(false)
@@ -62,20 +62,11 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   const [searchedPlace, setSearchedPlace] = React.useState<SimplePlace | null>(null)
   const [userPosition, setUserPosition] = React.useState<LatLng>(InitialRegion)
 
-  const [highlightedItem, setHighlightedItem] = React.useState<
-    {
-      type: WisbObjectType.Dumpster
-      item: WisbDumpster
-    } |
-    {
-      type: WisbObjectType.Wasteland
-      item: WisbWasteland
-    } |
-    {
-      type: WisbObjectType.Event
-      item: WisbEvent
-    }
-    | null>(null)
+  const currentUser = api.getCurrentUser()
+
+  if(currentUser == null) {
+    return <Text>BŁĄD</Text>
+  }
 
   const setCurrentRegionName = (region: Region) => {
     setIsReverseGeocoding(true)
@@ -85,33 +76,12 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     })
   }
 
-  const onNewNotification = async (n: Notification) => {
-    if (isObjectCRUDNotification(n) && n.action == CRUD.Created && n.type!=WisbObjectType.User) {
-      updateMapObjects(displayedRegion)
-
-      if(n.author.id == getCurrentUser().id) {
-        const item = await api.getOne(n.ref!)
-        
-        if(item.data!= null) {
-          setHighlightedItem({
-            item: item.data,
-            type: n.type
-          } as any)
-
-          mapRef.current?.animateToRegion({ ...item.data.place.coords, latitudeDelta: 0.1, longitudeDelta: 0.1 })
-        }
-      }
-    }
-  }
-
   React.useEffect(() => {
-    api.notifications.registerListener(onNewNotification, { location: InitialRegion, allowFromSelf: true })
     setCurrentRegionName(InitialRegion)
     updateMapObjects(InitialRegion)
 
     const unregister = res.registerUserLocationListener(newLocation => {
       setUserPosition(newLocation)
-      api.notifications.updateListener(onNewNotification, { location: newLocation })
     })
 
     return () => {
@@ -241,7 +211,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           )}
 
-          {mapObjects[WisbObjectType.Wasteland].filter(it => highlightedItem?.type !== WisbObjectType.Wasteland && highlightedItem?.item.id != it.id).map(wasteland => (
+          {mapObjects[WisbObjectType.Wasteland].map(wasteland => (
             <Marker
               key={`${WisbObjectType.Wasteland}${MarkerIdSeparator}${wasteland.id}`}
               onPress={() => onItemSelected(wasteland)}
@@ -250,7 +220,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           ))}
 
-          {mapObjects[WisbObjectType.Event].filter(it => highlightedItem?.type !== WisbObjectType.Event && highlightedItem?.item.id != it.id).map(event => (
+          {mapObjects[WisbObjectType.Event].map(event => (
             <Marker
               key={`${WisbObjectType.Event}${MarkerIdSeparator}${event.id}`}
               onPress={() => onItemSelected(event)}
@@ -259,7 +229,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           ))}
 
-          {mapObjects[WisbObjectType.Dumpster].filter(it => highlightedItem?.type !== WisbObjectType.Dumpster && highlightedItem?.item.id != it.id).map(dumpster => (
+          {mapObjects[WisbObjectType.Dumpster].map(dumpster => (
             <Marker
               key={`${WisbObjectType.Dumpster}${MarkerIdSeparator}${dumpster.id}`}
               onPress={() => onItemSelected(dumpster)}
@@ -267,23 +237,6 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
               <WisbIcon size={30} icon={IconType.Dumpster} />
             </Marker>
           ))}
-
-          {
-            highlightedItem == null ? null : (
-              <Marker
-                key={`${highlightedItem.type}${MarkerIdSeparator}${highlightedItem.item.id}`}
-                onPress={() => onItemSelected(highlightedItem.item)}
-                coordinate={highlightedItem.item.place.coords}>
-                <PulsingComponent
-                  isPulsing
-                  onDuration={200}
-                  offDuration={200}
-                  numberOfPulses={10}>
-                  <WisbIcon size={30} icon={IconType.Dumpster} />
-                </PulsingComponent>
-              </Marker>
-            )
-          }
         </Fragment>
       </MapView>
 
@@ -373,14 +326,14 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             navigate.go(WisbScreens.ChatScreen, { event: event.data })
           }}
           onItemSelected={async id => {
-            const event = await api.getOne(id)
+            const item = await api.getOne(id)
 
-            onItemSelected(event.data!)
+            onItemSelected(item.data!)
           }} /> : null}
       </View>
 
       <ListDialog
-        currentUser={getCurrentUser()}
+        currentUser={currentUser}
         googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
         onPlaceSelected={selectedPlace => {
           setIsSearchDialogVisible(false)

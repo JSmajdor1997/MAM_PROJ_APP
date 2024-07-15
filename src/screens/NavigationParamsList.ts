@@ -31,11 +31,9 @@ type NavigationParamsList = {
     },
     [WisbScreens.MapScreen]: {
         onItemSelected: (item: WisbWasteland | WisbEvent | WisbDumpster) => void
-        getCurrentUser(): WisbUser
         navigate: Navigation
     },
     [WisbScreens.MyEventsScreen]: {
-        getCurrentUser(): WisbUser
         navigate: Navigation
         onItemSelected: (event: WisbEvent) => void
     },

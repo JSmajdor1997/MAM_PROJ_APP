@@ -26,6 +26,7 @@ import UserItem from '../components/UserItem';
 import IconType from '../components/WisbIcon/IconType';
 import WisbIcon from '../components/WisbIcon/WisbIcon';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
+import getSeededImage from '../API/generators/getSeededImage';
 
 const res = Resources.get()
 
@@ -49,7 +50,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
     hasMore: true
   })
 
-  const [updatedSelfData, setUpdatedSelfData] = React.useState<{ userName: string } | null>()
+  const [updatedSelfData, setUpdatedSelfData] = React.useState<{ userName?: string, photoUrl?: string } | null>()
 
   React.useEffect(() => {
     setIsLoading(true)
@@ -105,16 +106,18 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
             colors={res.getColors().AvatarColors}
             size={70}
             fontSize={52}
-            username={user.userName}
-            image={user.photoUrl}
-            onPress={() => { }}
+            username={updatedSelfData?.photoUrl ?? user.userName ?? ""}
+            image={updatedSelfData?.photoUrl ?? user.photoUrl}
+            onPress={() => { 
+              setUpdatedSelfData(it => ({ ...it, photoUrl: getSeededImage(new Date().getTime().toString()) }))
+            }}
           />
 
           <TextInput
-            onPress={() => setUpdatedSelfData({ userName: user.userName })}
+            onPress={() => setUpdatedSelfData(it => ({ ...it, userName: user.userName }))}
             readOnly={updatedSelfData == null}
             onChange={e => {
-              setUpdatedSelfData({ userName: e.nativeEvent.text })
+              setUpdatedSelfData(it => ({ ...it, userName: e.nativeEvent.text }))
             }}
             style={styles.userNameInput}>
             {updatedSelfData?.userName ?? user.userName}
@@ -206,7 +209,7 @@ export default function LeaderboardScreen({ route: { params: { navigate } } }: P
           <TouchableOpacity
             style={styles.saveButton}
             onPress={() => {
-              api.updateOne({ type: WisbObjectType.User, id: api.getCurrentUser()!.id }, { userName: updatedSelfData.userName }).then(result => {
+              api.updateOne({ type: WisbObjectType.User, id: api.getCurrentUser()!.id }, updatedSelfData).then(result => {
                 if (result.data != null) {
                   setUser({
                     ...user,

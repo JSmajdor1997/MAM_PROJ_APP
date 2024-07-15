@@ -9,7 +9,7 @@ export default function getRandomNonCurrentUser(storage: Storage, currentUser: W
 
     do {
         randomUser = usersList[faker.number.int({ min: 0, max: usersList.length - 1 })]
-    } while (randomUser.id != currentUser.id)
+    } while (randomUser.id == currentUser.id)
 
     return randomUser
 }

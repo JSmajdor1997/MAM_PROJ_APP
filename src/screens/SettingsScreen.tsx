@@ -70,12 +70,12 @@ export default function SettingsScreen({ route: { params: { navigate } } }: Prop
           <View style={styles.locationHeader}>
             <FontAwesomeIcon icon={faLocationDot} color={res.getColors().Red} />
             <Text style={styles.locationText}>
-              {settings.defaultLocation == null ? "Domyślna lokalizacja" : "Automatyczna lokalizacja"}
+              {settings.defaultLocation == null ? "Automatyczna lokalizacja" : "Domyślna lokalizacja"}
             </Text>
 
             <Switch
-              value={settings.defaultLocation == null}
-              onValueChange={item => res.setSettings({ defaultLocation: item ? null : userPosiition })}
+              value={settings.defaultLocation != null}
+              onValueChange={item => res.setSettings({ defaultLocation: item ?  userPosiition : null })}
               circleSize={20}
               barHeight={24}
               circleBorderWidth={0}
@@ -97,6 +97,9 @@ export default function SettingsScreen({ route: { params: { navigate } } }: Prop
             readonly={settings.defaultLocation == null}
             userLocation={userPosiition}
             showNavigateButton={false}
+            onLocationChanged={location => res.setSettings({
+              defaultLocation: location.coords
+            })}
             location={{
               coords: settings.defaultLocation ?? userPosiition,
               asText: ''

@@ -100,12 +100,12 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                         }
                     },
                 },
-                {
+                ...(workingEvent.members.has(currentUser.id.toString()) ?[{
                     label: res.getStrings().Dialogs.EventDialog.OpenChatAction,
                     icon: <FontAwesomeIcon icon={faMessage} />,
                     color: res.getColors().Primary,
-                    onPress: () => onOpenChat(event!),
-                }
+                    onPress: () => onOpenChat(event!)
+                }] : [])
             ] : []}
             onDismiss={onDismiss}
             sections={[
@@ -262,10 +262,10 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                     if (isUser(selectedItem)) {
                                         if (workingEvent.members != null && workingEvent.members.has(selectedItem.id.toString())) {
                                             workingEvent.members.delete(selectedItem.id.toString())
-                                            setWorkingEvent(workingEvent)
+                                            setWorkingEvent({...workingEvent})
                                         } else {
                                             workingEvent.members?.set(selectedItem.id.toString(), { type: WisbObjectType.User, id: selectedItem.id, isAdmin: false })
-                                            setWorkingEvent(workingEvent)
+                                            setWorkingEvent({...workingEvent})
                                         }
                                     }
                                 }}
