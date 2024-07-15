@@ -595,12 +595,13 @@ export default class MockupAPI extends API {
         }
     }
 
-    @api_endpoint({ checkLogin: true, altersData: true, notification: (api, user) => [{ action: CRUD.Created, type: WisbObjectType.User }] })
+    @api_endpoint({ checkLogin: false, altersData: true, notification: (api, user) => [{ action: CRUD.Created, type: WisbObjectType.User }] })
     async signUp(user: Pick<WisbUser, "photoUrl" | "email" | "userName" | "password">): Promise<APIResponse<SignUpError, {}>> {
         const usersList = [...this.storage.get().users.values()]
 
         //checking if userName is unique
         if (usersList.some(existing => existing.userName == user.userName)) {
+            console.log("A")
             return {
                 error: SignUpError.InvalidDataProvided,
                 description: "Username already registered"
@@ -609,6 +610,7 @@ export default class MockupAPI extends API {
 
         //checking if email is unique
         if (usersList.some(existing => existing.email == user.email)) {
+            console.log("B")
             return {
                 error: SignUpError.InvalidDataProvided,
                 description: "Email already registered"

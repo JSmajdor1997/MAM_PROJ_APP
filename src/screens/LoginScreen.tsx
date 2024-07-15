@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { Fragment } from 'react';
 import {
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +17,7 @@ import LeavesImage from "../../res/images/leaves_on_stick.svg";
 import { GeneralError, SignUpError } from '../API/API';
 import getAPI from '../API/getAPI';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
+import ImageInput from '../components/inputs/ImageInput';
 
 const api = getAPI()
 const res = Resources.get()
@@ -64,47 +66,45 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
         </View>
 
         <View style={styles.inputsContainer}>
+          {mode == Mode.SignUp ? (
+            <ImageInput
+              readonly={false}
+              onImageSelected={setPhoto}
+              style={{ width: 100, height: 100 }}
+              image={photo}
+            />
+          ) : null}
+
           <TextInput
             onChangeText={value => setCredentials({ ...credentials, email: value })}
             placeholder={res.getStrings().Screens.LoginScreen.EmailLabel}
             style={styles.input}
+            autoCorrect={false}
+            autoCapitalize="none"
             keyboardType="email-address"
             placeholderTextColor={res.getColors().DarkBeige}
-            autoCapitalize="none"
           />
           <TextInput
             onChangeText={value => setCredentials({ ...credentials, password: value })}
             placeholder={res.getStrings().Screens.LoginScreen.PasswordLabel}
             style={styles.input}
             secureTextEntry
-            placeholderTextColor={res.getColors().DarkBeige}
+            autoCorrect={false}
             autoCapitalize="none"
+            placeholderTextColor={res.getColors().DarkBeige}
           />
 
           {mode == Mode.SignUp ? (
-            <Fragment>
-              <TextInput
-                placeholder={res.getStrings().Screens.LoginScreen.UserNameLabel}
-                style={styles.input}
-                secureTextEntry
-                placeholderTextColor={res.getColors().DarkBeige}
-                autoCapitalize="none"
-                onChangeText={value => {
-                  setUserName(value)
-                }}
-              />
-
-              <TextInput
-                placeholder={res.getStrings().Screens.LoginScreen.PhotoLabel}
-                style={styles.input}
-                secureTextEntry
-                placeholderTextColor={res.getColors().DarkBeige}
-                autoCapitalize="none"
-                onChangeText={value => {
-                  setPhoto(value)
-                }}
-              />
-            </Fragment>
+            <TextInput
+              placeholder={res.getStrings().Screens.LoginScreen.UserNameLabel}
+              style={styles.input}
+              autoCorrect={false}
+              autoCapitalize="none"
+              placeholderTextColor={res.getColors().DarkBeige}
+              onChangeText={value => {
+                setUserName(value)
+              }}
+            />
           ) : null}
 
           <TouchableOpacity
@@ -125,8 +125,9 @@ export default function LoginScreen({ route: { params: { onUserLoggedIn } } }: P
                   }
                 })
               } else {
-                api.signUp({ email, password, userName }).then(result => {
+                api.signUp({ email, password, userName, photoUrl: photo }).then(result => {
                   if (result.error != null) {
+                    console.log(result.error)
                     if (result.error == SignUpError.InvalidDataProvided) {
                       toast(res.getStrings().Screens.LoginScreen.SignUpErrorInvalidDataProvidedMessage);
                     } else if (result.error == SignUpError.UserAlreadyRegistered) {
