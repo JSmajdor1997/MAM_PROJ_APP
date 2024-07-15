@@ -9,6 +9,7 @@ export type ChangeListener = (n: Notification) => void
 export interface Filter {
     location?: LatLng
     observedIds?: Ref<any>[]
+    allowFromSelf?: boolean
 }
 
 export enum NotificationType {
@@ -30,6 +31,10 @@ export default class ListenersManager {
             }
 
             for (const [listener, filter] of this.listeners) {
+                if (filter.allowFromSelf === false && currentUser.id === notification.author.id) {
+                    return
+                }
+
                 if (isObjectCRUDNotification(notification)) {
                     const { location, ref } = notification
 
@@ -79,7 +84,7 @@ export default class ListenersManager {
 
     updateListener(listener: ChangeListener, filter: Filter) {
         if (this.listeners.has(listener)) {
-            this.listeners.set(listener, filter)
+            this.listeners.set(listener, { ...this.listeners.get(listener), ...filter })
         }
     }
 }

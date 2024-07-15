@@ -215,16 +215,12 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                 placeholder="Szukaj wysypisk"
                                 onPhraseChanged={setPhrase} /> : null}
 
-                            <ObjectsList
-                                filter={{
-                                    [WisbObjectType.Wasteland]: {
-                                        activeOnly: true
-                                    }
-                                }}
+                            <ObjectsList<WisbObjectType.Wasteland, true | false>
+                                filter={{activeOnly: true, phrase}}
                                 type={WisbObjectType.Wasteland}
-                                multi={mode == Mode.Adding}
-                                selectedItemsIds={([...workingEvent.wastelands?.values() ?? []]).map(it => it.id)}
-                                onSelected={selectedItem => {
+                                multiselect={mode == Mode.Adding}
+                                selectedItems={([...workingEvent.wastelands?.values() ?? []]).map(it => ({type: WisbObjectType.Wasteland, id: it.id}))}
+                                onSelection={selectedItem => {
                                     if (isWasteland(selectedItem)) {
                                         if (workingEvent.wastelands != null && (workingEvent.wastelands ?? []).some(it => it.id == selectedItem.id)) {
                                             setWorkingEvent({
@@ -242,7 +238,6 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                         }
                                     }
                                 }}
-                                phrase={phrase}
                                 currentUser={currentUser}
                                 googleMapsAPIKey={googleMapsApiKey} />
                         </View>
@@ -259,11 +254,11 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                 placeholder="Szukaj użytkowników"
                                 onPhraseChanged={setPhrase} /> : null}
 
-                            <ObjectsList
+                            <ObjectsList<WisbObjectType.User, true | false>
                                 type={WisbObjectType.User}
-                                multi={mode == Mode.Adding}
-                                selectedItemsIds={[...(workingEvent.members?.values() ?? [])].map(it => it.id)}
-                                onSelected={selectedItem => {
+                                multiselect={mode == Mode.Adding}
+                                selectedItems={[...(workingEvent.members?.values() ?? [])].map(it => ({type: WisbObjectType.User, id: it.id}))}
+                                onSelection={selectedItem => {
                                     if (isUser(selectedItem)) {
                                         if (workingEvent.members != null && workingEvent.members.has(selectedItem.id.toString())) {
                                             workingEvent.members.delete(selectedItem.id.toString())
@@ -274,7 +269,7 @@ export default function EventDialog({ mode: propMode, event, onDismiss, visible,
                                         }
                                     }
                                 }}
-                                phrase={phrase}
+                                filter={{phrase}}
                                 currentUser={currentUser}
                                 googleMapsAPIKey={googleMapsApiKey} />
                         </View>

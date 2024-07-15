@@ -24,6 +24,7 @@ import ListDialog from '../dialogs/ListDialog';
 import GeoHelper from '../utils/GeoHelper';
 import reverseGeoCode from '../utils/GooglePlacesAPI/reverseGeoCode';
 import NavigationParamsList, { WisbScreens } from './NavigationParamsList';
+import PulsingComponent from '../components/PulsingComponent';
 const map_style = require('../../res/map_style.json');
 
 const api = getAPI()
@@ -61,6 +62,21 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
   const [searchedPlace, setSearchedPlace] = React.useState<SimplePlace | null>(null)
   const [userPosition, setUserPosition] = React.useState<LatLng>(InitialRegion)
 
+  const [highlightedItem, setHighlightedItem] = React.useState<
+    {
+      type: WisbObjectType.Dumpster
+      item: WisbDumpster
+    } |
+    {
+      type: WisbObjectType.Wasteland
+      item: WisbWasteland
+    } |
+    {
+      type: WisbObjectType.Event
+      item: WisbEvent
+    }
+    | null>(null)
+
   const setCurrentRegionName = (region: Region) => {
     setIsReverseGeocoding(true)
     reverseGeoCode(res.getEnv().GOOGLE_MAPS_API_KEY, region).then(formattedAddress => {
@@ -69,14 +85,27 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
     })
   }
 
-  const onNewNotification = (n: Notification) => { 
-    if(isObjectCRUDNotification(n) && n.action == CRUD.Created) {
+  const onNewNotification = async (n: Notification) => {
+    if (isObjectCRUDNotification(n) && n.action == CRUD.Created && n.type!=WisbObjectType.User) {
       updateMapObjects(displayedRegion)
+
+      if(n.author.id == getCurrentUser().id) {
+        const item = await api.getOne(n.ref!)
+        
+        if(item.data!= null) {
+          setHighlightedItem({
+            item: item.data,
+            type: n.type
+          } as any)
+
+          mapRef.current?.animateToRegion({ ...item.data.place.coords, latitudeDelta: 0.1, longitudeDelta: 0.1 })
+        }
+      }
     }
   }
 
   React.useEffect(() => {
-    api.notifications.registerListener(onNewNotification, { location: InitialRegion })
+    api.notifications.registerListener(onNewNotification, { location: InitialRegion, allowFromSelf: true })
     setCurrentRegionName(InitialRegion)
     updateMapObjects(InitialRegion)
 
@@ -212,7 +241,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           )}
 
-          {mapObjects[WisbObjectType.Wasteland].map(wasteland => (
+          {mapObjects[WisbObjectType.Wasteland].filter(it => highlightedItem?.type !== WisbObjectType.Wasteland && highlightedItem?.item.id != it.id).map(wasteland => (
             <Marker
               key={`${WisbObjectType.Wasteland}${MarkerIdSeparator}${wasteland.id}`}
               onPress={() => onItemSelected(wasteland)}
@@ -221,7 +250,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           ))}
 
-          {mapObjects[WisbObjectType.Event].map(event => (
+          {mapObjects[WisbObjectType.Event].filter(it => highlightedItem?.type !== WisbObjectType.Event && highlightedItem?.item.id != it.id).map(event => (
             <Marker
               key={`${WisbObjectType.Event}${MarkerIdSeparator}${event.id}`}
               onPress={() => onItemSelected(event)}
@@ -230,7 +259,7 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
             </Marker>
           ))}
 
-          {mapObjects[WisbObjectType.Dumpster].map(dumpster => (
+          {mapObjects[WisbObjectType.Dumpster].filter(it => highlightedItem?.type !== WisbObjectType.Dumpster && highlightedItem?.item.id != it.id).map(dumpster => (
             <Marker
               key={`${WisbObjectType.Dumpster}${MarkerIdSeparator}${dumpster.id}`}
               onPress={() => onItemSelected(dumpster)}
@@ -238,6 +267,23 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
               <WisbIcon size={30} icon={IconType.Dumpster} />
             </Marker>
           ))}
+
+          {
+            highlightedItem == null ? null : (
+              <Marker
+                key={`${highlightedItem.type}${MarkerIdSeparator}${highlightedItem.item.id}`}
+                onPress={() => onItemSelected(highlightedItem.item)}
+                coordinate={highlightedItem.item.place.coords}>
+                <PulsingComponent
+                  isPulsing
+                  onDuration={200}
+                  offDuration={200}
+                  numberOfPulses={10}>
+                  <WisbIcon size={30} icon={IconType.Dumpster} />
+                </PulsingComponent>
+              </Marker>
+            )
+          }
         </Fragment>
       </MapView>
 
@@ -322,11 +368,11 @@ export default function MapScreen({ route: { params: { onItemSelected, getCurren
           onExpandedChange={setIsNotificationsListExpanded}
           userPosition={userPosition}
           style={{ marginBottom: 4, marginTop: -6, width: "100%" }}
-          onOpenChat={async id=>{
+          onOpenChat={async id => {
             const event = await api.getOne(id)
-            navigate.go(WisbScreens.ChatScreen, {event: event.data})
+            navigate.go(WisbScreens.ChatScreen, { event: event.data })
           }}
-          onItemSelected={async id=>{
+          onItemSelected={async id => {
             const event = await api.getOne(id)
 
             onItemSelected(event.data!)

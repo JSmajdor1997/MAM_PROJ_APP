@@ -10,18 +10,22 @@ const res = Resources.get();
 
 interface WrappedFlatListProps<T> extends Omit<FlatListProps<T>, 'data' | "style"> {
     data: T[];
+    style?: ViewStyle;
+
     isLoading: boolean;
     hasMore: boolean;
-    style?: ViewStyle;
 }
 
 const WisbFlatList = <T,>(
     { data, isLoading, hasMore, style, ...flatListProps }: WrappedFlatListProps<T>,
     ref: React.Ref<FlatList<T>>
 ): React.ReactElement => {
-    const showNoMoreItemsIcon = !hasMore;
-    const showLoadingIcon = isLoading;
-    const showEmptyListIcon = data.length === 0 && !hasMore && !isLoading;
+
+    const showNoResultsInfo = data.length == 0 && isLoading == false && hasMore == false
+    const showNoMoreItemsInfo = data.length != 0 && isLoading == false && hasMore == false
+    const showLoadingSkeleton = data.length == 0 && isLoading == true
+    const showLoadingIcon = data.length != 0 && isLoading == true
+
 
     return (
         <View style={{ ...styles.container, ...style }}>
@@ -29,33 +33,37 @@ const WisbFlatList = <T,>(
                 ref={ref}
                 data={data}
                 contentContainerStyle={[{ flexGrow: 1 }]}
-                ListEmptyComponent={showEmptyListIcon ? (
+                ListEmptyComponent={showNoResultsInfo ? (
                     <View style={styles.emptyListContainer}>
                         <WisbIcon icon={IconType.EmptyList} size={50} />
-                        <Text style={styles.noMoreText}>No results</Text>
+                        <Text style={styles.noMoreText}>Brak wyników</Text>
                     </View>
-                ) : isLoading ? (
+                ) : showLoadingSkeleton ? (
                     <View style={{ justifyContent: "center" }}>
-                    {Array.from({ length: 3 }, () => (
-                        <SkeletonPlaceholder borderRadius={4} backgroundColor="white">
-                            <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" width={"90%"} height={50}>
-                                <SkeletonPlaceholder.Item width={20} height={20} borderRadius={100} left={10} />
-                                <SkeletonPlaceholder.Item marginLeft={20}>
-                                    <SkeletonPlaceholder.Item width={Dimensions.get("window").width - 100} height={20} />
-                                    <SkeletonPlaceholder.Item marginTop={6} width={80} height={20} />
+                        {Array.from({ length: 3 }, () => (
+                            <SkeletonPlaceholder borderRadius={4} backgroundColor="white">
+                                <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" width={"90%"} height={50}>
+                                    <SkeletonPlaceholder.Item width={20} height={20} borderRadius={100} left={10} />
+                                    <SkeletonPlaceholder.Item marginLeft={20}>
+                                        <SkeletonPlaceholder.Item width={Dimensions.get("window").width - 100} height={20} />
+                                        <SkeletonPlaceholder.Item marginTop={6} width={80} height={20} />
+                                    </SkeletonPlaceholder.Item>
                                 </SkeletonPlaceholder.Item>
-                            </SkeletonPlaceholder.Item>
-                        </SkeletonPlaceholder>
-                    ))}
-                </View>
-                ) : null}
-                ListFooterComponent={showNoMoreItemsIcon ? (
-                    <View style={styles.footerContainer}>
-                        <WisbIcon icon={IconType.NoMoreItems} size={50} />
-                        <Text style={styles.noMoreText}>No more items</Text>
+                            </SkeletonPlaceholder>
+                        ))}
                     </View>
                 ) : null}
                 {...flatListProps}
+                ListFooterComponent={showNoMoreItemsInfo ? (
+                    <>
+                        <View style={styles.footerContainer}>
+                            <WisbIcon icon={IconType.NoMoreItems} size={50} />
+                            <Text style={styles.noMoreText}>To już wszystko!</Text>
+                        </View>
+
+                        {flatListProps.ListFooterComponent}
+                    </>
+                ) : null}
             />
 
             {showLoadingIcon ? (
@@ -86,7 +94,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         padding: 16,
         fontSize: 26,
-        color: "white",
+        color: res.getColors().DarkBeige,
         fontFamily: res.getFonts().Secondary,
         fontWeight: "bold"
     },

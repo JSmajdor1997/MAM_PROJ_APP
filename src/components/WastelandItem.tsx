@@ -19,14 +19,14 @@ const res = Resources.get();
 
 interface Props {
   item: WisbWasteland;
-  onOpen: (item: WisbWasteland) => void;
+  onPress: (item: WisbWasteland) => void;
   widthCoeff: number;
 }
 
-const WastelandItem: React.FC<Props> = ({ item, onOpen, widthCoeff }) => {
+const WastelandItem: React.FC<Props> = ({ item, onPress, widthCoeff }) => {
   return (
     <TouchableOpacity
-      onPress={() => onOpen(item)}
+      onPress={() => onPress(item)}
       activeOpacity={0.6}
       style={[
         styles.root,

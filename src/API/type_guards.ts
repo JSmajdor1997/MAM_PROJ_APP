@@ -58,7 +58,7 @@ export function isDumpster(item: WisbEvent | WisbDumpster | WisbWasteland | Wisb
     )
 }
 
-export function isUser(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation): item is WisbUser {
+export function isUser(item: WisbEvent | WisbDumpster | WisbWasteland | WisbUser | Invitation | any): item is WisbUser {
     if (item == null) {
         return false
     }
@@ -92,7 +92,7 @@ export function isWasteland(item: WisbEvent | WisbDumpster | WisbWasteland | Wis
         e.creationDate instanceof Date &&
         isRef(e.reportedBy, WisbObjectType.User) &&
         (typeof e.afterCleaningData === "undefined" || (
-            isRef(e.afterCleaningData.cleanedBy, WisbObjectType.User) &&
+            Array.isArray(e.afterCleaningData.cleanedBy) &&
             e.afterCleaningData.date instanceof Date &&
             Array.isArray(e.afterCleaningData.photos)
         ))

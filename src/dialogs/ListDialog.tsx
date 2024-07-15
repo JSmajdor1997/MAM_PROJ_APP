@@ -43,23 +43,24 @@ export default function ListDialog({ visible, onDismiss, onItemSelected, query, 
       dismissOnBackdropPress={false}>
       <View style={styles.container}>
         <ObjectsList
+          nestedScrollEnabled
           ListHeaderComponent={(
             <LocationsList
               userLocation={userLocation}
               maxNrOfPlaces={4}
               phrase={query.phrase}
-              style={{ width: "100%", height: 150, maxHeight: 150 }}
+              
               apiKey={googleMapsApiKey}
               onSelected={onPlaceSelected} />
           )}
           type={query.type}
-          multi={false}
-          onPressed={(item: WisbEvent | WisbWasteland | WisbDumpster | WisbUser) => {
+          multiselect={false}
+          onSelection={(item: WisbEvent | WisbWasteland | WisbDumpster | WisbUser) => {
             if (!isUser(item)) {
               onItemSelected(item)
             }
           }}
-          phrase={query.phrase}
+          filter={{phrase: query.phrase}}
           currentUser={currentUser}
           googleMapsAPIKey={googleMapsApiKey} />
       </View>

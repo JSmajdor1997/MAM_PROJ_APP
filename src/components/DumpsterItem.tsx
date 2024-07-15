@@ -17,15 +17,15 @@ const res = Resources.get()
 
 interface Props {
   item: WisbDumpster;
-  onOpen: (item: WisbDumpster) => void
+  onPress: (item: WisbDumpster) => void
   googleMapsAPIKey: string
   widthCoeff: number
 }
 
-function DumpsterItem({ item, onOpen, googleMapsAPIKey, widthCoeff }: Props) {
+function DumpsterItem({ item, onPress, googleMapsAPIKey, widthCoeff }: Props) {
   return (
     <TouchableOpacity
-      onPress={() => onOpen(item)}
+      onPress={() => onPress(item)}
       activeOpacity={0.6}
       style={styles.root}>
       <Neomorph

@@ -51,7 +51,7 @@ export default function LocationsList({ phrase, style, apiKey, userLocation, onS
 
     return (
         <WisbFlatList<Place>
-            isLoading={true}
+            isLoading={isLoading || places.length == 0}
             hasMore={true}
             style={{ width: "100%", backgroundColor: "white", ...style }}
             data={places}

@@ -19,16 +19,16 @@ const res = Resources.get()
 
 interface Props {
   item: WisbEvent;
-  onOpen: (item: WisbEvent) => void
+  onPress: (item: WisbEvent) => void
   isAdmin: boolean
   widthCoeff: number
 }
 
-function EventItem({ item, onOpen, isAdmin, widthCoeff }: Props) {
+function EventItem({ item, onPress, isAdmin, widthCoeff }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.6}
-      onPress={() => onOpen(item)}
+      onPress={() => onPress(item)}
       style={styles.root}>
       <Neomorph
         style={{

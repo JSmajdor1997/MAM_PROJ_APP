@@ -64,11 +64,11 @@ export default function QueryInput({ style, onPress, phrase, onPhraseChanged, it
                 focused={isFocused}
                 leftIcon={<FontAwesomeIcon icon={faSearch} color={res.getColors().Black} size={16} />}
                 rightIcon={(
-                    isFocused ?
-                        <TouchableOpacity onPress={onClear}>
-                            <FontAwesomeIcon icon={faClose} color={res.getColors().Black} size={16} />
-                        </TouchableOpacity> :
-                        <FontAwesomeIcon icon={faChevronDown} color={res.getColors().Black} size={16} />
+                    <TouchableOpacity onPress={isFocused ? onClear : onPress}>
+                        {isFocused ? <FontAwesomeIcon icon={faClose} color={res.getColors().Black} size={16} /> :
+                            <FontAwesomeIcon icon={faChevronDown} color={res.getColors().Black} size={16} />}
+
+                    </TouchableOpacity>
                 )}
                 placeholder={placeholder}
                 onPress={onPress}

@@ -61,20 +61,19 @@ export default function EventsScreen({ route: { params: { getCurrentUser, onItem
         />
       </View>
 
-      <ObjectsList<false, WisbObjectType.Event>
+      <ObjectsList<WisbObjectType.Event, false>
         style={styles.flatList}
         currentUser={getCurrentUser()}
         type={WisbObjectType.Event}
         filter={{
-          [WisbObjectType.Event]: {
-            onlyOwn: true,
-            activeOnly: onlyCurrentEvents
-          }
+          onlyOwn: true,
+          activeOnly: onlyCurrentEvents,
+          phrase
         }}
-        multi={false}
-        phrase={phrase}
-        onSelected={onItemSelected}
+        multiselect={false}
+        onSelection={onItemSelected}
         googleMapsAPIKey={res.getEnv().GOOGLE_MAPS_API_KEY}
+        ListFooterComponent={<View style={{height: 150}}/>}
       />
 
       <View style={styles.shadowView} />
