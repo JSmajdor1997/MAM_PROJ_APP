@@ -107,7 +107,6 @@ export default function ProgressInput({ style, selectedOptionIndex, options, onS
                 style={[styles.movingCircle, {
                     height: circlesDiameter,
                     width: circlesDiameter,
-                    top: circleBorderWidth,
                     backgroundColor: indicatorColor.interpolate({
                         inputRange: options.map((_, index) => index),
                         outputRange: options.map((item) => item.color)
@@ -120,7 +119,7 @@ export default function ProgressInput({ style, selectedOptionIndex, options, onS
 
 const styles = StyleSheet.create({
     root: {
-        width: "100%", height: 100, justifyContent: "space-between", flexDirection: "row"
+        width: "100%", minHeight: 60, justifyContent: "space-between", flexDirection: "row",
     },
     optionContainer: {
         flex: 1, backgroundColor: res.getColors().Black

@@ -13,6 +13,7 @@ import DumpsterItem from "../DumpsterItem";
 import EventItem from "../EventItem";
 import UserItem from "../UserItem";
 import WastelandItem from "../WastelandItem";
+import { CRUD, Notification, isObjectCRUDNotification } from "../../API/notifications";
 
 const api = getAPI()
 
@@ -31,12 +32,15 @@ export interface Props<T extends WisbObjectType, MultiSelect extends boolean> ex
     googleMapsAPIKey: string
 
     style?: ViewStyle
+
+    readonly?: boolean
 }
 
 const PageSize = 10;
 
 export default function ObjectsList<T extends WisbObjectType, MultiSelect extends boolean>({
     multiselect,
+    readonly,
     filter,
     type,
     selectedItems,
@@ -83,10 +87,33 @@ export default function ObjectsList<T extends WisbObjectType, MultiSelect extend
         setItems(0)
     }, [filter, type])
 
+    React.useEffect(()=>{
+        const onNotification = (n: Notification)=>{
+            if(isObjectCRUDNotification(n)) {
+                if(n.action == CRUD.Deleted) {
+                    setData(data=> ({
+                        ...data,
+                        items: data.items.filter(it => it.id !== n.ref.id)
+                    }))
+                }
+            }
+        }
+
+        api.notifications.registerListener(onNotification, {
+            observedIds: data.items.map(it => ({type, id: it.id})),
+            allowFromSelf: true
+        })
+
+        return ()=>{
+            api.notifications.unregisterListener(onNotification)
+        }
+    }, [])
+
     return (
         <WisbFlatList<any>
             showsHorizontalScrollIndicator={false}
             onEndReachedThreshold={0.5}
+            readonly={readonly}
             showsVerticalScrollIndicator={false}
             isLoading={isLoading}
             hasMore={data.hasMore}

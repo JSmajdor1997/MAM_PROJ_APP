@@ -1,62 +1,43 @@
-import { faBroom, faCalendar, faGripLines, faShare, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faBroom, faCalendar, faCheck, faClose, faGripLines, faShare, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
-import { Dimensions, Text, TextInput, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Dimensions, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { LatLng } from "react-native-maps";
-import Share from 'react-native-share';
+import Toast from 'react-native-simple-toast';
 import Resources from "../../res/Resources";
 import WisbObjectType from "../API/WisbObjectType";
 import getAPI from "../API/getAPI";
-import { WisbUser, WisbWasteland } from "../API/interfaces";
-import { isObjectCRUDNotification } from "../API/notifications";
+import { WastelandCleaningData, WisbUser, WisbWasteland } from "../API/interfaces";
 import { isWasteland } from "../API/type_guards";
-import LocationInput from "../components/inputs/LocationInput";
 import IconType from "../components/WisbIcon/IconType";
-import WisbDialog, { Mode, Section } from "./WisbDialog";
 import ImagesGallery from "../components/inputs/ImagesGallery";
+import LocationInput from "../components/inputs/LocationInput";
+import WisbDialog, { Mode } from "./WisbDialog";
 
 const res = Resources.get()
-
-enum Sections {
-    BasicInfo,
-    BeforeCleaningPhotos,
-    AfterCleaningPhotos,
-}
 
 export interface Props {
     wasteland?: WisbWasteland
     mode: Mode
     onDismiss(): void
-    visible: boolean
     userLocation: LatLng
     currentUser: WisbUser
 }
 
 const api = getAPI()
 
-export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, visible, userLocation, currentUser }: Props) {
+export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, userLocation, currentUser }: Props) {
     const [mode, setMode] = React.useState(propMode)
     const [workingWasteland, setWorkingWasteland] = React.useState<Partial<WisbWasteland>>(wasteland ?? {})
 
-    React.useEffect(() => {
-        const unregister = api.notifications.registerListener((n) => {
-            if ((mode == Mode.Viewing || mode == Mode.Editing) && isObjectCRUDNotification(n)) {
-                setWorkingWasteland({
-                    ...workingWasteland,
-                    ...n.updatedFields
-                })
-            }
-        }, { observedIds: wasteland?.id != null ? [{ type: WisbObjectType.Event, id: wasteland.id }] : [] })
+    const [isInClearingMode, setIsInClearingMode] = React.useState(false)
 
-        return unregister
-    }, [wasteland, mode])
+    const [clearingPhotos, setClearingPhotos] = React.useState<string[]>([])
 
     return (
         <WisbDialog
             onItemUpdated={update => setWorkingWasteland({ ...workingWasteland, ...update })}
-            id={workingWasteland.id ?? null}
             type={WisbObjectType.Wasteland}
-            visible={visible}
             mainIcon={IconType.WastelandIcon}
             mode={mode}
             onDismiss={onDismiss}
@@ -65,37 +46,68 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
             workingItem={workingWasteland}
             actions={[
                 {
-                    label: res.getStrings().Dialogs.WastelandDialog.CleanAction,
-                    icon: <FontAwesomeIcon icon={faBroom} />,
+                    label: isInClearingMode ? "Zgłoś" : res.getStrings().Dialogs.WastelandDialog.CleanAction,
+                    icon: <FontAwesomeIcon icon={faCheck} />,
                     color: res.getColors().Primary,
+                    enabled: (isInClearingMode && clearingPhotos?.length !== 0) || !isInClearingMode,
+                    available: workingWasteland.afterCleaningData == null,
+                    onPress: ({ startConfetti, setLoading }) => {
+                        if (isInClearingMode) {
+                            setLoading("Czyszczenie...")
+                            const afterClearingData: WastelandCleaningData = {
+                                photos: clearingPhotos,
+                                cleanedBy: [{ type: WisbObjectType.User, id: currentUser.id }],
+                                date: new Date()
+                            }
+
+                            api.clearWasteland(workingWasteland as WisbWasteland, afterClearingData).then(rsp => {
+                                if (rsp.error) {
+                                    Toast.show(`Unexpected Error!`, Toast.SHORT);
+                                    setLoading(null)
+                                } else {
+                                    setLoading(null)
+                                    setWorkingWasteland({ afterCleaningData: afterClearingData })
+                                }
+
+                                setIsInClearingMode(false)
+                                setClearingPhotos([])
+                            })
+                        } else {
+                            setIsInClearingMode(true)
+                        }
+                    }
+                },
+                {
+                    label: "Anuluj",
+                    icon: <FontAwesomeIcon icon={faClose} />,
+                    color: res.getColors().Red,
+                    available: isInClearingMode,
                     onPress: ({ startConfetti }) => { startConfetti() },
                 },
                 {
                     label: res.getStrings().Dialogs.WastelandDialog.ShareAction,
+                    available: !isInClearingMode,
                     icon: <FontAwesomeIcon icon={faShare} />,
                     color: res.getColors().Blue,
-                    onPress: () => Share.open({
+                    onPress: () => Share.share({
                         title: "Share",
                         message: "Let's clean up planet together!",
-                    })
+                    }, { tintColor: res.getColors().Primary })
                         .then((res) => {
                             console.log(res);
                         })
                         .catch((err) => {
                             err && console.log(err);
                         }),
-                },
-                {
-                    label: res.getStrings().Dialogs.WastelandDialog.CreateEventAction,
-                    icon: <FontAwesomeIcon icon={faCalendar} />,
-                    color: res.getColors().Lime,
-                    onPress: () => { },
                 }
             ]}
             sections={[
                 {
                     enabled: () => workingWasteland.place != null && workingWasteland.description != null && workingWasteland.description.length > 0,
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.WastelandDialog.BasicDataLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />,
+                    color: res.getColors().Yellow,
+                    label: res.getStrings().Dialogs.WastelandDialog.BasicDataLabel,
+                    renderPage: (props, index) => (
                         <View key={index} style={styles.sectionContainer}>
                             <LocationInput
                                 readonly={mode == Mode.Viewing}
@@ -123,20 +135,23 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                 <TextInput
                                     placeholder="Opis"
                                     readOnly={mode == Mode.Viewing}
-                                    value={workingWasteland.description ?? ""}
                                     onChange={e => setWorkingWasteland({
                                         ...workingWasteland,
                                         description: e.nativeEvent.text
                                     })}
                                     multiline
-                                    style={styles.descriptionInput} />
+                                    style={styles.descriptionInput} >
+                                    {workingWasteland.description}
+                                </TextInput>
                             </View>
                         </View>
                     )
                 },
                 {
                     enabled: () => workingWasteland.photos != null && workingWasteland.photos.length > 0,
-                    icon: <FontAwesomeIcon icon={faTrash} />, color: res.getColors().Lime, name: res.getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faTrash} />,
+                    color: res.getColors().Lime,
+                    label: res.getStrings().Dialogs.WastelandDialog.PhotosBeforeCleaningLabel, renderPage: (props, index) => (
                         <View key={index} style={styles.sectionContainer}>
                             <Text style={styles.boldText}>Zdjęcia z przed sprzątnięcia</Text>
                             <ImagesGallery
@@ -144,47 +159,66 @@ export default function WastelandDialog({ mode: propMode, wasteland, onDismiss, 
                                 images={workingWasteland.photos ?? []}
                                 nrOfImagesPerRow={4}
                                 interImagesSpace={5}
-                                onAddRequest={() => { }}
+                                onAddRequest={path => setWorkingWasteland({
+                                    ...workingWasteland,
+                                    photos: [...(workingWasteland.photos ?? []), path]
+                                })}
+                                readonly={mode == Mode.Viewing}
                                 onRemoveRequest={() => { }}
                                 rowWidth={Dimensions.get("window").width * 0.9} />
                         </View>
                     )
                 },
-                ...(mode == Mode.Viewing ? [{
+                {
                     enabled: () => workingWasteland.afterCleaningData != null && workingWasteland.afterCleaningData.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faBroom} />,
                     color: res.getColors().DarkBeige,
-                    name: res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel,
-                    renderPage: ({ shake, startConfetti, block, setLoading }, index) => (
+                    available: mode == Mode.Viewing,
+                    label: res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningLabel,
+                    renderPage: ({ shake, startConfetti, setLoading }, index) => (
                         <View key={index} style={styles.sectionContainer}>
                             <View style={styles.afterCleaningContainer}>
                                 <Text style={styles.boldText}>{res.getStrings().Dialogs.WastelandDialog.PhotosAfterCleaningByLabel} Mariusz1997</Text>
                                 <ImagesGallery
-                                    images={workingWasteland.afterCleaningData?.photos ?? []}
+                                    images={workingWasteland.afterCleaningData?.photos ?? clearingPhotos}
                                     style={styles.imagesGallery}
                                     nrOfImagesPerRow={4}
                                     interImagesSpace={5}
-                                    onAddRequest={() => { }}
+                                    onAddRequest={path => setClearingPhotos([...clearingPhotos, path])}
+                                    readonly={!isInClearingMode}
                                     onRemoveRequest={() => { }}
                                     rowWidth={Dimensions.get("window").width * 0.9} />
                             </View>
-
-                            <TouchableOpacity style={styles.addButton} onPress={() => {
-                                if (isWasteland({ ...workingWasteland, id: -1 })) {
-                                    setLoading("Trwa dodawanie")
-                                    api.createOne(WisbObjectType.Wasteland, workingWasteland as Omit<WisbWasteland, "id">).then(() => {
-                                        setLoading(null)
-                                        block(true)
-                                        startConfetti()
-                                    })
-                                }
-                            }}>
-                                <Text style={{ fontFamily: res.getFonts().Secondary }}>DODAJ</Text>
-                            </TouchableOpacity>
                         </View>
                     )
-                } satisfies Section<WisbObjectType.Wasteland>]
-                    : [] as any)
+                },
+                {
+                    enabled: () => true,
+                    available: mode == Mode.Adding,
+                    icon: <FontAwesomeIcon icon={faAdd} />,
+                    color: res.getColors().Primary,
+                    label: "Dodaj",
+                    renderPage: ({ startConfetti, setLoading, currentIndex }, index) => {
+                        return (
+                            <View style={styles.addButtonContainer}>
+                                <TouchableOpacity
+                                    style={styles.addButton}
+                                    onPress={() => {
+                                        setLoading("Trwa dodawanie")
+
+                                        api.createOne(WisbObjectType.Wasteland, workingWasteland as Omit<WisbWasteland, "id">).then(async ref => {
+                                            setLoading(null)
+                                            startConfetti()
+                                            setTimeout(onDismiss, 600)
+                                            console.log(ref)
+                                        })
+                                    }}>
+                                    <Text style={styles.addButtonText}>DODAJ</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )
+                    }
+                }
             ]} />
     )
 }
@@ -236,6 +270,16 @@ const styles = StyleSheet.create({
         padding: 15
     },
     addButton: {
-        marginTop: 20
-    }
+        padding: 10,
+        borderRadius: 15,
+        backgroundColor: res.getColors().Beige
+    },
+    addButtonText: {
+        fontFamily: res.getFonts().Secondary
+    },
+    addButtonContainer: {
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1
+    },
 });

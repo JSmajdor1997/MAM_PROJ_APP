@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
   },
   flatList: {
     marginTop: 14,
+    flex: 1
   },
   flatListContentContainer: {
     marginTop: 14,

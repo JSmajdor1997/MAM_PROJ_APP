@@ -62,8 +62,8 @@ const styles = StyleSheet.create({
     },
     labelContainer: {
         backgroundColor: res.getColors().White,
-        paddingHorizontal: 5,
-        paddingVertical: 3,
+        paddingHorizontal: 4,
+        paddingVertical: 2,
         borderRadius: 5,
         marginTop: 8,
 
@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
     label: {
         textAlign: 'center',
         letterSpacing: 1,
+        fontSize: 12,
         fontFamily: res.getFonts().Secondary
     }
 })

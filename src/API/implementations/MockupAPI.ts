@@ -1,10 +1,11 @@
+import { icon } from "@fortawesome/fontawesome-svg-core";
 import GeoHelper from "../../utils/GeoHelper";
 import compareDates from "../../utils/dates/compareDates";
 import type { APIResponse, CreateMap, QueryMap, TypeMap } from "../API";
 import API, { GeneralError, LogoutError, SignUpError } from "../API";
 import type Ref from "../Ref";
 import WisbObjectType from "../WisbObjectType";
-import type { Invitation, WastelandCleaningData, WisbEvent, WisbMessage, WisbUser, WisbWasteland } from "../interfaces";
+import type { Invitation, WastelandCleaningData, WisbDumpster, WisbEvent, WisbMessage, WisbUser, WisbWasteland } from "../interfaces";
 import { CRUD } from "../notifications";
 import { isEvent, isInvitation } from "../type_guards";
 import Storage from "./Storage";
@@ -160,7 +161,7 @@ export default class MockupAPI extends API {
 
             list = [...this.storage.get().dumpsters.values()]
                 .filter(dumpster => {
-                    if ((query.phrase != null && query.phrase.length != 0) && !dumpster.description.includes(query.phrase)) {
+                    if ((query.phrase != null && query.phrase.length != 0) && !dumpster.description.toLocaleLowerCase().includes(query.phrase.toLocaleLowerCase())) {
                         return false
                     }
 
@@ -174,7 +175,7 @@ export default class MockupAPI extends API {
             const q = query as QueryMap<WisbObjectType.Wasteland>
 
             list = [...this.storage.get().wastelands.values()].filter(({ place, description, reportedBy, afterCleaningData }) => {
-                if ((query.phrase != null && query.phrase.length != 0) && !place.asText.includes(query.phrase) && !description.includes(query.phrase)) {
+                if ((query.phrase != null && query.phrase.length != 0) && !place.asText.includes(query.phrase) && !description.toLocaleLowerCase().includes(query.phrase.toLocaleLowerCase())) {
                     return false
                 }
 
@@ -325,7 +326,15 @@ export default class MockupAPI extends API {
                 }
             }
 
-            this.storage.get().dumpsters.set(ref.id.toString(), { ...this.storage.get().dumpsters.get(ref.id.toString())!, ...update })
+            const {place, description, photos} = update as Partial<WisbDumpster>
+
+            const current = this.storage.get().dumpsters.get(ref.id.toString())!
+            this.storage.get().dumpsters.set(ref.id.toString(), { 
+                ...current, 
+                place: place ?? current.place, 
+                description: description ?? current.description, 
+                photos: photos ?? current.photos
+            })
         } else if (ref.type == WisbObjectType.Wasteland) {
             const wasteland = this.storage.get().wastelands.get(ref.id.toString())
 
@@ -343,7 +352,15 @@ export default class MockupAPI extends API {
                 }
             }
 
-            this.storage.get().wastelands.set(ref.id.toString(), { ...this.storage.get().wastelands.get(ref.id.toString())!, ...update })
+            const {place, description, photos} = update as Partial<WisbWasteland>
+
+            const current = this.storage.get().wastelands.get(ref.id.toString())!
+            this.storage.get().wastelands.set(ref.id.toString(), { 
+                ...current, 
+                place: place ?? current.place,
+                photos: photos ?? current.photos,
+                description: description ?? current.description
+            })
         } else if (ref.type == WisbObjectType.Event) {
             const event = this.storage.get().events.get(ref.id.toString())
 
@@ -360,6 +377,19 @@ export default class MockupAPI extends API {
                     description: "Only administrator may change event"
                 }
             }
+
+            const {name, iconUrl, dateRange, place, description, wastelands} = update as Partial<WisbEvent>
+
+            const current = this.storage.get().events.get(ref.id.toString())!
+            this.storage.get().events.set(ref.id.toString(), { 
+                ...current, 
+                name: name ?? current.name,
+                iconUrl: iconUrl ?? current.iconUrl,
+                dateRange: dateRange ?? current.dateRange,
+                place: place ?? current.place,
+                description: description ?? current.description,
+                wastelands:wastelands ?? current.wastelands
+            })
 
             this.storage.get().events.set(ref.id.toString(), { ...event, ...update })
         } else if (ref.type == WisbObjectType.User) {
@@ -379,7 +409,14 @@ export default class MockupAPI extends API {
                 }
             }
 
-            const newUser = { ...this.storage.get().users.get(ref.id.toString())!, ...update }
+            const {email, userName, photoUrl} = update as Partial<WisbUser>
+
+            const current = this.storage.get().users.get(ref.id.toString())!
+            const newUser = { ...current, 
+                email: email ?? current?.email,
+                userName: userName ?? current?.userName,
+                photoUrl: photoUrl ?? current?.photoUrl,
+            }
             this.storage.get().currentUser = newUser
             this.storage.get().users.set(ref.id.toString(), newUser)
         }

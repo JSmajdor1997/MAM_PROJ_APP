@@ -20,11 +20,7 @@ import NavBar from './src/components/NavBar/NavBar';
 import IconType from './src/components/WisbIcon/IconType';
 import ModificatorType from './src/components/WisbIcon/ModificatorType';
 import WisbIcon from './src/components/WisbIcon/WisbIcon';
-import DumpsterDialog from './src/dialogs/DumpsterDialog';
-import EventDialog from './src/dialogs/EventDialog';
 import QRCodeDialog from './src/dialogs/QRCodeDialog';
-import WastelandDialog from './src/dialogs/WastelandDialog';
-import { Mode } from './src/dialogs/WisbDialog';
 import ChatScreen from './src/screens/ChatScreen';
 import LeaderboardScreen from './src/screens/LeaderBoardScreen';
 import LoginScreen from './src/screens/LoginScreen';
@@ -33,6 +29,10 @@ import MyEventsScreen from './src/screens/MyEventsScreen';
 import NavigationParamsList, { WisbNavigateFunction, WisbScreens } from './src/screens/NavigationParamsList';
 import SettingsScreen from './src/screens/SettingsScreen';
 import SplashScreen from './src/screens/SplashScreen';
+import DumpsterDialog from './src/dialogs/DumpsterDialog';
+import EventDialog from './src/dialogs/EventDialog';
+import WastelandDialog from './src/dialogs/WastelandDialog';
+import { Mode } from './src/dialogs/WisbDialog';
 
 LogBox.ignoreAllLogs();
 
@@ -258,7 +258,6 @@ export default function App() {
               currentUser == null ? null : (
                 <>
                   {dialogData[WisbObjectType.Event] != null ? <EventDialog
-                    visible={dialogData[WisbObjectType.Event] != null}
                     googleMapsApiKey={res.getEnv().GOOGLE_MAPS_API_KEY}
                     event={dialogData[WisbObjectType.Event]?.item}
                     mode={dialogData[WisbObjectType.Event]?.mode ?? Mode.Viewing}
@@ -270,7 +269,6 @@ export default function App() {
                       setDialogData({})
                     }} /> : null}
                   {dialogData[WisbObjectType.Wasteland] != null ? <WastelandDialog
-                    visible={dialogData[WisbObjectType.Wasteland] != null}
                     wasteland={dialogData[WisbObjectType.Wasteland]?.item}
                     mode={dialogData[WisbObjectType.Wasteland]?.mode ?? Mode.Viewing}
                     userLocation={userLocation}
@@ -278,7 +276,6 @@ export default function App() {
                     onDismiss={() => setDialogData({})} /> : null}
                   {dialogData[WisbObjectType.Dumpster] != null ? <DumpsterDialog
                     currentUser={currentUser}
-                    visible={dialogData[WisbObjectType.Dumpster] != null}
                     dumpster={dialogData[WisbObjectType.Dumpster]?.item}
                     mode={dialogData[WisbObjectType.Dumpster]?.mode ?? Mode.Viewing}
                     userLocation={userLocation}

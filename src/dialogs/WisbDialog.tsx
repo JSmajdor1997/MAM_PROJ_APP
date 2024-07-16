@@ -1,4 +1,4 @@
-import { faClose, faEdit, faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faAdd, faCheck, faClose, faEdit, faEllipsisV, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from 'react';
 import {
@@ -9,7 +9,8 @@ import {
     Text,
     TouchableOpacity,
     View,
-    StyleSheet
+    StyleSheet,
+    Share
 } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Menu, MenuItem } from 'react-native-material-menu';
@@ -38,17 +39,20 @@ export interface RenderPageProps<Type extends ObjectType> {
     shake: () => void
     startConfetti: () => void
     setLoading: (label: string | null) => void
-    block: (block: boolean) => void
     item: Partial<TypeMap<Type>>
+    dismiss(): void
+    mode: Mode
 }
 
 export interface Section<Type extends ObjectType> {
     icon: React.ReactNode
     color: string
-    name: string
+    label: string
 
     enabled: () => boolean
     renderPage(props: RenderPageProps<Type>, index: number): React.ReactNode
+
+    available?: boolean
 }
 
 export enum Mode {
@@ -63,19 +67,19 @@ export interface Action<Type extends ObjectType> {
     color: string
     enabled?: boolean
     onPress: (props: RenderPageProps<Type>) => void
+
+    available?: boolean
 }
 
 type ObjectType = WisbObjectType.Dumpster | WisbObjectType.Wasteland | WisbObjectType.Event
 
 export interface Props<Type extends ObjectType> {
     type: Type
-    id: number | null
     workingItem: Partial<TypeMap<Type>>
     mode: Mode
     currentUser: WisbUser
 
     onDismiss(): void
-    visible: boolean
 
     sections: Section<Type>[]
 
@@ -102,35 +106,34 @@ function isAllowedToManage(user: WisbUser, item: Partial<WisbDumpster | WisbEven
     } else return false
 }
 
-export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated, currentUser, type, workingItem, mode, onDismiss, visible, sections, actions, mainIcon, onModeChanged }: Props<Type>) {
+export default function WisbDialog<Type extends ObjectType>({ onItemUpdated, currentUser, type, workingItem, mode, onDismiss, sections, actions, mainIcon, onModeChanged }: Props<Type>) {
     const shadowAnim = React.useRef(new Animated.Value(0)).current;
     const swiperRef = React.useRef<Swiper>(null)
     const [currentIndex, setCurrentIndex] = React.useState<number>(0)
     const [makeConfetti, setMakeConfetti] = React.useState(false)
     const [isMoreMenuVisible, setIsMoreMenuVisible] = React.useState(false)
-    const [isBlocked, setIsBlocked] = React.useState(false)
     const [loadingMessage, setLoadingMessage] = React.useState<string | null>(null)
 
-    React.useEffect(()=>{
+    React.useEffect(() => {
         const listener = (n: Notification) => {
-            if(isObjectCRUDNotification(n)) {
-                if(n.action == CRUD.Deleted) {
+            if (isObjectCRUDNotification(n)) {
+                if (n.action == CRUD.Deleted) {
                     Toast.show(`Obiekt został usunięty przez innego użytkownika!`, Toast.SHORT);
                     onDismiss()
-                } else if(n.action == CRUD.Updated) {
+                } else if (n.action == CRUD.Updated) {
                     onItemUpdated(n.updatedFields as any)
                 }
             }
         }
 
-        if((mode == Mode.Editing || mode == Mode.Viewing) && id != null) {
-            api.notifications.registerListener(listener, {observedIds: [{type, id}]})
+        if ((mode == Mode.Editing || mode == Mode.Viewing) && workingItem?.id != null) {
+            api.notifications.registerListener(listener, { observedIds: [{ type, id: workingItem.id }] })
         }
 
-        return ()=>{
+        return () => {
             api.notifications.unregisterListener(listener)
         }
-    }, [id, type, mode])
+    }, [workingItem?.id, type, mode])
 
     const { shake, translationX } = useShaky({
         durationMs: ShakingDuration,
@@ -184,15 +187,48 @@ export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated,
         }
     ]
 
+    const EditActions: Action<Type>[] = [
+        {
+            label: "Anuluj",
+            icon: <FontAwesomeIcon icon={faClose} />,
+            color: res.getColors().Red,
+            onPress: () => {
+                onModeChanged(Mode.Viewing)
+            }
+        },
+        {
+            label: "Zapisz",
+            icon: <FontAwesomeIcon icon={faCheck} />,
+            color: res.getColors().Green,
+            onPress: ({ setLoading }) => {
+                setLoading("Zapisywanie...")
+
+                api.updateOne({type, id: workingItem.id!}, workingItem as any).then(()=>{
+                    setLoading(null)
+
+                    onItemUpdated(workingItem)
+                    onModeChanged(Mode.Viewing)
+                })
+            },
+        }
+    ]
+
     const params = {
-        shake, startConfetti, currentIndex, setLoading, block: setIsBlocked, item: workingItem
+        shake, startConfetti, currentIndex, setLoading, item: workingItem, dismiss: onDismiss, mode
     }
+
+    const availableActions = (
+        mode == Mode.Editing ? EditActions :
+        mode == Mode.Viewing ? (actions??[]).filter(it => it.available !== false) :
+        []
+    )
+    const availableSections = sections.filter(it => it.available !== false)
 
     return (
         <Modal
             animationType='slide'
             transparent
-            visible={visible}
+            visible={true}
             onDismiss={onDismiss}>
 
             <Pressable
@@ -200,7 +236,7 @@ export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated,
                 onPress={onDismiss} >
                 <View style={styles.modalContainer}>
                     <Animated.View
-                        onStartShouldSetResponder={(event) => true}
+                        onStartShouldSetResponder={() => true}
                         onTouchEnd={(e) => {
                             e.stopPropagation();
                         }}
@@ -229,7 +265,7 @@ export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated,
                                 <FontAwesomeIcon icon={faClose} color={res.getColors().White} size={20} />
                             </TouchableOpacity>
 
-                            <WisbIcon icon={mainIcon} size={80} modificator={mode == Mode.Adding ? ModificatorType.Add : mode == Mode.Editing ? ModificatorType.Edit : undefined} />
+                            <WisbIcon icon={mainIcon} size={50} modificator={mode == Mode.Adding ? ModificatorType.Add : mode == Mode.Editing ? ModificatorType.Edit : undefined} />
 
                             <View>
                                 {mode == Mode.Viewing && isAllowedToManage(currentUser, workingItem) ?
@@ -252,61 +288,56 @@ export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated,
                             </View>
                         </Animated.View>
 
-                        {
-                            mode == Mode.Adding || mode == Mode.Editing ? (
-                                <Swiper
-                                    loadMinimal
-                                    ref={swiperRef}
-                                    showsButtons={false}
-                                    showsPagination={false}
-                                    scrollEnabled={false}
-                                    loop={false}>
-                                    {sections.map((it, index) => it.renderPage(params, index))}
-                                </Swiper>
-                            ) : <ScrollView>
-                                {sections.map((it, index) => it.renderPage(params, index))}
-                            </ScrollView>
-                        }
+                        <Swiper
+                            loadMinimal
+                            ref={swiperRef}
+                            showsButtons={false}
+                            showsPagination={false}
+                            scrollEnabled={false}
+                            loop={false}>
+                            {availableSections.map((it, index) => (
+                                <ScrollView>
+                                    {it.renderPage(params, index)}
+                                </ScrollView>
+                            ))}
+                        </Swiper>
 
-                        {
-                            mode == Mode.Adding || mode == Mode.Editing ?
-                                <Animated.View style={[
-                                    styles.progressInputContainer,
-                                    {
-                                        shadowOpacity: shadowAnim.interpolate({
-                                            inputRange: [0, 10],
-                                            outputRange: [0, 1],
-                                        }),
+                        <Animated.View style={[
+                            styles.progressInputContainer,
+                            {
+                                shadowOpacity: shadowAnim.interpolate({
+                                    inputRange: [0, 10],
+                                    outputRange: [0, 1],
+                                }),
+                            }
+                        ]}>
+                            <Text style={styles.sectionName}>{sections[currentIndex].label}</Text>
+                            <ProgressInput
+                                translationAnimationTime={TranslationAnimationDuration}
+                                selectedOptionIndex={currentIndex}
+                                options={availableSections.map((it, index) => {
+                                    return {
+                                        ...it,
+                                        disabled: !sections.slice(0, index).every(it => it.enabled())
                                     }
-                                ]}>
-                                    <Text style={styles.sectionName}>{sections[currentIndex].name}</Text>
-                                    <ProgressInput
-                                        translationAnimationTime={TranslationAnimationDuration}
-                                        selectedOptionIndex={currentIndex}
-                                        options={sections.map((it, index) => {
-                                            return {
-                                                ...it,
-                                                disabled: !sections.slice(0, index).every(it => it.enabled()) || isBlocked
-                                            }
-                                        })}
-                                        style={styles.progressInput}
-                                        onSelectedOptionChanged={i => {
-                                            setCurrentIndex(i)
-                                            swiperRef.current?.scrollTo(i, true)
-                                        }} />
-                                </Animated.View> : null
-                        }
+                                })}
+                                style={styles.progressInput}
+                                onSelectedOptionChanged={i => {
+                                    setCurrentIndex(i)
+                                    swiperRef.current?.scrollTo(i, true)
+                                }} />
+
+                            {availableActions.length == 0 ? null : (
+                                <View style={[styles.actionsContainer, {justifyContent: availableActions.length==1 ? "center" : "space-between"}]}>
+                                    {availableActions.filter(it => it.available !== false).map((action, index) => (
+                                        <FAB size={40} key={`${index}|${action.label}`} {...action} onPress={() => action.onPress(params)} />
+                                    ))}
+                                </View>)}
+                        </Animated.View>
 
                         {makeConfetti ?
                             <ConfettiCannon count={40} origin={{ x: 0, y: 0 }} autoStart={true} fadeOut /> :
                             null}
-
-                        {actions == null || mode == Mode.Adding ? null : (
-                            <View style={styles.actionsContainer}>
-                                {actions.map((action, index) => (
-                                    <FAB key={`${index}|${action.label}`} {...action} onPress={() => action.onPress(params)} />
-                                ))}
-                            </View>)}
 
                         {loadingMessage != null ? (
                             <View style={styles.loadingContainer}>
@@ -324,6 +355,22 @@ export default function WisbDialog<Type extends ObjectType>({ id, onItemUpdated,
 }
 
 const styles = StyleSheet.create({
+    addButtonContainer: {
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1
+    },
+    addButton: {
+        padding: 10,
+        borderRadius: 15,
+        backgroundColor: res.getColors().Beige
+    },
+    addButtonText: {
+        fontWeight: "bold",
+        fontSize: 25,
+        color: res.getColors().Primary,
+        fontFamily: res.getFonts().Secondary
+    },
     pressable: {
         height: "100%",
         display: "flex"
@@ -404,7 +451,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         width: "100%",
         padding: 10,
-        height: 100
+        height: 80,
     },
     loadingContainer: {
         position: "absolute",
@@ -434,5 +481,25 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 20,
         fontFamily: res.getFonts().Secondary,
+    },
+    sharingContainer: {
+        flex: 1
+    },
+    shareButtonContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    },
+    shareButton: {
+        backgroundColor: res.getColors().DarkBeige,
+        padding: 20,
+        borderRadius: 15
+    },
+    shareButtonText: {
+        fontFamily: res.getFonts().Secondary,
+        color: "white",
+        fontWeight: "600",
+        letterSpacing: 1,
+        fontSize: 15
     }
 });

@@ -14,17 +14,19 @@ interface WrappedFlatListProps<T> extends Omit<FlatListProps<T>, 'data' | "style
 
     isLoading: boolean;
     hasMore: boolean;
+
+    readonly?: boolean
 }
 
 const WisbFlatList = <T,>(
-    { data, isLoading, hasMore, style, ...flatListProps }: WrappedFlatListProps<T>,
+    { data, isLoading, hasMore, style,readonly, ...flatListProps }: WrappedFlatListProps<T>,
     ref: React.Ref<FlatList<T>>
 ): React.ReactElement => {
 
-    const showNoResultsInfo = data.length == 0 && isLoading == false && hasMore == false
-    const showNoMoreItemsInfo = data.length != 0 && isLoading == false && hasMore == false
-    const showLoadingSkeleton = data.length == 0 && isLoading == true
-    const showLoadingIcon = data.length != 0 && isLoading == true
+    const showNoResultsInfo = readonly === false && data.length == 0 && isLoading == false && hasMore == false
+    const showNoMoreItemsInfo = readonly === false && data.length != 0 && isLoading == false && hasMore == false
+    const showLoadingSkeleton = readonly === false && data.length == 0 && isLoading == true
+    const showLoadingIcon = readonly === false && data.length != 0 && isLoading == true
 
 
     return (
@@ -54,16 +56,18 @@ const WisbFlatList = <T,>(
                     </View>
                 ) : null}
                 {...flatListProps}
-                ListFooterComponent={showNoMoreItemsInfo ? (
+                ListFooterComponent={
                     <>
-                        <View style={styles.footerContainer}>
-                            <WisbIcon icon={IconType.NoMoreItems} size={50} />
-                            <Text style={styles.noMoreText}>To już wszystko!</Text>
-                        </View>
+                        {showNoMoreItemsInfo ? (
+                            <View style={styles.footerContainer}>
+                                <WisbIcon icon={IconType.NoMoreItems} size={50} />
+                                <Text style={styles.noMoreText}>To już wszystko!</Text>
+                            </View>
+                        ) : null}
 
                         {flatListProps.ListFooterComponent}
                     </>
-                ) : null}
+                }
             />
 
             {showLoadingIcon ? (

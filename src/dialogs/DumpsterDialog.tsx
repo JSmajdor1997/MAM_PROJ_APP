@@ -1,4 +1,4 @@
-import { faGripLines, faImage, faMapPin } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faGripLines, faImage, faMapPin } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import React from "react";
 import { Dimensions, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -7,66 +7,43 @@ import Resources from "../../res/Resources";
 import WisbObjectType from "../API/WisbObjectType";
 import getAPI from "../API/getAPI";
 import { WisbDumpster, WisbUser } from "../API/interfaces";
-import { isObjectCRUDNotification } from "../API/notifications";
-import { isDumpster } from "../API/type_guards";;
-import LocationInput from "../components/inputs/LocationInput";
+import { isDumpster } from "../API/type_guards";
 import IconType from "../components/WisbIcon/IconType";
-import WisbDialog, { Mode } from "./WisbDialog";
 import ImagesGallery from "../components/inputs/ImagesGallery";
+import LocationInput from "../components/inputs/LocationInput";
+import WisbDialog, { Mode } from "./WisbDialog";
+;
 
 const res = Resources.get()
-
-enum Sections {
-    BasicInfo,
-    Location,
-    Photos
-}
 
 export interface Props {
     dumpster?: WisbDumpster
     mode: Mode
     onDismiss(): void
-    onAdd?: (dumpster: WisbDumpster) => void
-    visible: boolean
     userLocation: LatLng
     currentUser: WisbUser
 }
 
 const api = getAPI()
 
-export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, onAdd, visible, userLocation, currentUser }: Props) {
+export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, userLocation, currentUser }: Props) {
     const [mode, setMode] = React.useState(propMode)
     const [workingDumpster, setWorkingDumpster] = React.useState<Partial<WisbDumpster>>(dumpster ?? {})
 
-    React.useEffect(() => {
-        const unregister = api.notifications.registerListener((n) => {
-            if ((mode == Mode.Viewing || mode == Mode.Editing) && isObjectCRUDNotification(n)) {
-                setWorkingDumpster({
-                    ...workingDumpster,
-                    ...n.updatedFields
-                })
-            }
-        }, { observedIds: dumpster?.id != null ? [{ type: WisbObjectType.Event, id: dumpster.id }] : [] })
-
-        return unregister
-    }, [dumpster, mode])
-
     return (
         <WisbDialog
-            id={workingDumpster.id ?? null}
-            onItemUpdated={update => setWorkingDumpster({...workingDumpster, ...update})}
+            onItemUpdated={update => setWorkingDumpster({ ...workingDumpster, ...update })}
             currentUser={currentUser}
             type={WisbObjectType.Dumpster}
             workingItem={workingDumpster}
             onModeChanged={setMode}
-            visible={visible}
             mainIcon={IconType.Dumpster}
             mode={mode}
             onDismiss={onDismiss}
             sections={[
                 {
                     enabled: () => workingDumpster.place != null,
-                    icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Green, name: res.getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faMapPin} />, color: res.getColors().Green, label: res.getStrings().Dialogs.DumpsterDialog.LocationLabel, renderPage: (props, index) => (
                         <View key={index} style={styles.locationContainer}>
                             <LocationInput
                                 readonly={mode == Mode.Viewing}
@@ -83,7 +60,7 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                 },
                 {
                     enabled: () => workingDumpster.description != null && workingDumpster.description.length > 0,
-                    icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, name: res.getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
+                    icon: <FontAwesomeIcon icon={faGripLines} />, color: res.getColors().Yellow, label: res.getStrings().Dialogs.DumpsterDialog.BasicDataLabel, renderPage: (props, index) => (
                         <View key={index} style={styles.basicDataContainer}>
                             <View>
                                 <Text style={styles.sectionTitle}>Opis</Text>
@@ -93,8 +70,9 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                                     multiline
                                     readOnly={mode == Mode.Viewing}
                                     onChange={e => setWorkingDumpster({ ...workingDumpster, description: e.nativeEvent.text })}
-                                    value={workingDumpster.description ?? ""}
-                                    style={styles.descriptionInput} />
+                                    style={styles.descriptionInput} >
+                                    {workingDumpster.description}
+                                </TextInput>
                             </View>
 
                             <View style={styles.addedByContainer}>
@@ -108,8 +86,8 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                     enabled: () => workingDumpster.photos != null && workingDumpster.photos.length > 0,
                     icon: <FontAwesomeIcon icon={faImage} />,
                     color: res.getColors().Yellow,
-                    name: "Zdjęcia",
-                    renderPage: ({ block, startConfetti, setLoading }, index) => {
+                    label: "Zdjęcia",
+                    renderPage: ({ startConfetti, setLoading }, index) => {
                         return (
                             <View style={styles.photosContainer}>
                                 <View key={index} style={styles.photosSection}>
@@ -122,25 +100,46 @@ export default function DumpsterDialog({ mode: propMode, dumpster, onDismiss, on
                                         rowWidth={Dimensions.get("window").width * 0.9}
                                         interImagesSpace={5}
                                         style={styles.gallery}
-                                        onAddRequest={() => { }}
+                                        readonly={mode == Mode.Viewing}
+                                        onAddRequest={path => setWorkingDumpster({
+                                            ...workingDumpster, 
+                                            photos: [...(workingDumpster.photos ?? []), path]
+                                        })}
                                         onRemoveRequest={() => { }}
                                         nrOfImagesPerRow={4} />
                                 </View>
-                                <TouchableOpacity style={styles.addButton} onPress={() => {
-                                    if (isDumpster({ ...workingDumpster, id: -1 })) {
-                                        setLoading("Trwa dodawanie")
+                            </View>
+                        )
+                    }
+                },
+                {
+                    enabled: () => true,
+                    available: mode == Mode.Adding,
+                    icon: <FontAwesomeIcon icon={faAdd} />,
+                    color: res.getColors().Primary,
+                    label: "Dodaj",
+                    renderPage: ({ startConfetti, setLoading, currentIndex }, index) => {
+                        return (
+                            <View style={styles.addButtonContainer}>
+                                <TouchableOpacity
+                                    style={styles.addButton}
+                                    onPress={() => {
+                                        if (isDumpster({ ...workingDumpster, id: -1, addedBy: {type: WisbObjectType.User, id: -1} })) {
+                                            setLoading("Trwa dodawanie")
 
-                                        api.createOne(WisbObjectType.Dumpster, workingDumpster as Omit<WisbDumpster, "id">).then(async ref => {
-                                            setLoading(null)
-                                        })
-                                    }
-                                }}>
+                                            api.createOne(WisbObjectType.Dumpster, workingDumpster as Omit<WisbDumpster, "id">).then(async ref => {
+                                                setLoading(null)
+                                                startConfetti()
+                                                setTimeout(onDismiss, 600)
+                                            })
+                                        }
+                                    }}>
                                     <Text style={styles.addButtonText}>DODAJ</Text>
                                 </TouchableOpacity>
                             </View>
                         )
                     }
-                },
+                }
             ]} />
     )
 }
@@ -188,9 +187,16 @@ const styles = StyleSheet.create({
         width: "100%"
     },
     addButton: {
-        padding: 10
+        padding: 10,
+        borderRadius: 15,
+        backgroundColor: res.getColors().Beige
     },
     addButtonText: {
         fontFamily: res.getFonts().Secondary
-    }
+    },
+    addButtonContainer: {
+        justifyContent: "center",
+        alignItems: "center",
+        flex: 1
+    },
 });

@@ -3,17 +3,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View, ViewStyle } from "react-native";
 import Resources from "../../../res/Resources";
+import getSeededImage from "../../API/generators/getSeededImage";
 
 const res = Resources.get();
 
 export interface Props {
     images: string[];
-    onAddRequest?: () => void;
+    onAddRequest?: (image: string) => void;
     onRemoveRequest?: (image: string) => void;
     nrOfImagesPerRow: number;
     style?: ViewStyle;
     interImagesSpace: number;
     rowWidth: number;
+    readonly: boolean
 }
 
 const ImagesGallery: React.FC<Props> = ({
@@ -24,6 +26,7 @@ const ImagesGallery: React.FC<Props> = ({
     style,
     interImagesSpace,
     rowWidth,
+    readonly
 }) => {
     // Calculate the total space taken by all the gaps between images
     const totalSpacing = interImagesSpace * (nrOfImagesPerRow - 1);
@@ -39,18 +42,18 @@ const ImagesGallery: React.FC<Props> = ({
                     <ImageComponent
                         imageSrc={image}
                         size={imageSize}
-                        onRemoveRequest={onRemoveRequest ? () => onRemoveRequest(image) : undefined}
+                        onRemoveRequest={onRemoveRequest && !readonly ? () => onRemoveRequest(image) : undefined}
                     />
                 </View>
             ))}
-            {onAddRequest && (
+            {onAddRequest && !readonly ? (
                 <TouchableOpacity
                     style={[styles.addButton, { width: imageSize, height: imageSize, marginBottom: interImagesSpace }]}
-                    onPress={onAddRequest}
+                    onPress={()=>onAddRequest(getSeededImage(new Date().getTime().toString()))}
                 >
                     <FontAwesomeIcon icon={faAdd} size={30} color={res.getColors().Blue} />
                 </TouchableOpacity>
-            )}
+            ) : null}
         </View>
     );
 };
